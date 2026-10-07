@@ -710,28 +710,14 @@ class CollectAvatar extends StatelessWidget {
   }
 }
 
-/// Best-effort Ghana network from a phone number prefix (for display only).
-DsNetwork? networkFromPhone(String? phone) {
-  if (phone == null) return null;
-  var digits = phone.replaceAll(RegExp(r'\D'), '');
-  if (digits.startsWith('233')) digits = '0${digits.substring(3)}';
-  if (!digits.startsWith('0') && digits.length == 9) digits = '0$digits';
-  if (digits.length < 3) return null;
-  final p = digits.substring(0, 3);
-  const mtn = {'024', '025', '053', '054', '055', '059'};
-  const telecel = {'020', '050'};
-  const at = {'026', '027', '056', '057'};
-  if (mtn.contains(p)) return DsNetwork.mtn;
-  if (telecel.contains(p)) return DsNetwork.telecel;
-  if (at.contains(p)) return DsNetwork.airtelTigo;
-  return null;
-}
-
 /// Leading tile for a payment row: network logo for MoMo, otherwise an icon
 /// tile for cash, card, bank, transfers and refunds.
 class PaymentMethodTile extends StatelessWidget {
   final String? paymentMethod;
-  final String? phone;
+
+  /// The transaction's mobileMoneyProvider. The logo comes from this, not the
+  /// payer's number, because numbers can be ported between networks.
+  final String? provider;
   final bool isPayout;
   final bool isRefund;
   final double size;
@@ -739,7 +725,7 @@ class PaymentMethodTile extends StatelessWidget {
   const PaymentMethodTile({
     super.key,
     this.paymentMethod,
-    this.phone,
+    this.provider,
     this.isPayout = false,
     this.isRefund = false,
     this.size = 40,
@@ -755,7 +741,7 @@ class PaymentMethodTile extends StatelessWidget {
     }
     switch (paymentMethod) {
       case 'mobile-money':
-        final net = networkFromPhone(phone);
+        final net = DsNetworkLogo.fromProvider(provider);
         if (net != null) return DsNetworkLogo(net, size: size);
         return DsIconTile(Icons.phone_android_rounded, size: size);
       case 'cash':

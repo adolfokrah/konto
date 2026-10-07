@@ -41,7 +41,7 @@ class JarActivityRow extends StatelessWidget {
       return const DsIconTile(Icons.undo_rounded, tone: DsTone.pending);
     }
     final method = (c.paymentMethod ?? '').toLowerCase();
-    final network = DsNetworkLogo.fromProvider(c.paymentMethod);
+    final network = DsNetworkLogo.fromProvider(c.mobileMoneyProvider);
     if (network != null) return DsNetworkLogo(network);
     switch (method) {
       case 'cash':

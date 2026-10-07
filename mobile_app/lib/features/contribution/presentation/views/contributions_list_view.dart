@@ -992,7 +992,7 @@ class _ActivityRow extends StatelessWidget {
       onTap: () => ContributionView.show(context, c.id),
       leading: PaymentMethodTile(
         paymentMethod: c.paymentMethod,
-        phone: c.contributorPhoneNumber,
+        provider: c.mobileMoneyProvider,
         isPayout: c.isPayout,
         isRefund: c.isRefund,
       ),

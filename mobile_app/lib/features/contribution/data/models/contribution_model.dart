@@ -510,6 +510,10 @@ class ContributionModel {
   final String? contributor;
   final String? contributorPhoneNumber;
   final String? paymentMethod; // 'mobile-money' | 'bank' | 'cash'
+
+  /// Network the payer actually paid with ('MTN', 'Telecel', 'AirtelTigo').
+  /// Use this, never the phone prefix: numbers can be ported between networks.
+  final String? mobileMoneyProvider;
   final String? accountNumber;
   final double amountContributed;
   final double? charges; // Optional charges associated with the contribution
@@ -531,6 +535,7 @@ class ContributionModel {
     this.contributor,
     this.contributorPhoneNumber,
     this.paymentMethod,
+    this.mobileMoneyProvider,
     this.accountNumber,
     required this.amountContributed,
     this.charges,
@@ -592,6 +597,7 @@ class ContributionModel {
         contributor: json['contributor'] as String?,
         contributorPhoneNumber: json['contributorPhoneNumber'] as String?,
         paymentMethod: json['paymentMethod'] as String?,
+        mobileMoneyProvider: json['mobileMoneyProvider'] as String?,
         accountNumber: json['accountNumber'] as String?,
         amountContributed: (json['amountContributed'] as num? ?? 0).toDouble(),
         charges:
@@ -640,6 +646,8 @@ class ContributionModel {
       if (contributorPhoneNumber != null)
         'contributorPhoneNumber': contributorPhoneNumber,
       if (paymentMethod != null) 'paymentMethod': paymentMethod,
+      if (mobileMoneyProvider != null)
+        'mobileMoneyProvider': mobileMoneyProvider,
       if (accountNumber != null) 'accountNumber': accountNumber,
       'amountContributed': amountContributed,
       if (charges != null) 'charges': charges,
@@ -666,6 +674,7 @@ class ContributionModel {
     String? contributor,
     String? contributorPhoneNumber,
     String? paymentMethod,
+    String? mobileMoneyProvider,
     String? accountNumber,
     double? amountContributed,
     double? charges,
@@ -688,6 +697,7 @@ class ContributionModel {
       contributorPhoneNumber:
           contributorPhoneNumber ?? this.contributorPhoneNumber,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      mobileMoneyProvider: mobileMoneyProvider ?? this.mobileMoneyProvider,
       accountNumber: accountNumber ?? this.accountNumber,
       amountContributed: amountContributed ?? this.amountContributed,
       charges: charges ?? this.charges,

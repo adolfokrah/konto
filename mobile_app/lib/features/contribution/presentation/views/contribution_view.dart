@@ -166,7 +166,7 @@ String _masked(String value, {bool phone = true}) {
 }
 
 String _methodName(ContributionModel c, AppLocalizations localizations) {
-  final net = networkFromPhone(c.contributorPhoneNumber);
+  final net = DsNetworkLogo.fromProvider(c.mobileMoneyProvider);
   if (c.isMobileMoney && net != null) {
     return switch (net) {
       DsNetwork.mtn => 'MTN MoMo',
@@ -471,7 +471,7 @@ class _ContributionDetail extends StatelessWidget {
             children: [
               PaymentMethodTile(
                 paymentMethod: contribution.paymentMethod,
-                phone: contribution.contributorPhoneNumber,
+                provider: contribution.mobileMoneyProvider,
                 isPayout: contribution.isPayout,
                 isRefund: contribution.isRefund,
                 size: 52,
