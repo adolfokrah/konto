@@ -271,7 +271,18 @@ export function DataTable<TData>({
                       row.getIsSelected() && 'bg-muted/40',
                     )}
                     data-expanded={isExpanded || undefined}
-                    onClick={handleClick}
+                    onClick={
+                      handleClick
+                        ? (e) => {
+                            // Let links and controls inside a cell do their own thing.
+                            if (
+                              (e.target as HTMLElement).closest('a, button, input, [role=checkbox]')
+                            )
+                              return
+                            handleClick()
+                          }
+                        : undefined
+                    }
                   >
                     {row.getVisibleCells().map((cell) => {
                       const cellMeta = cell.column.columnDef.meta as DataTableColumnMeta | undefined
