@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/widgets/snacbar_message.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -23,6 +25,11 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:Hoga/core/config/app_config.dart';
 
+/// True from the moment the user picks "change photo" until the new photo is
+/// saved (or fails). Gates the busy overlay, so unrelated MediaBloc or
+/// UserAccountBloc work (e.g. the FCM token update) doesn't show it.
+final ValueNotifier<bool> _photoUpdateActive = ValueNotifier(false);
+
 /// Profile tab: user card, referral card, grouped settings, log out / close.
 class UserAccountView extends StatelessWidget {
   const UserAccountView({super.key});
@@ -42,6 +49,7 @@ class UserAccountView extends StatelessWidget {
           ),
           BlocListener<MediaBloc, MediaState>(
             listener: (context, state) {
+              if (state is MediaError) _photoUpdateActive.value = false;
               if (state is MediaLoaded &&
                   state.context == MediaUploadContext.userPhoto) {
                 final media = state.media;
@@ -52,18 +60,63 @@ class UserAccountView extends StatelessWidget {
               }
             },
           ),
+          BlocListener<UserAccountBloc, UserAccountState>(
+            listenWhen:
+                (_, curr) =>
+                    curr is UserAccountSuccess || curr is UserAccountError,
+            listener: (context, state) {
+              if (!_photoUpdateActive.value) return;
+              _photoUpdateActive.value = false;
+              if (state is UserAccountError) {
+                AppSnackBar.show(
+                  context,
+                  message: 'Couldn\'t update your photo. Please try again.',
+                  type: SnackBarType.error,
+                );
+              }
+            },
+          ),
         ],
-        child: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            // Show loading indicator during logout
-            if (state is AuthLoading) {
-              return const SafeArea(bottom: false, child: _ProfileSkeleton());
-            }
-            if (state is AuthAuthenticated) {
-              return _buildAccountView(context, state.user);
-            }
-            return const SizedBox.shrink();
-          },
+        child: Stack(
+          children: [
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                // Show loading indicator during logout
+                if (state is AuthLoading) {
+                  return const SafeArea(
+                    bottom: false,
+                    child: _ProfileSkeleton(),
+                  );
+                }
+                if (state is AuthAuthenticated) {
+                  return _buildAccountView(context, state.user);
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            // Busy overlay while a new profile photo uploads and saves.
+            ValueListenableBuilder<bool>(
+              valueListenable: _photoUpdateActive,
+              builder: (context, active, _) {
+                if (!active) return const SizedBox.shrink();
+                return BlocBuilder<MediaBloc, MediaState>(
+                  builder: (context, media) {
+                    return BlocBuilder<UserAccountBloc, UserAccountState>(
+                      builder: (context, account) {
+                        final busy =
+                            media is MediaLoading ||
+                            account is UserAccountLoading;
+                        if (!busy) return const SizedBox.shrink();
+                        return const JarBusyOverlay(
+                          label: 'Updating your photo…',
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -382,6 +435,7 @@ class _UserCard extends StatelessWidget {
   const _UserCard({required this.user});
 
   void _changePhoto(BuildContext context) {
+    _photoUpdateActive.value = true;
     ImageUploaderBottomSheet.show(
       context,
       uploadContext: MediaUploadContext.userPhoto,
