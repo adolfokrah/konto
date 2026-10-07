@@ -248,7 +248,9 @@ class _InsightsBodyState extends State<_InsightsBody> {
               break;
           }
           if (insights == null) return _loading();
-          if (!insights.hasEnoughData) return _notEnoughData(jar);
+          if (!insights.hasEnoughData) {
+            return _notEnoughData(jar, insights.paymentsCountAllTime);
+          }
           return AnimatedOpacity(
             duration: const Duration(milliseconds: 150),
             opacity: state.status == InsightsStatus.loading ? 0.5 : 1,
@@ -326,7 +328,8 @@ class _InsightsBodyState extends State<_InsightsBody> {
     ),
   );
 
-  Widget _notEnoughData(JarSummaryModel jar) {
+  Widget _notEnoughData(JarSummaryModel jar, int completed) {
+    final left = JarInsights.minPayments - completed;
     return DsCard(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
       child: Column(
@@ -334,7 +337,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
           const InsightsPlaceholderBars(),
           const SizedBox(height: 14),
           Text(
-            'Insights appear after ${JarInsights.minPayments} payments',
+            'Insights appear after ${JarInsights.minPayments} completed payments',
             textAlign: TextAlign.center,
             style: DsText.section,
           ),
@@ -343,6 +346,21 @@ class _InsightsBodyState extends State<_InsightsBody> {
             'You\'ll see your best days to share, how people pay and who\'s collecting most.',
             textAlign: TextAlign.center,
             style: DsText.small,
+          ),
+          const SizedBox(height: 12),
+          // Progress, and what counts: Activity also lists failed / pending
+          // payments and transfers, which don't.
+          DsTag(
+            '$completed of ${JarInsights.minPayments} completed',
+            tone: DsTone.lime,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            left == 1
+                ? '1 more completed payment to go. Failed or pending payments and transfers don\'t count.'
+                : '$left more completed payments to go. Failed or pending payments and transfers don\'t count.',
+            textAlign: TextAlign.center,
+            style: DsText.caption,
           ),
           const SizedBox(height: 14),
           DsSmallButton(
