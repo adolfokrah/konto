@@ -159,12 +159,20 @@ class _JarCreateViewState extends State<JarCreateView> {
                   )
                   .toList();
 
+          for (final c in newContacts) {
+            final u = c.username;
+            if (u != null && u.isNotEmpty) _usernames[c.id] = u;
+          }
+
           // Append new collectors to the existing list
           newInvitedCollectors = [...newInvitedCollectors, ...newCollectors];
         });
       },
     );
   }
+
+  /// Usernames of picked collectors, for the row subtitle.
+  final Map<String, String> _usernames = {};
 
   int get _pendingMore => _uploading.where((s) => s == _moreSlot).length;
   bool get _coverUploading => _uploading.contains(_coverSlot);
@@ -877,14 +885,18 @@ class _JarCreateViewState extends State<JarCreateView> {
                 DsRow(
                   leading: JarInitialsAvatar(
                     name: c.collector?.fullName ?? c.name ?? '',
+                    // Photo URLs come back relative (/api/media/...).
                     imageUrl:
-                        c.photo != null && c.photo!.startsWith('http')
-                            ? c.photo
+                        c.photo != null && c.photo!.isNotEmpty
+                            ? ImageUtils.constructImageUrl(c.photo!)
                             : null,
                   ),
                   title:
                       c.collector?.fullName ?? c.name ?? localizations.unknown,
-                  subtitle: c.phoneNumber ?? c.collector?.phoneNumber,
+                  subtitle:
+                      _usernames[c.collector?.id] != null
+                          ? '@${_usernames[c.collector?.id]}'
+                          : null,
                   trailing: _checkbox(true),
                   // Tapping a picked collector unticks (removes) them.
                   onTap: () => setState(() => newInvitedCollectors.remove(c)),

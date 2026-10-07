@@ -426,10 +426,14 @@ class UserModel {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
-      fullName: json['fullName'] as String,
-      phoneNumber: json['phoneNumber'] as String,
+      // Other users' contact fields are hidden by the server (e.g. invited
+      // collectors on a jar you created), so none of these are guaranteed.
+      fullName:
+          json['fullName'] as String? ??
+          '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim(),
+      phoneNumber: json['phoneNumber'] as String? ?? '',
       countryCode: json['countryCode'] as String? ?? '',
-      country: json['country'] as String,
+      country: json['country'] as String? ?? '',
       isKYCVerified: json['isKYCVerified'] as bool? ?? false,
       photo: parsedPhoto,
       createdAt:

@@ -17,7 +17,11 @@ class Contact {
   final String? photo;
   final String id;
 
+  /// Shown instead of the phone number, which the server hides for others.
+  final String? username;
+
   Contact({
+    this.username,
     required this.fullName,
     required this.phoneNumber,
     required this.email,
@@ -301,6 +305,7 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
                                         phoneNumber: c.fullPhoneNumber,
                                         email: c.email,
                                         id: c.id,
+                                        username: c.username,
                                         photo:
                                             c.hasProfilePicture
                                                 ? c.photo!.bestImageUrl ?? ''
@@ -323,7 +328,8 @@ class _InviteCollaboratorsViewState extends State<InviteCollaboratorsView> {
   /// "024 ••• 8812": enough to tell people apart without showing the number.
   String _maskedPhone(CollectorModel c) {
     var local = c.phoneNumber.replaceAll(RegExp(r'\D'), '');
-    if (local.isEmpty) return c.fullPhoneNumber;
+    // The server hides other people's numbers; show their username instead.
+    if (local.isEmpty) return c.username.isNotEmpty ? '@${c.username}' : '';
     if (!local.startsWith('0')) local = '0$local';
     if (local.length < 7) return local;
     return '${local.substring(0, 3)} ••• ${local.substring(local.length - 4)}';

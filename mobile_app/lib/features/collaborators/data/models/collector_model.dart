@@ -56,6 +56,7 @@ class CollectorModel {
   final String email;
   final String firstName;
   final String lastName;
+  final String username;
   final String phoneNumber;
   final String countryCode;
   final String country;
@@ -69,6 +70,7 @@ class CollectorModel {
     required this.email,
     required this.firstName,
     required this.lastName,
+    this.username = '',
     required this.phoneNumber,
     required this.countryCode,
     required this.country,
@@ -86,6 +88,7 @@ class CollectorModel {
       email: json['email'] as String? ?? '',
       firstName: json['firstName'] as String? ?? '',
       lastName: json['lastName'] as String? ?? '',
+      username: json['username'] as String? ?? '',
       phoneNumber: json['phoneNumber'] as String? ?? '',
       countryCode: json['countryCode'] as String? ?? '',
       country: json['country'] as String? ?? '',
