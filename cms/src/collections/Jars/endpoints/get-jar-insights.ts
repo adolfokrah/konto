@@ -51,7 +51,11 @@ export function methodKeyOf(
   }
 }
 
-/** [start, end) of the selected window and of the equivalent preceding one. */
+/**
+ * [start, end) of the selected window and of the equivalent preceding one.
+ * Week = the current calendar week (from Monday); Month = the current
+ * calendar month; All time = since the jar was created. UTC.
+ */
 export function periodWindows(
   period: InsightsPeriod,
   now: Date,
@@ -60,7 +64,8 @@ export function periodWindows(
   const end = now
   if (period === 'week') {
     const todayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-    const start = new Date(todayStart - 6 * DAY)
+    const sinceMonday = (now.getUTCDay() + 6) % 7
+    const start = new Date(todayStart - sinceMonday * DAY)
     return { start, end, prevStart: new Date(start.getTime() - 7 * DAY), prevEnd: start }
   }
   if (period === 'month') {
@@ -72,15 +77,16 @@ export function periodWindows(
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAYS_MON = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export type TimelineBucket = { label: string; start: string; amount: number }
 
 /**
- * Money in over time for the chart, sized to the period: Week = one bar per
- * day; Month = one bar per week of the month (1-7, 8-14, ...); All time = per
- * day for jars up to 14 days old, per week up to ~3 months, else per month
- * (last 12). Days are UTC, like the rest of insights.
+ * Money in over time for the chart, one shape per period:
+ * Week = the current week, Mon..Sun (days still to come are empty);
+ * Month = the current month, one bar per week (1-7, 8-14, ...);
+ * All time = a year view, one bar per month for the last 12 months.
+ * UTC, like the rest of insights.
  */
 export function timelineBuckets(
   txs: InsightTx[],
@@ -88,52 +94,26 @@ export function timelineBuckets(
   start: Date,
   end: Date,
 ): TimelineBucket[] {
-  const dayStart = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
   const edges: { label: string; from: number }[] = []
-  const firstDay = dayStart(start)
-  const lastDay = dayStart(end)
-  const ageDays = Math.floor((lastDay - firstDay) / DAY) + 1
 
-  if (period === 'week' || (period === 'all' && ageDays <= 14)) {
-    for (let d = firstDay; d <= lastDay; d += DAY) {
-      const date = new Date(d)
-      edges.push({
-        label: period === 'week' ? WEEKDAYS[date.getUTCDay()] : String(date.getUTCDate()),
-        from: d,
-      })
-    }
+  if (period === 'week') {
+    const monday = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
+    for (let i = 0; i < 7; i++) edges.push({ label: WEEKDAYS_MON[i], from: monday + i * DAY })
   } else if (period === 'month') {
-    // Whole month, so the chart keeps its shape early in the month.
-    const monthEnd = Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0)
-    const lastDate = new Date(monthEnd).getUTCDate()
-    for (let d = firstDay; d <= monthEnd; d += 7 * DAY) {
-      const a = new Date(d).getUTCDate()
+    const first = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1)
+    const lastDate = new Date(
+      Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0),
+    ).getUTCDate()
+    for (let a = 1; a <= lastDate; a += 7) {
       const b = Math.min(a + 6, lastDate)
-      edges.push({ label: a === b ? String(a) : `${a}-${b}`, from: d })
-    }
-  } else if (ageDays <= 92) {
-    for (let d = firstDay; d <= lastDay; d += 7 * DAY) {
-      const date = new Date(d)
-      edges.push({ label: `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`, from: d })
+      edges.push({ label: a === b ? String(a) : `${a}-${b}`, from: first + (a - 1) * DAY })
     }
   } else {
-    const endMonth = new Date(lastDay)
-    let y = start.getUTCFullYear()
-    let m = start.getUTCMonth()
-    const months: { y: number; m: number }[] = []
-    while (
-      y < endMonth.getUTCFullYear() ||
-      (y === endMonth.getUTCFullYear() && m <= endMonth.getUTCMonth())
-    ) {
-      months.push({ y, m })
-      m++
-      if (m > 11) {
-        m = 0
-        y++
-      }
-    }
-    for (const { y: yy, m: mm } of months.slice(-12)) {
-      edges.push({ label: MONTHS[mm], from: Date.UTC(yy, mm, 1) })
+    const y = end.getUTCFullYear()
+    const m = end.getUTCMonth()
+    for (let i = 11; i >= 0; i--) {
+      const from = Date.UTC(y, m - i, 1)
+      edges.push({ label: MONTHS[new Date(from).getUTCMonth()], from })
     }
   }
 

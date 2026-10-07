@@ -389,7 +389,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
   String _periodLabel(JarInsights insights) {
     switch (insights.period) {
       case InsightsPeriod.week:
-        return 'Collected in the last 7 days';
+        return 'Collected this week';
       case InsightsPeriod.month:
         final start = insights.rangeStart?.toUtc() ?? DateTime.now();
         return 'Collected in ${DateFormat('MMMM').format(start)}';
