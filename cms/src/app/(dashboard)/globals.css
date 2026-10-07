@@ -495,7 +495,7 @@
 }
 
 /* Card density: 15px Chillax titles, 16px padding, like the v4 dcard */
-.dashboard-theme main .leading-none.tracking-tight {
+.dashboard-theme main div.leading-none.tracking-tight {
   font-size: 15px;
   line-height: 1.3;
 }

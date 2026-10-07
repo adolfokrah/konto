@@ -50,3 +50,16 @@ export function formatShortDate(dateString: string) {
     minute: '2-digit',
   })
 }
+
+/** Network logos for mobile money providers (values seen in transactions.mobileMoneyProvider). */
+const NETWORKS: Record<string, { label: string; logo: string }> = {
+  mtn: { label: 'MoMo', logo: '/payment-logos/mtn.png' },
+  telecel: { label: 'Telecel', logo: '/payment-logos/telecel.png' },
+  vod: { label: 'Telecel', logo: '/payment-logos/telecel.png' },
+  atl: { label: 'AirtelTigo', logo: '/payment-logos/airteltigo.png' },
+  airteltigo: { label: 'AirtelTigo', logo: '/payment-logos/airteltigo.png' },
+}
+
+export function networkFor(provider: string | null | undefined) {
+  return NETWORKS[(provider ?? '').toLowerCase()]
+}

@@ -3,8 +3,6 @@ import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import { TransactionDetailView } from '@/components/dashboard/transaction-detail-view'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -67,16 +65,5 @@ export default async function TransactionDetailPage({ params }: Props) {
     customFieldValues: tx.customFieldValues ?? null,
   }
 
-  return (
-    <div className="space-y-4">
-      <Link
-        href="/dashboard/transactions"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Transactions
-      </Link>
-      <TransactionDetailView transaction={transaction} />
-    </div>
-  )
+  return <TransactionDetailView transaction={transaction} />
 }

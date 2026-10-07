@@ -12,25 +12,15 @@ import {
   statusStyles,
   statusLabels,
   paymentMethodLabels,
+  networkFor,
   formatShortDate,
 } from '@/components/dashboard/table-constants'
 import { type DataTableColumnMeta } from '../types'
 
-/** Network logos for mobile money; everything else shows its label. */
-const NETWORKS: Record<string, { label: string; logo: string }> = {
-  mtn: { label: 'MoMo', logo: '/payment-logos/mtn.png' },
-  telecel: { label: 'Telecel', logo: '/payment-logos/telecel.png' },
-  vod: { label: 'Telecel', logo: '/payment-logos/telecel.png' },
-  atl: { label: 'AirtelTigo', logo: '/payment-logos/airteltigo.png' },
-  airteltigo: { label: 'AirtelTigo', logo: '/payment-logos/airteltigo.png' },
-}
-
 function MethodCell({ row }: { row: TransactionRow }) {
   if (!row.paymentMethod) return <span>{'\u2014'}</span>
   const network =
-    row.paymentMethod === 'mobile-money'
-      ? NETWORKS[(row.mobileMoneyProvider ?? '').toLowerCase()]
-      : undefined
+    row.paymentMethod === 'mobile-money' ? networkFor(row.mobileMoneyProvider) : undefined
   const label = network?.label ?? paymentMethodLabels[row.paymentMethod] ?? row.paymentMethod
   return (
     <span className="flex items-center gap-2">
