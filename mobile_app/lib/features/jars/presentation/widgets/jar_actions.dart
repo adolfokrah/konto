@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:Hoga/core/utils/image_utils.dart';
+import 'package:Hoga/core/widgets/ds/ds.dart';
+import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
+import 'package:Hoga/features/jars/data/models/jar_list_model.dart';
 import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/withdrawal_accounts/logic/bloc/withdrawal_accounts_bloc.dart';
 import 'package:Hoga/route.dart';
 
@@ -115,5 +120,56 @@ class JarActions {
         'withdrawalAccount': jarData.withdrawalAccount,
       },
     );
+  }
+
+  /// Thumbnail URL for a jar in the jars list, or null when it has none.
+  static String? imageUrl(JarListItem jar) {
+    final url = jar.image?.url;
+    if (url == null || url.isEmpty) return null;
+    return ImageUtils.constructImageUrl(url);
+  }
+
+  /// "Which jar?" sheet. Returns the picked jar, or null when dismissed.
+  static Future<JarListItem?> pickJar(
+    BuildContext context, {
+    required String title,
+    required List<JarListItem> jars,
+    String? selectedId,
+  }) async {
+    final authState = context.read<AuthBloc>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.id : null;
+
+    Widget row(JarListItem jar, bool selected, VoidCallback onTap) {
+      return DsRow(
+        leading: JarThumb(imageUrl: imageUrl(jar), size: 40),
+        title: jar.name,
+        subtitle: [
+          jar.creator.id == userId ? 'Owner' : 'Collector',
+          if (!jar.isActive) 'Closed',
+        ].join(' · '),
+        trailing: DsRadio(selected: selected),
+        onTap: onTap,
+      );
+    }
+
+    JarListItem? choice;
+    await GenericPicker.showPickerDialog<JarListItem>(
+      context,
+      title: title,
+      selectedValue:
+          selectedId != null && jars.any((j) => j.id == selectedId)
+              ? selectedId
+              : jars.first.id,
+      items: jars,
+      showSearch: jars.length > 6,
+      searchHint: 'Search jars',
+      searchFilter: (j) => j.name,
+      isItemSelected: (j, sel) => j.id == sel,
+      onItemSelected: (j) => choice = j,
+      itemBuilder: row,
+      recentItemBuilder: row,
+      searchResultBuilder: row,
+    );
+    return choice;
   }
 }

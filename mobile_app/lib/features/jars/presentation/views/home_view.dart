@@ -6,9 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
-import 'package:Hoga/core/utils/image_utils.dart';
 import 'package:Hoga/core/widgets/ds/ds.dart';
-import 'package:Hoga/core/widgets/generic_picker.dart';
 import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/core/widgets/user_avatar_small.dart';
 import 'package:Hoga/features/authentication/data/models/user.dart';
@@ -144,29 +142,16 @@ class _HomeViewState extends State<HomeView> {
     if (eligible.length == 1) {
       picked = eligible.first;
     } else {
-      JarListItem? choice;
-      await GenericPicker.showPickerDialog<JarListItem>(
+      picked = await JarActions.pickJar(
         context,
         title: switch (action) {
           _HomeAction.collect => 'Collect for which jar?',
           _HomeAction.request => 'Request for which jar?',
           _HomeAction.transfer => 'Transfer from',
         },
-        selectedValue:
-            current != null && eligible.any((j) => j.id == current)
-                ? current
-                : eligible.first.id,
-        items: eligible,
-        showSearch: eligible.length > 6,
-        searchFilter: (j) => j.name,
-        isItemSelected: (j, sel) => j.id == sel,
-        onItemSelected: (j) => choice = j,
-        itemBuilder: (j, sel, onTap) => _pickerRow(j, sel, onTap, userId),
-        recentItemBuilder: (j, sel, onTap) => _pickerRow(j, sel, onTap, userId),
-        searchResultBuilder:
-            (j, sel, onTap) => _pickerRow(j, sel, onTap, userId),
+        jars: eligible,
+        selectedId: current,
       );
-      picked = choice;
     }
     if (picked == null || !mounted) return;
 
@@ -206,26 +191,7 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  Widget _pickerRow(
-    JarListItem jar,
-    bool selected,
-    VoidCallback onTap,
-    String? userId,
-  ) {
-    return DsRow(
-      leading: JarThumb(imageUrl: _imageUrl(jar), size: 40),
-      title: jar.name,
-      subtitle: jar.creator.id == userId ? 'Owner' : 'Collector',
-      trailing: DsRadio(selected: selected),
-      onTap: onTap,
-    );
-  }
-
-  static String? _imageUrl(JarListItem jar) {
-    final url = jar.image?.url;
-    if (url == null || url.isEmpty) return null;
-    return ImageUtils.constructImageUrl(url);
-  }
+  static String? _imageUrl(JarListItem jar) => JarActions.imageUrl(jar);
 
   // ------------------------------------------------------------ build
 

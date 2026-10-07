@@ -15,7 +15,11 @@ import 'package:Hoga/features/contribution/logic/bloc/filter_contributions_bloc.
 import 'package:Hoga/features/contribution/presentation/views/contribution_view.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/collect_ui.dart';
 import 'package:Hoga/features/contribution/presentation/widgets/contribtions_list_filter.dart';
+import 'package:Hoga/core/utils/image_utils.dart';
+import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/l10n/app_localizations.dart';
 
 /// Activity tab: a statement for the current jar, searchable and filterable,
@@ -173,13 +177,41 @@ class _ContributionsListViewState extends State<ContributionsListView> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return BlocListener<FilterContributionsBloc, FilterContributionsState>(
-      listener: (context, state) {
-        // When filters change, refetch contributions
-        if (state is FilterContributionsLoaded) {
-          _fetchContributions(page: 1, contributor: _currentSearchQuery);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FilterContributionsBloc, FilterContributionsState>(
+          listener: (context, state) {
+            // When filters change, refetch contributions
+            if (state is FilterContributionsLoaded) {
+              _fetchContributions(page: 1, contributor: _currentSearchQuery);
+            }
+          },
+        ),
+        // The feed follows the current jar: refetch when it changes (here via
+        // the jar chip, or on Home / Jars).
+        BlocListener<JarSummaryBloc, JarSummaryState>(
+          listenWhen:
+              (prev, curr) =>
+                  curr is JarSummaryLoaded &&
+                  (prev is! JarSummaryLoaded ||
+                      prev.jarData.id != curr.jarData.id),
+          listener: (context, state) {
+            setState(() {
+              _currentPage = 1;
+              _isLoadingMore = false;
+            });
+            final filterState = context.read<FilterContributionsBloc>().state;
+            if (filterState is FilterContributionsLoaded &&
+                filterState.hasFilters) {
+              // Collector filters belong to the old jar; the filter listener
+              // refetches once they're cleared.
+              context.read<FilterContributionsBloc>().add(ClearAllFilters());
+            } else {
+              _fetchContributions(page: 1, contributor: _currentSearchQuery);
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppColors.cream,
         body: SafeArea(
@@ -205,6 +237,107 @@ class _ContributionsListViewState extends State<ContributionsListView> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _switchJar() async {
+    final listBloc = context.read<JarListBloc>();
+    if (listBloc.state is! JarListLoaded) {
+      listBloc.add(LoadJarList());
+      try {
+        await listBloc.stream
+            .firstWhere((s) => s is JarListLoaded || s is JarListError)
+            .timeout(const Duration(seconds: 20));
+      } catch (_) {}
+    }
+    final listState = listBloc.state;
+    if (listState is! JarListLoaded || !mounted) return;
+    final seen = <String>{};
+    final jars = [
+      for (final g in listState.jars.groups)
+        for (final j in g.jars)
+          if (seen.add(j.id)) j,
+    ];
+    if (jars.isEmpty) return;
+    final summary = context.read<JarSummaryBloc>().state;
+    final picked = await JarActions.pickJar(
+      context,
+      title: 'Show activity for',
+      jars: jars,
+      selectedId: summary is JarSummaryLoaded ? summary.jarData.id : null,
+    );
+    if (picked == null || !mounted) return;
+    if (summary is JarSummaryLoaded && summary.jarData.id == picked.id) return;
+    context.read<JarSummaryBloc>().add(
+      SetCurrentJarRequested(jarId: picked.id),
+    );
+  }
+
+  /// Which jar this feed is for, and its money in and out (mockup chips and
+  /// In / Out card). The totals are the jar's, so they show only unfiltered.
+  Widget _buildJarContext() {
+    return BlocBuilder<JarSummaryBloc, JarSummaryState>(
+      builder: (context, state) {
+        if (state is! JarSummaryLoaded) return const SizedBox.shrink();
+        final jar = state.jarData;
+        final imageUrl =
+            jar.image?.url != null
+                ? ImageUtils.constructImageUrl(jar.image!.url!)
+                : null;
+        return BlocBuilder<FilterContributionsBloc, FilterContributionsState>(
+          builder: (context, filterState) {
+            final filtered =
+                _currentSearchQuery.isNotEmpty ||
+                (filterState is FilterContributionsLoaded &&
+                    filterState.hasFilters);
+            final b = jar.balanceBreakDown;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                _JarChip(
+                  key: const Key('activity_jar_chip'),
+                  name: jar.name,
+                  imageUrl: imageUrl,
+                  onTap: _switchJar,
+                ),
+                if (!filtered) ...[
+                  const SizedBox(height: 12),
+                  DsCard(
+                    padding: EdgeInsets.zero,
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: _Flow(
+                              label: 'In',
+                              amount: b.totalContributedAmount,
+                              positive: true,
+                            ),
+                          ),
+                          const VerticalDivider(
+                            width: 1,
+                            thickness: 1,
+                            color: AppColors.line,
+                          ),
+                          Expanded(
+                            child: _Flow(
+                              label: 'Out',
+                              amount: b.totalTransfers,
+                              positive: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -282,6 +415,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
               ],
             ),
           ),
+          _buildJarContext(),
           _buildActiveFilterChips(localizations),
         ],
       ),
@@ -674,4 +808,106 @@ class ContributionDateGroup {
     required this.dateLabel,
     required this.contributions,
   });
+}
+
+/// Current jar as a chip: thumbnail, name, chevron. Tap to switch.
+class _JarChip extends StatelessWidget {
+  final String name;
+  final String? imageUrl;
+  final VoidCallback onTap;
+
+  const _JarChip({
+    super.key,
+    required this.name,
+    required this.imageUrl,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.limeSoft,
+      borderRadius: BorderRadius.circular(100),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(100),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(5, 5, 12, 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: JarThumb(imageUrl: imageUrl, size: 24),
+              ),
+              const SizedBox(width: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 220),
+                child: Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DsText.rowTitle.copyWith(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18,
+                color: AppColors.navy,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One half of the In / Out card.
+class _Flow extends StatelessWidget {
+  final String label;
+  final double amount;
+  final bool positive;
+
+  const _Flow({
+    required this.label,
+    required this.amount,
+    required this.positive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final whole = amount.abs().toStringAsFixed(2);
+    final parts = whole.split('.');
+    final b = StringBuffer();
+    for (var i = 0; i < parts[0].length; i++) {
+      if (i > 0 && (parts[0].length - i) % 3 == 0) b.write(',');
+      b.write(parts[0][i]);
+    }
+    final text = '${positive ? '+' : '−'}$b.${parts[1]}';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: DsText.caption),
+          const SizedBox(height: 2),
+          Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'Chillax',
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              color: positive ? AppColors.positive : AppColors.navy,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
