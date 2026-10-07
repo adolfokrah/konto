@@ -195,9 +195,10 @@
 
 /* Unlayered on purpose: must beat tailwind utilities on shared ui/* components */
 /* v4 component treatments, scoped so shared ui/* stays unchanged on public pages */
-.dashboard-theme main .rounded-lg.border.bg-card,
-.dashboard-theme main .rounded-xl.border.bg-card,
-.dashboard-theme main .rounded-2xl.border.bg-card {
+/* Cards only: controls (search forms, link buttons) keep their border */
+.dashboard-theme main div.rounded-lg.border.bg-card,
+.dashboard-theme main div.rounded-xl.border.bg-card,
+.dashboard-theme main div.rounded-2xl.border.bg-card {
   border-color: transparent;
   border-radius: 1rem;
   box-shadow: none;

@@ -5,6 +5,7 @@ import { BusinessVerificationsDataTable } from '@/components/dashboard/business-
 import { type BusinessVerificationRow } from '@/components/dashboard/data-table/columns/business-verification-columns'
 import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 import { MetricCard } from '@/components/dashboard/metric-card'
 
 const DEFAULT_LIMIT = 20
@@ -43,6 +44,11 @@ export default async function BusinessVerificationsPage({ searchParams }: Props)
     where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
   }
 
+  if (search) {
+    const userIds = await findUserIdsBySearch(payload, search)
+    where.or = [inIds('user', userIds), { businessName: { like: search } }]
+  }
+
   const countStatus = (value: string) =>
     payload.count({
       collection: 'business-verifications' as any,
@@ -67,21 +73,7 @@ export default async function BusinessVerificationsPage({ searchParams }: Props)
     overrideAccess: true,
   })
 
-  let docs = result.docs as any[]
-
-  // Search by business or user name (in-memory, matching disputes pattern)
-  if (search) {
-    const lower = search.toLowerCase()
-    docs = docs.filter((d: any) => {
-      const user = typeof d.user === 'object' && d.user ? d.user : null
-      const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ').toLowerCase()
-      return (
-        d.businessName?.toLowerCase().includes(lower) ||
-        name.includes(lower) ||
-        user?.email?.toLowerCase().includes(lower)
-      )
-    })
-  }
+  const docs = result.docs as any[]
 
   const rows: BusinessVerificationRow[] = docs.map((d: any) => {
     const user = typeof d.user === 'object' && d.user ? d.user : null

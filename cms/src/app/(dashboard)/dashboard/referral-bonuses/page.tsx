@@ -4,6 +4,7 @@ import { ReferralBonusesDataTable } from '@/components/dashboard/referral-bonuse
 import { type ReferralBonusRow } from '@/components/dashboard/data-table/columns/referral-bonus-columns'
 import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -34,7 +35,7 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
     where.id = { equals: id }
   }
   if (search) {
-    where['user.firstName'] = { like: search }
+    Object.assign(where, inIds('user', await findUserIdsBySearch(payload, search)))
   }
   if (status && status !== 'all') {
     const valid = ['paid', 'pending', 'failed', 'cancelled']

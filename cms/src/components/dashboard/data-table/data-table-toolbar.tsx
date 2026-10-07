@@ -43,7 +43,12 @@ export function DataTableToolbar<TData>({
   const filters = collectFilters(columns)
   if (filters.length === 0) return null
 
-  const primaryIndex = filters.findIndex((f) => f.filter.type === 'search')
+  // Prefer the general "search" param; ID/reference lookups go under "More".
+  const generalIndex = filters.findIndex(
+    (f) => f.filter.type === 'search' && f.filter.paramKey === 'search',
+  )
+  const primaryIndex =
+    generalIndex >= 0 ? generalIndex : filters.findIndex((f) => f.filter.type === 'search')
   const primary = primaryIndex >= 0 ? filters[primaryIndex] : null
   const rest = filters.filter((_, i) => i !== primaryIndex)
   // v4 shows a few chips; the rest go under "More" so the toolbar stays on one line.

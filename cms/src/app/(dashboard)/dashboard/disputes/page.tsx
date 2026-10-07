@@ -5,6 +5,7 @@ import { DisputesDataTable } from '@/components/dashboard/disputes-data-table'
 import { type DisputeRow } from '@/components/dashboard/data-table/columns/dispute-columns'
 import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -46,7 +47,11 @@ export default async function DisputesPage({ searchParams }: Props) {
     where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
   }
 
-  // Search by user name requires joining — filter in memory after fetch if search provided
+  if (search) {
+    const userIds = await findUserIdsBySearch(payload, search)
+    where.or = [inIds('raisedBy', userIds), { description: { like: search } }]
+  }
+
   const result = await payload.find({
     collection: 'disputes' as any,
     where,
@@ -57,16 +62,7 @@ export default async function DisputesPage({ searchParams }: Props) {
     overrideAccess: true,
   })
 
-  let docs = result.docs as any[]
-
-  if (search) {
-    const lower = search.toLowerCase()
-    docs = docs.filter((d: any) => {
-      const user = typeof d.raisedBy === 'object' && d.raisedBy ? d.raisedBy : null
-      const name = [user?.firstName, user?.lastName].filter(Boolean).join(' ').toLowerCase()
-      return name.includes(lower) || d.description?.toLowerCase().includes(lower)
-    })
-  }
+  const docs = result.docs as any[]
 
   const disputes: DisputeRow[] = docs.map((d: any) => {
     const user = typeof d.raisedBy === 'object' && d.raisedBy ? d.raisedBy : null

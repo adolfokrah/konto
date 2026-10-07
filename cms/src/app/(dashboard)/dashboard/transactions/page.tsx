@@ -38,7 +38,11 @@ export default async function TransactionsPage({ searchParams }: Props) {
   // Build where clause from filters (supports comma-separated multi-select)
   const where: Record<string, any> = {}
   if (search) {
-    where.contributor = { like: search }
+    const digits = search.replace(/\D/g, '').replace(/^233/, '').replace(/^0/, '')
+    where.or = [
+      { contributor: { like: search } },
+      ...(digits.length >= 4 ? [{ contributorPhoneNumber: { like: digits } }] : []),
+    ]
   }
   if (status) {
     const valid = ['pending', 'completed', 'failed']

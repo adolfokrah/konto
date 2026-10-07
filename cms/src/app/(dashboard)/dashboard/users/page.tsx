@@ -6,6 +6,7 @@ import { ExportUsersButton } from '@/components/dashboard/export-users-button'
 import { type UserRow } from '@/components/dashboard/data-table/columns/user-columns'
 import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { userSearchClauses } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -29,20 +30,7 @@ export default async function UsersPage({ searchParams }: Props) {
   // Build where clause from filters
   const where: Record<string, any> = {}
   if (search) {
-    const parts = search.trim().split(/\s+/)
-    if (parts.length >= 2) {
-      // Full name search: match first name + last name
-      where.and = [
-        { firstName: { like: parts[0] } },
-        { lastName: { like: parts.slice(1).join(' ') } },
-      ]
-    } else {
-      where.or = [
-        { firstName: { like: search } },
-        { lastName: { like: search } },
-        { phoneNumber: { like: search } },
-      ]
-    }
+    where.and = userSearchClauses(search)
   }
   if (kyc && ['none', 'in_review', 'verified'].includes(kyc)) {
     where.kycStatus = { equals: kyc }

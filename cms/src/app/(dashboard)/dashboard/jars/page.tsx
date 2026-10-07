@@ -5,6 +5,7 @@ import { MetricCard } from '@/components/dashboard/metric-card'
 import { JarsDataTable } from '@/components/dashboard/jars-data-table'
 import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -33,7 +34,8 @@ export default async function JarsPage({ searchParams }: Props) {
   // Build where clause
   const where: Record<string, any> = {}
   if (search) {
-    where.name = { like: search }
+    const creatorIds = await findUserIdsBySearch(payload, search)
+    where.or = [{ name: { like: search } }, inIds('creator', creatorIds)]
   }
   if (status && ['open', 'frozen', 'broken', 'sealed'].includes(status)) {
     where.status = { equals: status }

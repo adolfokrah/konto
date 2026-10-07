@@ -62,6 +62,7 @@ export default async function EmailsPage({ searchParams }: Props) {
     where.or = [
       { subject: { like: search } },
       { from: { like: search } },
+      { 'to.email': { like: search } },
       { bodyText: { like: search } },
     ]
   }

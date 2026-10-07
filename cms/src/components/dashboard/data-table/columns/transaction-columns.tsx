@@ -133,7 +133,7 @@ export const transactionColumns: ColumnDef<TransactionRow, any>[] = [
       <span className="font-medium truncate block">{row.original.contributor || '\u2014'}</span>
     ),
     meta: {
-      filter: { type: 'search', paramKey: 'search', placeholder: 'Search...' },
+      filter: { type: 'search', paramKey: 'search', placeholder: 'Search contributor or phone' },
       filterLabel: 'Contributor',
     } satisfies DataTableColumnMeta,
   },

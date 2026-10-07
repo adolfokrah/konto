@@ -4,6 +4,7 @@ import { ReferralsDataTable } from '@/components/dashboard/referrals-data-table'
 import { type ReferralRow } from '@/components/dashboard/data-table/columns/referral-columns'
 import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { findUserIdsBySearch, inIds } from '@/utilities/dashboardSearch'
 
 const DEFAULT_LIMIT = 20
 
@@ -26,7 +27,7 @@ export default async function ReferralsPage({ searchParams }: Props) {
 
   const where: Record<string, any> = {}
   if (search) {
-    where['referredBy.firstName'] = { like: search }
+    Object.assign(where, inIds('referredBy', await findUserIdsBySearch(payload, search)))
   }
   if (from) {
     where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }
