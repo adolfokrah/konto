@@ -495,7 +495,7 @@ class _UserCard extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: AppColors.navy,
+                          color: AppColors.inkFill,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.surfaceWhite,
@@ -505,7 +505,7 @@ class _UserCard extends StatelessWidget {
                         child: Icon(
                           Icons.camera_alt_rounded,
                           size: 11,
-                          color: AppColors.limeOnInk,
+                          color: AppColors.lime,
                         ),
                       ),
                     ),
@@ -563,7 +563,7 @@ class _ReferralCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DsCard(
-      color: AppColors.navy,
+      color: AppColors.inkFill,
       padding: const EdgeInsets.all(14),
       onTap: onTap,
       child: Row(
@@ -572,13 +572,13 @@ class _ReferralCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.onPrimaryWhite.withValues(alpha: 0.1),
+              color: AppColors.onInkFill.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.card_giftcard_rounded,
               size: 20,
-              color: AppColors.limeOnInk,
+              color: AppColors.lime,
             ),
           ),
           const SizedBox(width: 12),
@@ -590,7 +590,7 @@ class _ReferralCard extends StatelessWidget {
                   'Invite friends, earn GHS 5',
                   style: AccText.h3.copyWith(
                     fontSize: 14,
-                    color: AppColors.surfaceWhite,
+                    color: AppColors.onInkFill,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -599,7 +599,7 @@ class _ReferralCard extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Supreme',
                     fontSize: 12,
-                    color: AppColors.onPrimaryWhite.withValues(alpha: 0.75),
+                    color: AppColors.onInkFill.withValues(alpha: 0.75),
                   ),
                 ),
               ],
@@ -608,7 +608,7 @@ class _ReferralCard extends StatelessWidget {
           Icon(
             Icons.chevron_right_rounded,
             size: 20,
-            color: AppColors.surfaceWhite,
+            color: AppColors.onInkFill,
           ),
         ],
       ),

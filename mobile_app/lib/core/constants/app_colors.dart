@@ -17,6 +17,8 @@ class _Palette {
   final Color primaryLight;
   final Color primaryDark;
   final Color black;
+  final Color inkFill; // primary buttons, tab bar, snackbars
+  final Color onInkFill; // text and icons on inkFill
   final Color positive;
   final Color positiveSoft;
   final Color negative;
@@ -41,6 +43,8 @@ class _Palette {
     required this.primaryLight,
     required this.primaryDark,
     required this.black,
+    required this.inkFill,
+    required this.onInkFill,
     required this.positive,
     required this.positiveSoft,
     required this.negative,
@@ -67,6 +71,8 @@ const _light = _Palette(
   primaryLight: Color(0xFFFDF7EC),
   primaryDark: Color(0xFF2D3849),
   black: Color(0xFF000000),
+  inkFill: Color(0xFF1B232E),
+  onInkFill: Color(0xFFFFFFFF),
   positive: Color(0xFF0F9F61),
   positiveSoft: Color(0xFFE6F7EE),
   negative: Color(0xFFE5483D),
@@ -94,6 +100,10 @@ const _dark = _Palette(
   primaryLight: Color(0xFF1B222B),
   primaryDark: Color(0xFF2D3849),
   black: Color(0xFFF3EEE6),
+  // Deeper than the 0xFF11161D canvas, so primary actions and the tab bar
+  // stay dark instead of flipping to light ink.
+  inkFill: Color(0xFF070A0E),
+  onInkFill: Color(0xFFF3EEE6),
   positive: Color(0xFF34C27F),
   positiveSoft: Color(0xFF14301F),
   negative: Color(0xFFFF6B5F),
@@ -130,6 +140,11 @@ class AppColors {
   static Color get ink2 => _p.ink2;
   static Color get muted => _p.muted;
   static Color get faint => _p.faint;
+
+  /// Fill for primary actions and the tab bar: navy on light, a shade deeper
+  /// than the background on dark. Pair with [onInkFill].
+  static Color get inkFill => _p.inkFill;
+  static Color get onInkFill => _p.onInkFill;
 
   /// Ink that stays dark in both themes, for text and icons on [lime].
   static const Color onLime = Color(0xFF1B232E);

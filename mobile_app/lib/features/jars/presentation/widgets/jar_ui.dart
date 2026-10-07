@@ -761,8 +761,8 @@ class JarPrimaryButton extends StatelessWidget {
       child: Material(
         color:
             enabled || loading
-                ? (color ?? AppColors.navy)
-                : AppColors.navy.withValues(alpha: 0.25),
+                ? (color ?? AppColors.inkFill)
+                : AppColors.inkFill.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(AppRadius.radiusButton),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.radiusButton),
@@ -775,14 +775,14 @@ class JarPrimaryButton extends StatelessWidget {
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.surfaceWhite,
+                        color: AppColors.onInkFill,
                       ),
                     )
                     : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (icon != null) ...[
-                          Icon(icon, size: 18, color: AppColors.surfaceWhite),
+                          Icon(icon, size: 18, color: AppColors.onInkFill),
                           const SizedBox(width: 8),
                         ],
                         Text(
@@ -791,7 +791,7 @@ class JarPrimaryButton extends StatelessWidget {
                             fontFamily: 'Supreme',
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
-                            color: AppColors.surfaceWhite,
+                            color: AppColors.onInkFill,
                           ),
                         ),
                       ],

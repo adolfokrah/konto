@@ -16,16 +16,18 @@ import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 
 /// Base colour of a block on the cream canvas.
-Color get _baseOnCanvas => AppColors.fill;
+Color get _baseOnCanvas =>
+    AppColors.isDark ? const Color(0xFF1B222B) : AppColors.fill;
 
 /// Base colour of a block inside a white card: lighter than [AppColors.fill]
 /// so it reads as the same tone on white.
-const Color _baseOnCard = Color(0xFFF6F1EA);
+Color get _baseOnCard =>
+    AppColors.isDark ? const Color(0xFF232B36) : const Color(0xFFF6F1EA);
 
 /// The sweeping highlight for a block of [base] colour: near white on light
 /// blocks, a gentle lift on dark ones.
 Color _highlightFor(Color base) =>
-    Color.lerp(base, Colors.white, base.computeLuminance() > 0.5 ? 0.7 : 0.12)!;
+    Color.lerp(base, Colors.white, base.computeLuminance() > 0.5 ? 0.7 : 0.07)!;
 
 // ---------------------------------------------------------------- scope
 

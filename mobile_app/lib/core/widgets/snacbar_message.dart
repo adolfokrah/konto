@@ -47,20 +47,20 @@ class AppSnackBar {
                 color: color,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppColors.onPrimaryWhite, size: 16),
+              child: Icon(icon, color: AppColors.onInkFill, size: 16),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
                 style: TextStyles.titleRegularM.copyWith(
-                  color: AppColors.onPrimaryWhite,
+                  color: AppColors.onInkFill,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: AppColors.navy,
+        backgroundColor: AppColors.inkFill,
         duration: duration,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -69,7 +69,7 @@ class AppSnackBar {
             actionLabel != null
                 ? SnackBarAction(
                   label: actionLabel,
-                  textColor: AppColors.onPrimaryWhite,
+                  textColor: AppColors.onInkFill,
                   onPressed: onActionPressed ?? () {},
                 )
                 : null,
@@ -208,7 +208,7 @@ class AppSnackBar {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.navy,
+                    color: AppColors.inkFill,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -220,18 +220,14 @@ class AppSnackBar {
                           color: color,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          icon,
-                          color: AppColors.onPrimaryWhite,
-                          size: 16,
-                        ),
+                        child: Icon(icon, color: AppColors.onInkFill, size: 16),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           message,
                           style: TextStyles.titleRegularM.copyWith(
-                            color: AppColors.onPrimaryWhite,
+                            color: AppColors.onInkFill,
                           ),
                         ),
                       ),
@@ -243,7 +239,7 @@ class AppSnackBar {
                           },
                           child: Text(
                             actionLabel,
-                            style: TextStyle(color: AppColors.onPrimaryWhite),
+                            style: TextStyle(color: AppColors.onInkFill),
                           ),
                         ),
                     ],

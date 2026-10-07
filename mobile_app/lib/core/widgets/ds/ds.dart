@@ -568,7 +568,7 @@ class DsQuickAction extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1 : 0.35,
       child: Material(
-        color: primary ? AppColors.navy : AppColors.surfaceWhite,
+        color: primary ? AppColors.inkFill : AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -581,7 +581,7 @@ class DsQuickAction extends StatelessWidget {
                 Icon(
                   icon,
                   size: 22,
-                  color: primary ? AppColors.limeOnInk : AppColors.navy,
+                  color: primary ? AppColors.lime : AppColors.navy,
                 ),
                 const SizedBox(height: 7),
                 Text(
@@ -590,7 +590,7 @@ class DsQuickAction extends StatelessWidget {
                     fontFamily: 'Supreme',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: primary ? AppColors.surfaceWhite : AppColors.navy,
+                    color: primary ? AppColors.onInkFill : AppColors.navy,
                   ),
                 ),
               ],
@@ -759,9 +759,9 @@ class DsSmallButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = secondary ? AppColors.navy : AppColors.surfaceWhite;
+    final fg = secondary ? AppColors.navy : AppColors.onInkFill;
     return Material(
-      color: secondary ? SheetSurface.fillOf(context) : AppColors.navy,
+      color: secondary ? SheetSurface.fillOf(context) : AppColors.inkFill,
       borderRadius: BorderRadius.circular(11),
       child: InkWell(
         borderRadius: BorderRadius.circular(11),

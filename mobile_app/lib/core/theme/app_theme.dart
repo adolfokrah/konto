@@ -100,8 +100,8 @@ class AppTheme {
         linearTrackColor: AppColors.fill,
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.navy,
-        contentTextStyle: TextStyle(color: AppColors.surfaceWhite),
+        backgroundColor: AppColors.inkFill,
+        contentTextStyle: TextStyle(color: AppColors.onInkFill),
         behavior: SnackBarBehavior.floating,
       ),
       textSelectionTheme: TextSelectionThemeData(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/constants/app_radius.dart';
 import 'package:Hoga/core/constants/app_spacing.dart';
 import 'package:Hoga/core/constants/button_variants.dart';
@@ -110,13 +111,11 @@ class AppButton extends StatelessWidget {
   Widget _buildFilledButton(BuildContext context, bool isDisabled) {
     final Color bgColor =
         isDisabled
-            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
-            : backgroundColor ?? Theme.of(context).colorScheme.onSurface;
+            ? AppColors.inkFill.withValues(alpha: 0.3)
+            : backgroundColor ?? AppColors.inkFill;
 
     final Color txtColor =
-        isDisabled
-            ? Theme.of(context).colorScheme.primary
-            : textColor ?? Theme.of(context).colorScheme.primary;
+        isDisabled ? AppColors.onInkFill : textColor ?? AppColors.onInkFill;
 
     return ElevatedButton(
       onPressed: _getOnPressedCallback(),

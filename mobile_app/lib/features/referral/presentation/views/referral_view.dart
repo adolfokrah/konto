@@ -279,9 +279,9 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dim = AppColors.onPrimaryWhite.withValues(alpha: 0.6);
+    final dim = AppColors.onInkFill.withValues(alpha: 0.6);
     return DsCard(
-      color: AppColors.navy,
+      color: AppColors.inkFill,
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,7 +303,7 @@ class _BalanceCard extends StatelessWidget {
               ),
             )
           else
-            DsMoney(balance, size: 36, color: AppColors.surfaceWhite),
+            DsMoney(balance, size: 36, color: AppColors.onInkFill),
           const SizedBox(height: 4),
           Text(
             totalEarned > 0
@@ -372,8 +372,8 @@ class _CodeCard extends StatelessWidget {
                 (ctx) => AccRoundButton(
                   icon: Icons.ios_share_rounded,
                   size: 40,
-                  background: AppColors.navy,
-                  foreground: AppColors.limeOnInk,
+                  background: AppColors.inkFill,
+                  foreground: AppColors.lime,
                   onTap: () => onShare(ctx),
                 ),
           ),
