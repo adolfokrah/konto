@@ -74,7 +74,10 @@ export const getUserJars = async (req: PayloadRequest) => {
         }
       }
 
-      // Get completed contributions for this jar
+      const isOwner = jar.creator.id === req.user!.id
+
+      // Get completed contributions for this jar. Collectors only see what
+      // they collected themselves; the owner sees the jar total.
       const contributions = await req.payload.find({
         collection: 'transactions',
         where: {
@@ -94,6 +97,7 @@ export const getUserJars = async (req: PayloadRequest) => {
                 equals: 'contribution',
               },
             },
+            ...(isOwner ? [] : [{ collector: { equals: req.user!.id } }]),
           ],
         },
         pagination: false,
@@ -112,7 +116,6 @@ export const getUserJars = async (req: PayloadRequest) => {
 
       // Money the owner can transfer out now. Collectors can't transfer, so
       // their jars skip the lookup.
-      const isOwner = jar.creator.id === req.user!.id
       const availableBalance = isOwner
         ? Number((await getJarBalance(req.payload, jar.id)).balance.toFixed(2))
         : 0
