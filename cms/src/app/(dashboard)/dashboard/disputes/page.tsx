@@ -4,6 +4,7 @@ import { headers as getHeaders } from 'next/headers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DisputesDataTable } from '@/components/dashboard/disputes-data-table'
 import { type DisputeRow } from '@/components/dashboard/data-table/columns/dispute-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -91,6 +92,9 @@ export default async function DisputesPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col h-full">
+      <div className="mb-4">
+        <PageHeader title="Disputes" subtitle="Payment disputes raised by users" />
+      </div>
       <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Disputes</CardTitle>

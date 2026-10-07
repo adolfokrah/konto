@@ -5,6 +5,7 @@ import { RevenueChart } from '@/components/dashboard/revenue-chart'
 import { TransactionCountChart } from '@/components/dashboard/transaction-count-chart'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 export default async function DashboardPage() {
   const payload = await getPayload({ config: configPromise })
@@ -142,28 +143,29 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader title="Overview" subtitle="What's happening on Hogapay" />
       {/* Compact stats strip */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Users</p>
-          <p className="text-2xl font-semibold mt-1">{totalUsersResult.totalDocs.toLocaleString()}</p>
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">{totalUsersResult.totalDocs.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{dauResult.totalDocs} active today</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Jars</p>
-          <p className="text-2xl font-semibold mt-1">{totalJarsResult.totalDocs.toLocaleString()}</p>
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">{totalJarsResult.totalDocs.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{activeJarsResult.totalDocs} open</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Contributions (30d)</p>
-          <p className="text-2xl font-semibold mt-1">
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">
             GHS {totalContributions.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">{last30DaysContributions.totalDocs} transactions</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Payouts (30d)</p>
-          <p className="text-2xl font-semibold mt-1">
+          <p className="mt-1 font-chillax text-2xl font-semibold tracking-tight tabular-nums">
             GHS {totalPayouts.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">{last30DaysPayouts.totalDocs} transactions</p>

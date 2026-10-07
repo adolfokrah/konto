@@ -14,10 +14,10 @@ type Props = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  Completed: 'hsl(142, 71%, 45%)',
-  Pending: 'hsl(48, 96%, 53%)',
-  Failed: 'hsl(0, 84%, 60%)',
-  Transferred: 'hsl(217, 91%, 60%)',
+  Completed: 'hsl(var(--success))',
+  Pending: 'hsl(var(--warning))',
+  Failed: 'hsl(var(--destructive))',
+  Transferred: 'hsl(var(--chart-4))',
 }
 
 const chartConfig = {

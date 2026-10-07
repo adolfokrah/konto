@@ -40,6 +40,7 @@ import { RevenueBreakdownChart } from '@/components/dashboard/analytics/revenue-
 import { CollectorPerformanceChart } from '@/components/dashboard/analytics/collector-performance-chart'
 import { TotalTransactionVolumeChart } from '@/components/dashboard/analytics/total-transaction-volume-chart'
 import { PayoutCountTrendChart } from '@/components/dashboard/analytics/payout-count-trend-chart'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const fmt = (n: number) =>
   n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -642,6 +643,7 @@ export default async function AnalyticsPage({
 
   return (
     <div className="space-y-6">
+      <PageHeader title="Analytics" subtitle="Growth, volume and revenue across the platform" />
       {/* Engagement KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard

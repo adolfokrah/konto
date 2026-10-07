@@ -18,14 +18,14 @@ type Props = {
 const COLORS: Record<string, string> = {
   Open: 'hsl(var(--primary))',
   Frozen: 'hsl(var(--chart-4))',
-  Broken: 'hsl(0, 84%, 60%)',
+  Broken: 'hsl(var(--destructive))',
   Sealed: 'hsl(var(--muted-foreground))',
 }
 
 const chartConfig = {
   Open: { label: 'Open', color: 'hsl(var(--primary))' },
   Frozen: { label: 'Frozen', color: 'hsl(var(--chart-4))' },
-  Broken: { label: 'Broken', color: 'hsl(0, 84%, 60%)' },
+  Broken: { label: 'Broken', color: 'hsl(var(--destructive))' },
   Sealed: { label: 'Sealed', color: 'hsl(var(--muted-foreground))' },
 } satisfies ChartConfig
 

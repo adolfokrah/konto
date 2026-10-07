@@ -147,16 +147,17 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex h-full flex-col border-r bg-card transition-all duration-200',
+          'dashboard-sidebar flex h-full flex-col transition-all duration-200',
           className,
         )}
       >
         {/* Logo + toggle */}
-        <div className="flex h-12 items-center border-b px-3 gap-2">
+        <div className="flex h-14 items-center px-3 gap-2">
           {!collapsed && (
             <Link href="/dashboard" className="flex flex-1 items-center gap-2 overflow-hidden">
-              <span className="truncate text-sm font-semibold tracking-tight">Hogapay</span>
-              <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary shrink-0">
+              <img src="/logo_icon.png" alt="" className="h-[30px] w-[30px] rounded-[9px]" />
+              <span className="truncate font-chillax text-lg font-semibold tracking-tight text-white">Hogapay</span>
+              <span className="ml-auto rounded-[5px] bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shrink-0">
                 Admin
               </span>
             </Link>
@@ -180,7 +181,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           {navGroups.map((group, gi) => (
             <div key={group.label} className={cn(gi > 0 && 'mt-4')}>
               {!collapsed && (
-                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                <p className="mb-1 px-2 text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[#6E7682]">
                   {group.label}
                 </p>
               )}
@@ -205,16 +206,16 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                     <Link
                       href={item.href}
                       className={cn(
-                        'relative flex items-center rounded-md transition-colors',
+                        'relative flex items-center rounded-[10px] transition-colors',
                         collapsed
                           ? 'justify-center p-2'
-                          : 'gap-2.5 px-2 py-1.5 text-[13px] font-medium',
+                          : 'h-[34px] gap-2.5 px-2.5 text-[13px] font-medium',
                         isActive
-                          ? 'bg-primary text-primary-foreground'
+                          ? 'bg-primary font-semibold text-primary-foreground'
                           : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                       )}
                     >
-                      <item.icon className="h-3.5 w-3.5 shrink-0" />
+                      <item.icon className="h-[17px] w-[17px] shrink-0" />
                       {!collapsed && (
                         <>
                           <span className="flex-1 truncate">{item.label}</span>
@@ -255,7 +256,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
         </nav>
 
         {/* User section */}
-        <div className="border-t p-2">
+        <div className="p-3">
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -270,7 +271,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted">
+                <button className="flex w-full items-center gap-2.5 rounded-xl bg-white/[0.06] px-2.5 py-2.5 text-left transition-colors hover:bg-white/10">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
                     {initials}
                   </span>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { ExportTransactionsButton } from '@/components/dashboard/export-transactions-button'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -146,6 +147,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
+      <PageHeader title="Transactions" subtitle="Contributions and payouts across all jars" />
       {/* Transactions Table */}
       <Card>
         <CardHeader>

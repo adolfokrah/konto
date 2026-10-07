@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/dashboard/page-header'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,24 +58,27 @@ export default async function DeletedAccountsPage({ searchParams }: Props) {
   }))
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-3.5rem-2rem)] lg:h-[calc(100vh-3.5rem-3rem)]">
-      <CardHeader>
-        <CardTitle>Deleted Accounts</CardTitle>
-        <CardDescription>
-          {result.totalDocs} account{result.totalDocs !== 1 ? 's' : ''} deleted
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden p-0">
-        <DeletedAccountsDataTable
-          rows={rows}
-          pagination={{
-            currentPage: page,
-            totalPages: result.totalPages,
-            totalRows: result.totalDocs,
-            rowsPerPage: limit,
-          }}
-        />
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-4">
+      <PageHeader title="Deleted accounts" subtitle="Accounts removed by their owners" />
+      <Card className="flex flex-col h-[calc(100vh-3.5rem-2rem-5rem)] lg:h-[calc(100vh-3.5rem-3rem-5rem)]">
+        <CardHeader>
+          <CardTitle>Deleted Accounts</CardTitle>
+          <CardDescription>
+            {result.totalDocs} account{result.totalDocs !== 1 ? 's' : ''} deleted
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-hidden p-0">
+          <DeletedAccountsDataTable
+            rows={rows}
+            pagination={{
+              currentPage: page,
+              totalPages: result.totalPages,
+              totalRows: result.totalDocs,
+              rowsPerPage: limit,
+            }}
+          />
+        </CardContent>
+      </Card>
+    </div>
   )
 }

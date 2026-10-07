@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralsDataTable } from '@/components/dashboard/referrals-data-table'
 import { type ReferralRow } from '@/components/dashboard/data-table/columns/referral-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -75,6 +76,9 @@ export default async function ReferralsPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col h-full">
+      <div className="mb-4">
+        <PageHeader title="Referrals" subtitle="Who invited whom" />
+      </div>
       <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Referrals</CardTitle>

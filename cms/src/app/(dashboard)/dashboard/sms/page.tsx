@@ -8,6 +8,7 @@ import { MetricCard } from '@/components/dashboard/metric-card'
 import { SmsCampaignsDataTable } from '@/components/dashboard/sms-campaigns-data-table'
 import { type SmsCampaignRow } from '@/components/dashboard/data-table/columns/sms-campaign-columns'
 import { AdminOnly } from '@/components/dashboard/dashboard-user-context'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -75,6 +76,7 @@ export default async function SmsPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6 h-full">
+      <PageHeader title="SMS" subtitle="SMS campaigns sent to users" />
       <div className="flex items-center justify-between">
         <div className="w-[220px]">
           <MetricCard

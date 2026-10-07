@@ -41,7 +41,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <html className={cn(GeistSans.variable, GeistMono.variable, 'dashboard-dark')} lang="en" suppressHydrationWarning>
+    <html className={cn(GeistSans.variable, GeistMono.variable, 'dashboard-theme')} lang="en" suppressHydrationWarning>
       <head>
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
       </head>
@@ -55,7 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
           </div>
         </DashboardUserProvider>
-        <NextTopLoader color="#ffffff" showSpinner={false} />
+        <NextTopLoader color="#1B232E" showSpinner={false} />
         <Toaster />
       </body>
     </html>

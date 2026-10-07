@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { CampaignsDataTable } from '@/components/dashboard/campaigns-data-table'
 import { AdminOnly } from '@/components/dashboard/dashboard-user-context'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -77,6 +78,7 @@ export default async function PushNotificationsPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6 h-full">
+      <PageHeader title="Push notifications" subtitle="Campaigns sent to app users" />
       <div className="flex items-center justify-between">
         <div className="w-[220px]">
           <MetricCard

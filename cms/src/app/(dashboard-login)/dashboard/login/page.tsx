@@ -23,12 +23,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold tracking-tight">Hogapay</span>
-            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+            <img src="/logo_icon.png" alt="" className="h-9 w-9 rounded-[10px]" />
+            <span className="font-chillax text-xl font-semibold tracking-tight">Hogapay</span>
+            <span className="rounded-[5px] bg-accent px-1.5 py-0.5 text-[10px] font-semibold text-accent-foreground">
               Admin
             </span>
           </div>
-          <h1 className="mt-6 text-2xl font-semibold tracking-tight">Sign in</h1>
+          <h1 className="mt-6 font-chillax text-3xl font-semibold tracking-tight">Sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter your email and password to access the dashboard
           </p>

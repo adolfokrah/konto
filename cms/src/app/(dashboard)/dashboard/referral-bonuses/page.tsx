@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralBonusesDataTable } from '@/components/dashboard/referral-bonuses-data-table'
 import { type ReferralBonusRow } from '@/components/dashboard/data-table/columns/referral-bonus-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -88,6 +89,9 @@ export default async function ReferralBonusesPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col h-full">
+      <div className="mb-4">
+        <PageHeader title="Referral bonuses" subtitle="Bonuses earned from referrals" />
+      </div>
       <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Referral Bonuses</CardTitle>

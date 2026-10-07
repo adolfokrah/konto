@@ -6,6 +6,7 @@ import { MetricCard } from '@/components/dashboard/metric-card'
 import { UsersDataTable } from '@/components/dashboard/users-data-table'
 import { ExportUsersButton } from '@/components/dashboard/export-users-button'
 import { type UserRow } from '@/components/dashboard/data-table/columns/user-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -137,6 +138,7 @@ export default async function UsersPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6 h-full">
+      <PageHeader title="Users" subtitle="People on Hogapay" />
       {/* Metric Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard

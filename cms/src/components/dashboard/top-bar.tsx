@@ -42,8 +42,27 @@ const pageTitles: Record<string, string> = {
   '/dashboard/sms': 'SMS',
   '/dashboard/sms/compose': 'New SMS',
   '/dashboard/emails': 'Emails',
+  '/dashboard/business-verifications': 'Business Verifications',
   '/dashboard/profile': 'Profile',
   '/dashboard/settings': 'System Settings',
+}
+
+const pageGroups: Record<string, string> = {
+  users: 'People',
+  'deleted-accounts': 'People',
+  jars: 'Jars',
+  'jar-reports': 'Jars',
+  transactions: 'Payments',
+  disputes: 'Payments',
+  'business-verifications': 'Payments',
+  cashbacks: 'Payments',
+  analytics: 'Finance',
+  ledger: 'Finance',
+  referrals: 'Finance',
+  'referral-bonuses': 'Finance',
+  'push-notifications': 'Comms',
+  sms: 'Comms',
+  emails: 'Comms',
 }
 
 const pageTitlePrefixes: Array<[string, string]> = [
@@ -60,6 +79,7 @@ export function TopBar({ user }: Props) {
     pageTitles[pathname] ||
     pageTitlePrefixes.find(([prefix]) => pathname.startsWith(prefix))?.[1] ||
     'Dashboard'
+  const pageGroup = pageGroups[pathname.split('/')[2] ?? ''] ?? null
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A'
 
   const { trigger: logout } = useSWRMutation(
@@ -73,19 +93,22 @@ export function TopBar({ user }: Props) {
   }
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:px-6">
+    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="lg:hidden">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-52 border-r-border bg-card p-0">
+        <SheetContent side="left" className="w-60 border-none bg-[#1B232E] p-0">
           <Sidebar user={user} collapsed={false} onToggle={() => {}} />
         </SheetContent>
       </Sheet>
 
-      <h1 className="text-lg font-semibold">{pageTitle}</h1>
+      <div className="text-[12.5px] text-muted-foreground">
+        {pageGroup && <>{pageGroup} / </>}
+        <b className="font-semibold text-foreground">{pageTitle}</b>
+      </div>
 
       <div className="ml-auto">
         <DropdownMenu>

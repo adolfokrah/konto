@@ -4,6 +4,7 @@ import { Flag } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { ReportsDataTable } from '@/components/dashboard/reports-data-table'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -70,6 +71,7 @@ export default async function JarReportsPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6 h-full">
+      <PageHeader title="Jar reports" subtitle="Jars reported by contributors" />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           title="Total Reports"

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { LedgerClient } from '@/components/dashboard/ledger-client'
 import { getEganow } from '@/utilities/initalise'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -87,6 +88,7 @@ export default async function LedgerPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6 h-full">
+      <PageHeader title="Ledger" subtitle="Top-ups and balance movements" />
       <div className="grid gap-4 md:grid-cols-2">
         <MetricCard
           title="Total Top-Ups (Completed)"

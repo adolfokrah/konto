@@ -4,6 +4,7 @@ import { Container as JarIcon, CircleCheck, Lock, Hammer, Snowflake } from 'luci
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { JarsDataTable } from '@/components/dashboard/jars-data-table'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -175,6 +176,7 @@ export default async function JarsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
+      <PageHeader title="Jars" subtitle="All jars across the platform" />
       {/* Metric Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <MetricCard

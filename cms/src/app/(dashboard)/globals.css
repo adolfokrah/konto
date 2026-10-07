@@ -14,6 +14,49 @@
   unicode-range: U+20B5;
 }
 
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chillax';
+  src: url('/fonts/chillax/Chillax-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('/fonts/supreme/Supreme-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('/fonts/supreme/Supreme-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Supreme';
+  src: url('/fonts/supreme/Supreme-Bold.otf') format('opentype');
+  font-weight: 600;
+  font-display: swap;
+}
+
 @layer base {
   *,
   ::after,
@@ -86,40 +129,245 @@
     @apply bg-background text-foreground min-h-screen flex flex-col;
   }
 
-  /* Dashboard dark theme — matches Hogapay mobile app colors */
-  .dashboard-dark {
-    --background: 213 25% 14%; /* #1B232E */
-    --foreground: 0 0% 100%; /* #FFFFFF */
+  /* Dashboard theme — Hogapay v4 design: cream canvas, ink text, lime accent,
+     navy sidebar (see .dashboard-sidebar). Tokens mirror design/hogapay-v4.html. */
+  .dashboard-theme {
+    --background: 37 70% 96%; /* #FBF6EE */
+    --foreground: 213 25% 14%; /* #1B232E ink */
 
-    --card: 213 25% 23%; /* #2D3849 */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 25% 14%;
 
-    --popover: 213 25% 20%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 25% 14%;
 
-    --primary: 78 88% 93%; /* #F4FDDF - secondary green */
-    --primary-foreground: 213 25% 14%; /* dark text on green */
+    --primary: 213 25% 14%; /* ink */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 25% 28%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 35 36% 92%; /* #F3ECE2 fill */
+    --secondary-foreground: 213 25% 14%;
 
-    --muted: 213 20% 20%;
-    --muted-foreground: 213 15% 65%;
+    --muted: 35 36% 92%;
+    --muted-foreground: 218 6% 56%; /* #8B8F96 */
 
-    --accent: 78 88% 93%;
+    --accent: 75 88% 73%; /* #D9F57A lime */
     --accent-foreground: 213 25% 14%;
 
-    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive: 4 76% 58%; /* #E5483D */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 213 20% 28%;
-    --input: 213 20% 25%;
-    --ring: 78 88% 93%;
+    --border: 36 33% 90%; /* #EDE5D9 line */
+    --input: 36 33% 90%;
+    --ring: 213 25% 14%;
 
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --radius: 0.875rem;
+
+    --success: 152 83% 34%; /* #0F9F61 */
+    --warning: 35 90% 45%;
+    --error: 4 76% 58%;
+
+    --chart-1: 213 25% 14%;
+    --chart-2: 152 83% 34%;
+    --chart-3: 35 90% 45%;
+    --chart-4: 218 91% 58%;
+    --chart-5: 75 60% 48%;
+
+    font-family: 'Supreme', 'Cedi', system-ui, sans-serif;
   }
+
+  /* Navy sidebar, lime active item */
+  .dashboard-theme .dashboard-sidebar {
+    --background: 213 25% 14%;
+    --foreground: 0 0% 100%;
+    --card: 213 25% 14%;
+    --card-foreground: 0 0% 100%;
+    --popover: 213 25% 18%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 75 88% 73%; /* lime */
+    --primary-foreground: 213 25% 14%;
+    --muted: 213 20% 22%;
+    --muted-foreground: 215 10% 75%;
+    --border: 213 20% 22%;
+    background-color: hsl(213 25% 14%);
+    color: #c9cdd3;
+  }
+
+  /* v4 component treatments, scoped so shared ui/* stays unchanged on public pages */
+  .dashboard-theme main .rounded-lg.border.bg-card {
+    border-color: hsl(var(--border));
+    border-radius: 1rem;
+    box-shadow: none;
+  }
+  .dashboard-theme main th {
+    height: 2.5rem;
+    border-right: 0;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    white-space: nowrap;
+  }
+  .dashboard-theme main td {
+    padding-block: 0.65rem;
+    font-size: 12.5px;
+    vertical-align: middle;
+  }
+  .dashboard-theme main tbody tr:hover {
+    background-color: hsl(var(--secondary) / 0.6);
+  }
+  .dashboard-theme main td,
+  .dashboard-theme main .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  .dashboard-theme [role='tablist'] {
+    background: transparent;
+    border-bottom: 1px solid hsl(var(--border));
+    border-radius: 0;
+    padding: 0;
+    gap: 1.1rem;
+  }
+  .dashboard-theme [role='tab'] {
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0.5rem 0;
+    color: hsl(var(--muted-foreground));
+  }
+  .dashboard-theme [role='tab'][data-state='active'] {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+    box-shadow: inset 0 -2px 0 hsl(var(--foreground));
+  }
+
+  .dashboard-theme main [class*='rounded'][class*='text-xs'][class*='font-semibold'][class*='px-2'] {
+    border-radius: 7px;
+  }
+  .dashboard-theme h1,
+  .dashboard-theme h2,
+  .dashboard-theme h3,
+  .dashboard-theme [data-slot='card-title'] {
+    font-family: 'Chillax', 'Cedi', system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }}
+
+/* Remap legacy dark-theme status colors (and light tailwind tints) to v4 soft tones */
+@layer utilities {
+.dashboard-theme main .bg-green-900\/40,
+.dashboard-theme main .bg-green-900\/20,
+.dashboard-theme main .bg-green-100,
+.dashboard-theme main .bg-green-500\/10,
+.dashboard-theme main .bg-green-500\/20 { background-color: #E6F7EE; }
+.dashboard-theme main .text-green-300,
+.dashboard-theme main .text-green-400,
+.dashboard-theme main .text-green-500,
+.dashboard-theme main .text-green-600,
+.dashboard-theme main .text-green-700,
+.dashboard-theme main .text-green-800 { color: #0F9F61; }
+.dashboard-theme main .border-green-200,
+.dashboard-theme main .border-green-700 { border-color: transparent; }
+.dashboard-theme main .bg-red-900\/40,
+.dashboard-theme main .bg-red-900\/20,
+.dashboard-theme main .bg-red-100,
+.dashboard-theme main .bg-red-500\/10,
+.dashboard-theme main .bg-red-500\/20 { background-color: #FDECEA; }
+.dashboard-theme main .text-red-300,
+.dashboard-theme main .text-red-400,
+.dashboard-theme main .text-red-500,
+.dashboard-theme main .text-red-600,
+.dashboard-theme main .text-red-700,
+.dashboard-theme main .text-red-800 { color: #E5483D; }
+.dashboard-theme main .border-red-200,
+.dashboard-theme main .border-red-700 { border-color: transparent; }
+.dashboard-theme main .bg-yellow-900\/40,
+.dashboard-theme main .bg-yellow-900\/20,
+.dashboard-theme main .bg-yellow-100,
+.dashboard-theme main .bg-yellow-500\/10,
+.dashboard-theme main .bg-yellow-500\/20 { background-color: #FFF4E2; }
+.dashboard-theme main .text-yellow-300,
+.dashboard-theme main .text-yellow-400,
+.dashboard-theme main .text-yellow-500,
+.dashboard-theme main .text-yellow-600,
+.dashboard-theme main .text-yellow-700,
+.dashboard-theme main .text-yellow-800 { color: #D9840A; }
+.dashboard-theme main .border-yellow-200,
+.dashboard-theme main .border-yellow-700 { border-color: transparent; }
+.dashboard-theme main .bg-amber-900\/40,
+.dashboard-theme main .bg-amber-900\/20,
+.dashboard-theme main .bg-amber-100,
+.dashboard-theme main .bg-amber-500\/10,
+.dashboard-theme main .bg-amber-500\/20 { background-color: #FFF4E2; }
+.dashboard-theme main .text-amber-300,
+.dashboard-theme main .text-amber-400,
+.dashboard-theme main .text-amber-500,
+.dashboard-theme main .text-amber-600,
+.dashboard-theme main .text-amber-700,
+.dashboard-theme main .text-amber-800 { color: #D9840A; }
+.dashboard-theme main .border-amber-200,
+.dashboard-theme main .border-amber-700 { border-color: transparent; }
+.dashboard-theme main .bg-orange-900\/40,
+.dashboard-theme main .bg-orange-900\/20,
+.dashboard-theme main .bg-orange-100,
+.dashboard-theme main .bg-orange-500\/10,
+.dashboard-theme main .bg-orange-500\/20 { background-color: #FFF4E2; }
+.dashboard-theme main .text-orange-300,
+.dashboard-theme main .text-orange-400,
+.dashboard-theme main .text-orange-500,
+.dashboard-theme main .text-orange-600,
+.dashboard-theme main .text-orange-700,
+.dashboard-theme main .text-orange-800 { color: #D9840A; }
+.dashboard-theme main .border-orange-200,
+.dashboard-theme main .border-orange-700 { border-color: transparent; }
+.dashboard-theme main .bg-blue-900\/40,
+.dashboard-theme main .bg-blue-900\/20,
+.dashboard-theme main .bg-blue-100,
+.dashboard-theme main .bg-blue-500\/10,
+.dashboard-theme main .bg-blue-500\/20 { background-color: #EAF2FF; }
+.dashboard-theme main .text-blue-300,
+.dashboard-theme main .text-blue-400,
+.dashboard-theme main .text-blue-500,
+.dashboard-theme main .text-blue-600,
+.dashboard-theme main .text-blue-700,
+.dashboard-theme main .text-blue-800 { color: #2E7CF6; }
+.dashboard-theme main .border-blue-200,
+.dashboard-theme main .border-blue-700 { border-color: transparent; }
+.dashboard-theme main .bg-indigo-900\/40,
+.dashboard-theme main .bg-indigo-900\/20,
+.dashboard-theme main .bg-indigo-100,
+.dashboard-theme main .bg-indigo-500\/10,
+.dashboard-theme main .bg-indigo-500\/20 { background-color: #EAF2FF; }
+.dashboard-theme main .text-indigo-300,
+.dashboard-theme main .text-indigo-400,
+.dashboard-theme main .text-indigo-500,
+.dashboard-theme main .text-indigo-600,
+.dashboard-theme main .text-indigo-700,
+.dashboard-theme main .text-indigo-800 { color: #2E7CF6; }
+.dashboard-theme main .border-indigo-200,
+.dashboard-theme main .border-indigo-700 { border-color: transparent; }
+.dashboard-theme main .bg-purple-900\/40,
+.dashboard-theme main .bg-purple-900\/20,
+.dashboard-theme main .bg-purple-100,
+.dashboard-theme main .bg-purple-500\/10,
+.dashboard-theme main .bg-purple-500\/20 { background-color: #F1ECFB; }
+.dashboard-theme main .text-purple-300,
+.dashboard-theme main .text-purple-400,
+.dashboard-theme main .text-purple-500,
+.dashboard-theme main .text-purple-600,
+.dashboard-theme main .text-purple-700,
+.dashboard-theme main .text-purple-800 { color: #7B4FD1; }
+.dashboard-theme main .border-purple-200,
+.dashboard-theme main .border-purple-700 { border-color: transparent; }
+.dashboard-theme main .bg-gray-900\/40,
+.dashboard-theme main .bg-gray-900\/20,
+.dashboard-theme main .bg-gray-100,
+.dashboard-theme main .bg-gray-500\/10,
+.dashboard-theme main .bg-gray-500\/20 { background-color: #F3ECE2; }
+.dashboard-theme main .text-gray-300,
+.dashboard-theme main .text-gray-400,
+.dashboard-theme main .text-gray-500,
+.dashboard-theme main .text-gray-600,
+.dashboard-theme main .text-gray-700,
+.dashboard-theme main .text-gray-800 { color: #4A5361; }
+.dashboard-theme main .border-gray-200,
+.dashboard-theme main .border-gray-700 { border-color: transparent; }
 }

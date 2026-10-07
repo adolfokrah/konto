@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CashbacksDataTable } from '@/components/dashboard/cashbacks-data-table'
 import { type CashbackRow } from '@/components/dashboard/data-table/columns/cashback-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -100,6 +101,7 @@ export default async function CashbacksPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6 h-full">
+      <PageHeader title="Cashbacks" subtitle="Cashback awarded to contributors" />
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">

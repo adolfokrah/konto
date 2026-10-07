@@ -4,6 +4,7 @@ import { headers as getHeaders } from 'next/headers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BusinessVerificationsDataTable } from '@/components/dashboard/business-verifications-data-table'
 import { type BusinessVerificationRow } from '@/components/dashboard/data-table/columns/business-verification-columns'
+import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -84,6 +85,9 @@ export default async function BusinessVerificationsPage({ searchParams }: Props)
 
   return (
     <div className="flex flex-col h-full">
+      <div className="mb-4">
+        <PageHeader title="Business verifications" subtitle="Organizations awaiting KYB review" />
+      </div>
       <Card className="flex flex-col flex-1 min-h-0">
         <CardHeader>
           <CardTitle>Business Verifications</CardTitle>

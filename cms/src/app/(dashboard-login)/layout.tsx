@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function DashboardLoginLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      className={cn(GeistSans.variable, GeistMono.variable, 'dashboard-dark')}
+      className={cn(GeistSans.variable, GeistMono.variable, 'dashboard-theme')}
       lang="en"
       suppressHydrationWarning
     >
@@ -24,7 +24,7 @@ export default function DashboardLoginLayout({ children }: { children: React.Rea
       </head>
       <body className="min-h-screen bg-background">
         {children}
-        <NextTopLoader color="#ffffff" showSpinner={false} />
+        <NextTopLoader color="#1B232E" showSpinner={false} />
         <Toaster />
       </body>
     </html>
