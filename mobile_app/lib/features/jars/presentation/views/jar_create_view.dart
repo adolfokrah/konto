@@ -259,7 +259,12 @@ class _JarCreateViewState extends State<JarCreateView> {
     }
   }
 
+  /// Set on the first tap, before the bloc reports loading, so quick repeat
+  /// taps can't send the create request more than once.
+  bool _submitting = false;
+
   void _createJar({bool skipInvites = false}) {
+    if (_submitting) return;
     if (nameController.text.isEmpty) {
       AppSnackBar.showError(
         context,
@@ -299,6 +304,7 @@ class _JarCreateViewState extends State<JarCreateView> {
             )
             .toList();
 
+    _submitting = true;
     context.read<JarCreateBloc>().add(
       JarCreateSubmitted(
         name: nameController.text,
@@ -945,6 +951,7 @@ class _JarCreateViewState extends State<JarCreateView> {
               context.go(AppRoutes.jarDetail);
               RatingService.instance.maybeRequestReview();
             } else if (state is JarCreateFailure) {
+              _submitting = false;
               AppSnackBar.showError(
                 context,
                 message: _translateError(state.error),
