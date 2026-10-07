@@ -856,7 +856,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
         DsListCard(
           children: [
             for (final contribution in group.contributions)
-              _ActivityRow(
+              ActivityRow(
                 contribution: contribution,
                 jarName: _allJars ? _jarName(contribution) : null,
               ),
@@ -926,13 +926,22 @@ class _ContributionsListViewState extends State<ContributionsListView> {
 
 /// One statement line: method tile, name, time and collector, signed amount
 /// with a status tag when it isn't completed.
-class _ActivityRow extends StatelessWidget {
+class ActivityRow extends StatelessWidget {
   final ContributionModel contribution;
 
   /// Shown first in the subtitle on the all-jars feed.
   final String? jarName;
 
-  const _ActivityRow({required this.contribution, this.jarName});
+  /// Show a date with the time ("Today 10:42", "Yesterday"); for lists
+  /// that aren't grouped under day headers, e.g. Home.
+  final bool withDate;
+
+  const ActivityRow({
+    super.key,
+    required this.contribution,
+    this.jarName,
+    this.withDate = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -957,7 +966,9 @@ class _ActivityRow extends StatelessWidget {
             : null;
     final subtitle = [
       if (jarName != null && jarName!.isNotEmpty) jarName!,
-      AppDateUtils.formatTimeOnly(c.createdAt, localizations),
+      withDate
+          ? AppDateUtils.formatTimestamp(c.createdAt, localizations)
+          : AppDateUtils.formatTimeOnly(c.createdAt, localizations),
       if (c.isContribution && collectorFirst != null)
         c.viaPaymentLink ? 'via $collectorFirst' : 'by $collectorFirst',
       if (c.isPayout && account != null && account.length >= 4)

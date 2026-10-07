@@ -1,6 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:Hoga/features/contribution/presentation/views/contributions_list_view.dart';
+import 'package:Hoga/features/contribution/data/repositories/contribution_repository.dart';
+import 'package:Hoga/features/contribution/data/models/contribution_model.dart'
+    as activity;
+import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/widgets/main_shell.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +23,6 @@ import 'package:Hoga/features/jars/data/models/jar_summary_model.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_list/jar_list_bloc.dart';
 import 'package:Hoga/features/jars/logic/bloc/jar_summary/jar_summary_bloc.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
-import 'package:Hoga/features/jars/presentation/widgets/jar_activity_row.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_ui.dart';
 import 'package:Hoga/features/notifications/data/models/notification_model.dart';
 import 'package:Hoga/features/notifications/logic/bloc/notifications_bloc.dart';
@@ -82,7 +86,10 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  final _activityKey = GlobalKey<_HomeRecentActivityState>();
+
   Future<void> _onRefresh() async {
+    _activityKey.currentState?._load();
     final listBloc = context.read<JarListBloc>();
     listBloc.add(LoadJarList());
     context.read<JarSummaryBloc>().add(GetJarSummaryRequested());
@@ -488,54 +495,19 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  /// Recent activity of the jar you last used (the feed is per jar).
+  /// Latest payments across all your jars (not the jar last opened, which
+  /// made this section change every time a jar was opened).
   Widget _recentActivity(
     BuildContext context,
     List<JarListItem> jars,
     String? userId,
-  ) {
-    return BlocBuilder<JarSummaryBloc, JarSummaryState>(
-      builder: (context, state) {
-        final jar = state is JarSummaryLoaded ? state.jarData : null;
-        final items = jar?.contributions.take(4).toList() ?? const [];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DsSectionHeader(
-              'Recent activity',
-              action: items.isNotEmpty ? 'All' : null,
-              onAction: _openActivity,
-            ),
-            if (jar != null && jars.length > 1)
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 8),
-                child: Text(jar.name, style: DsText.caption),
-              ),
-            if (state is JarSummaryLoading)
-              const JarActivitySkeleton()
-            else if (items.isEmpty)
-              DsCard(
-                padding: EdgeInsets.zero,
-                child: DsEmptyState(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'No payments yet',
-                  message:
-                      'Payments to your jar will show up here as they come in.',
-                  actionLabel: 'Share jar link',
-                  onAction: () => _runAction(_HomeAction.request, jars, userId),
-                ),
-              )
-            else
-              DsListCard(
-                children: [
-                  for (final c in items) JarActivityRow(contribution: c),
-                ],
-              ),
-          ],
-        );
-      },
-    );
-  }
+  ) => _HomeRecentActivity(
+    key: _activityKey,
+    jars: jars,
+    userId: userId,
+    onSeeAll: _openActivity,
+    onShare: () => _runAction(_HomeAction.request, jars, userId),
+  );
 
   // ------------------------------------------------------------ states
 
@@ -1072,6 +1044,155 @@ class _StepRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Home's "Recent activity": the 5 latest payments across every jar the
+/// user can see, each row naming its jar. Same access rule as Activity's
+/// "All jars": everything on jars you own or co-manage, only your own
+/// collections on the rest.
+class _HomeRecentActivity extends StatefulWidget {
+  final List<JarListItem> jars;
+  final String? userId;
+  final VoidCallback onSeeAll;
+  final VoidCallback onShare;
+
+  const _HomeRecentActivity({
+    super.key,
+    required this.jars,
+    required this.userId,
+    required this.onSeeAll,
+    required this.onShare,
+  });
+
+  @override
+  State<_HomeRecentActivity> createState() => _HomeRecentActivityState();
+}
+
+class _HomeRecentActivityState extends State<_HomeRecentActivity> {
+  List<activity.ContributionModel>? _items;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  /// Refetch when the jars or their totals change (e.g. a new payment).
+  String _signature(List<JarListItem> jars) =>
+      [for (final j in jars) '${j.id}:${j.totalContributions}'].join('|');
+
+  @override
+  void didUpdateWidget(covariant _HomeRecentActivity old) {
+    super.didUpdateWidget(old);
+    if (_signature(old.jars) != _signature(widget.jars)) _load();
+  }
+
+  Future<void> _load() async {
+    final full = <String>[];
+    final mine = <String>[];
+    for (final j in widget.jars) {
+      final isAdmin =
+          widget.userId != null &&
+          j.invitedCollectors.any(
+            (ic) =>
+                ic.collector?.id == widget.userId &&
+                ic.role == 'admin' &&
+                ic.status == 'accepted',
+          );
+      (j.creator.id == widget.userId || isAdmin ? full : mine).add(j.id);
+    }
+    if (full.isEmpty && mine.isEmpty) {
+      setState(() => _items = const []);
+      return;
+    }
+    try {
+      final result = await getIt<ContributionRepository>().getContributions(
+        fullAccessJarIds: full,
+        collectorOnlyJarIds: mine,
+        limit: 5,
+        page: 1,
+      );
+      if (!mounted) return;
+      final docs = (result['data']?['docs'] as List?) ?? const [];
+      final items = <activity.ContributionModel>[];
+      for (final d in docs) {
+        try {
+          items.add(
+            activity.ContributionModel.fromJson(d as Map<String, dynamic>),
+          );
+        } catch (_) {}
+      }
+      setState(() {
+        _failed = result['success'] != true;
+        _items = items;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    }
+  }
+
+  String _jarName(activity.ContributionModel c) {
+    if (c.jar.name.isNotEmpty) return c.jar.name;
+    for (final j in widget.jars) {
+      if (j.id == c.jar.id) return j.name;
+    }
+    return '';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _items;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DsSectionHeader(
+          'Recent activity',
+          action: (items?.isNotEmpty ?? false) ? 'All' : null,
+          onAction: widget.onSeeAll,
+        ),
+        if (items == null && !_failed)
+          const JarActivitySkeleton()
+        else if (_failed && (items == null || items.isEmpty))
+          DsCard(
+            padding: EdgeInsets.zero,
+            child: DsEmptyState(
+              icon: Icons.wifi_off_rounded,
+              title: 'Couldn\'t load recent activity',
+              message: 'Pull down to try again.',
+              actionLabel: 'Retry',
+              onAction: () {
+                setState(() => _failed = false);
+                _load();
+              },
+            ),
+          )
+        else if (items!.isEmpty)
+          DsCard(
+            padding: EdgeInsets.zero,
+            child: DsEmptyState(
+              icon: Icons.receipt_long_outlined,
+              title: 'No payments yet',
+              message:
+                  'Payments to any of your jars will show up here as they come in.',
+              actionLabel: 'Share jar link',
+              onAction: widget.onShare,
+            ),
+          )
+        else
+          DsListCard(
+            children: [
+              for (final c in items)
+                ActivityRow(
+                  contribution: c,
+                  jarName: _jarName(c),
+                  withDate: true,
+                ),
+            ],
+          ),
+      ],
     );
   }
 }
