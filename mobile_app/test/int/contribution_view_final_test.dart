@@ -125,7 +125,7 @@ void main() {
     ) async {
       // Mock API to return error
       MockInterceptor.overrideEndpoint(
-        '/transactions/contrib-123',
+        '/transactions/get-transaction',
         (options) =>
             throw DioException(
               requestOptions: options,
