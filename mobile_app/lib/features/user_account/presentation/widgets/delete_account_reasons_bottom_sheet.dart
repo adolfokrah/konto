@@ -70,7 +70,7 @@ class _DeleteAccountReasonsBottomSheetState
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
               child: Text('Why are you leaving?', style: AccText.h1),
             ),

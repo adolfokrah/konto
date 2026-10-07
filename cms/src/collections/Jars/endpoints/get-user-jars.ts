@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+import { getJarBalance } from '@/utilities/getJarBalance'
 
 export const getUserJars = async (req: PayloadRequest) => {
   if (!req.user) {
@@ -73,7 +74,10 @@ export const getUserJars = async (req: PayloadRequest) => {
         }
       }
 
-      // Get completed contributions for this jar
+      const isOwner = jar.creator.id === req.user!.id
+
+      // Get completed contributions for this jar. Collectors only see what
+      // they collected themselves; the owner sees the jar total.
       const contributions = await req.payload.find({
         collection: 'transactions',
         where: {
@@ -93,6 +97,7 @@ export const getUserJars = async (req: PayloadRequest) => {
                 equals: 'contribution',
               },
             },
+            ...(isOwner ? [] : [{ collector: { equals: req.user!.id } }]),
           ],
         },
         pagination: false,
@@ -108,6 +113,12 @@ export const getUserJars = async (req: PayloadRequest) => {
         },
         0,
       )
+
+      // Money the owner can transfer out now. Collectors can't transfer, so
+      // their jars skip the lookup.
+      const availableBalance = isOwner
+        ? Number((await getJarBalance(req.payload, jar.id)).balance.toFixed(2))
+        : 0
 
       // Add jar with essential data for the mobile app
       groups[groupId].jars.push({
@@ -143,6 +154,7 @@ export const getUserJars = async (req: PayloadRequest) => {
         createdAt: jar.createdAt,
         updatedAt: jar.updatedAt,
         totalContributions: jarTotalContributions,
+        availableBalance,
       })
 
       groups[groupId].totalJars += 1

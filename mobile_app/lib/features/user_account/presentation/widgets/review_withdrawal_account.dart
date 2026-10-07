@@ -52,7 +52,7 @@ class ReviewWithdrawalAccountBottomSheet extends StatelessWidget {
           child: Column(
             children: [
               DsKeyValue('Account name', verificationData.name),
-              const Divider(height: 1, color: AppColors.line),
+              Divider(height: 1, color: AppColors.line),
               DsKeyValue('Phone number', verificationData.phoneNumber),
             ],
           ),

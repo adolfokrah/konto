@@ -226,7 +226,7 @@ class _CustomDatesSheetState extends State<CustomDatesSheet> {
             fontWeight: edge ? FontWeight.w700 : FontWeight.w500,
             color:
                 edge
-                    ? AppColors.lime
+                    ? AppColors.limeOnInk
                     : disabled
                     ? AppColors.faint
                     : AppColors.navy,

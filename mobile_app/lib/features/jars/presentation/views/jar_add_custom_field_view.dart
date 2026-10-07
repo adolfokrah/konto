@@ -397,7 +397,7 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                           ),
                           IconButton(
                             onPressed: () => _removeOption(i),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close_rounded,
                               size: 18,
                               color: AppColors.muted,
@@ -415,7 +415,7 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.add_rounded,
                             size: 18,
                             color: AppColors.navy,
@@ -431,7 +431,7 @@ class _JarAddCustomFieldViewState extends State<JarAddCustomFieldView> {
                           ),
                           GestureDetector(
                             onTap: _openPasteSheet,
-                            child: const Text(
+                            child: Text(
                               'Paste list',
                               style: TextStyle(
                                 fontFamily: 'Supreme',

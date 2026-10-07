@@ -42,7 +42,7 @@ class GoalForecastView extends StatelessWidget {
               AppButton.filled(
                 key: const Key('goal_forecast_share'),
                 text: 'Share jar now',
-                icon: const Icon(
+                icon: Icon(
                   Icons.ios_share_rounded,
                   size: 18,
                   color: AppColors.surfaceWhite,

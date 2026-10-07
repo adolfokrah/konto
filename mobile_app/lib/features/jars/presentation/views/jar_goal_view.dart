@@ -94,7 +94,6 @@ class _JarGoalViewState extends State<JarGoalView> {
                 if (jarData.goalAmount > 0)
                   JarBarLink(
                     'Remove',
-                    destructive: true,
                     onTap: () {
                       // Remove goal by setting goalAmount to 0 and deadline to null
                       context.read<UpdateJarBloc>().add(

@@ -140,6 +140,10 @@ class JarListItem {
   final String updatedAt;
   final double totalContributions;
 
+  /// Money the owner can transfer out now. 0 for jars you only collect for.
+  /// Null when the API did not send it (older backend): balance unknown.
+  final double? availableBalance;
+
   const JarListItem({
     required this.id,
     required this.name,
@@ -159,6 +163,7 @@ class JarListItem {
     required this.createdAt,
     required this.updatedAt,
     required this.totalContributions,
+    this.availableBalance,
   });
 
   bool get isSealed => status == 'sealed';
@@ -167,6 +172,13 @@ class JarListItem {
 
   /// Open for new payments.
   bool get canCollect => !isClosed && !isSealed && !isFrozen;
+
+  /// Has money the owner can transfer out. Unknown balance stays enabled; the
+  /// transfer flow checks the real balance.
+  bool get canTransfer =>
+      !isClosed &&
+      !isFrozen &&
+      (availableBalance == null || availableBalance! > 0);
 
   factory JarListItem.fromJson(Map<String, dynamic> json) {
     return JarListItem(
@@ -200,6 +212,7 @@ class JarListItem {
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
       totalContributions: (json['totalContributions'] ?? 0).toDouble(),
+      availableBalance: (json['availableBalance'] as num?)?.toDouble(),
     );
   }
 
@@ -224,6 +237,7 @@ class JarListItem {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'totalContributions': totalContributions,
+      'availableBalance': availableBalance,
     };
   }
 }

@@ -52,7 +52,7 @@ class MainShell extends StatelessWidget {
             height: 64,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
-              color: AppColors.navy,
+              color: AppColors.inkFill,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
@@ -118,18 +118,18 @@ class _TabButton extends StatelessWidget {
                 size: 22,
                 color:
                     selected
-                        ? AppColors.navy
-                        : AppColors.cream.withValues(alpha: 0.6),
+                        ? AppColors.onLime
+                        : AppColors.onInkFill.withValues(alpha: 0.6),
               ),
               if (selected) ...[
                 const SizedBox(width: 6),
                 Text(
                   spec.label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Supreme',
                     fontWeight: FontWeight.w700,
                     fontSize: 13.5,
-                    color: AppColors.navy,
+                    color: AppColors.onLime,
                   ),
                 ),
               ],

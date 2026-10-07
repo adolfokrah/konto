@@ -218,7 +218,7 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
                   _creatorName?.isNotEmpty == true ? _creatorName! : 'Someone',
                 ),
                 if (_verification != null) ...[
-                  const Divider(height: 1, color: AppColors.line),
+                  Divider(height: 1, color: AppColors.line),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -246,7 +246,7 @@ class _JarInvitePreviewSheetState extends State<JarInvitePreviewSheet> {
                     ),
                   ),
                 ],
-                const Divider(height: 1, color: AppColors.line),
+                Divider(height: 1, color: AppColors.line),
                 const DsKeyValue('Your role', 'Collector'),
               ],
             ),

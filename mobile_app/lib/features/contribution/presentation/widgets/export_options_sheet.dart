@@ -89,7 +89,7 @@ class _ExportOptionsSheetState extends State<ExportOptionsSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.calendar_today_rounded,
                 size: 18,
                 color: AppColors.navy,

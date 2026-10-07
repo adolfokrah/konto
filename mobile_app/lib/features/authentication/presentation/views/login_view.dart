@@ -157,7 +157,7 @@ class _LoginViewState extends State<LoginView> {
                           fieldKey: const Key('phone_number'),
                         ),
                         const SizedBox(height: 16),
-                        const Row(
+                        Row(
                           children: [
                             Icon(
                               Icons.lock_outline_rounded,

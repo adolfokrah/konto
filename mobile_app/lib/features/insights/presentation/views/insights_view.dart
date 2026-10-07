@@ -446,7 +446,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
                               TextSpan(
                                 text:
                                     '${insights.currency.toUpperCase()} ${NumberFormat('#,##0.00').format(insights.transferredOut)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.navy,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -493,7 +493,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
                       TextSpan(text: '${insightsWeekdayLong[best]}s bring in '),
                       TextSpan(
                         text: '${insightsMultiple(multiple)}×',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.navy,
                           fontWeight: FontWeight.w700,
                         ),
@@ -518,7 +518,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('How people pay', style: DsText.section),
+                Text('How people pay', style: DsText.section),
                 const SizedBox(height: 12),
                 InsightsMethodMix(mix: insights.methodMix),
               ],
@@ -582,7 +582,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Goal forecast', style: DsText.rowTitle),
+                Text('Goal forecast', style: DsText.rowTitle),
                 const SizedBox(height: 2),
                 forecast != null
                     ? DsTag(subtitle, tone: tone)
@@ -590,7 +590,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.navy),
+          Icon(Icons.chevron_right_rounded, color: AppColors.navy),
         ],
       ),
     );
@@ -605,9 +605,7 @@ class _InsightsBodyState extends State<_InsightsBody> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text('Top collectors', style: DsText.section),
-              ),
+              Expanded(child: Text('Top collectors', style: DsText.section)),
               DsLink(
                 'All',
                 key: const Key('insights_collectors_all'),
@@ -684,7 +682,7 @@ class _InitialsAvatar extends StatelessWidget {
   final String name;
   const _InitialsAvatar({required this.name});
 
-  static const _palette = [
+  static List<Color> get _palette => [
     AppColors.limeSoft,
     AppColors.infoSoft,
     AppColors.pendingSoft,
@@ -703,7 +701,7 @@ class _InitialsAvatar extends StatelessWidget {
       ),
       child: Text(
         JarInitialsAvatar.initials(name),
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Supreme',
           fontWeight: FontWeight.w700,
           fontSize: 11.5,

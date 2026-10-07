@@ -40,7 +40,7 @@ class CollectBoxButton extends StatelessWidget {
           child: Center(
             child:
                 loading
-                    ? const SizedBox(
+                    ? SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
@@ -65,7 +65,7 @@ class CollectTopBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final bool showBack;
   final List<Widget> actions;
-  final Color background;
+  final Color? background;
   final bool filledButtons;
 
   const CollectTopBar({
@@ -76,7 +76,7 @@ class CollectTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.onBack,
     this.showBack = true,
     this.actions = const [],
-    this.background = AppColors.cream,
+    this.background,
     this.filledButtons = false,
   });
 
@@ -86,7 +86,7 @@ class CollectTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: background,
+      backgroundColor: background ?? AppColors.cream,
       automaticallyImplyLeading: false,
       centerTitle: true,
       toolbarHeight: 60,
@@ -173,7 +173,11 @@ class CollectButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (bg, fg, border) = switch (style) {
-      CollectButtonStyle.primary => (AppColors.navy, Colors.white, null),
+      CollectButtonStyle.primary => (
+        AppColors.navy,
+        AppColors.onPrimaryWhite,
+        null,
+      ),
       CollectButtonStyle.secondary => (
         AppColors.surfaceWhite,
         AppColors.navy,
@@ -347,7 +351,7 @@ class CollectTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.line)),
       ),
       child: Row(
@@ -414,7 +418,7 @@ class CollectChip extends StatelessWidget {
             : soft
             ? AppColors.limeSoft
             : AppColors.surfaceWhite;
-    final fg = selected ? Colors.white : AppColors.navy;
+    final fg = selected ? AppColors.onPrimaryWhite : AppColors.navy;
     final border =
         selected
             ? null
@@ -513,7 +517,7 @@ class CollectCheck extends StatelessWidget {
       ),
       child:
           checked
-              ? const Icon(Icons.check_rounded, size: 15, color: AppColors.lime)
+              ? Icon(Icons.check_rounded, size: 15, color: AppColors.limeOnInk)
               : null,
     );
   }
@@ -598,7 +602,7 @@ class CollectSheet extends StatelessWidget {
             );
     final sheet = Container(
       height: height,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -644,7 +648,7 @@ class CollectCap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(
+    final style = TextStyle(
       fontFamily: 'Supreme',
       fontSize: 12,
       fontWeight: FontWeight.w600,
@@ -861,7 +865,7 @@ class CollectFieldGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <Widget>[];
     for (var i = 0; i < children.length; i++) {
-      if (i > 0) rows.add(const Divider(height: 1, color: AppColors.line));
+      if (i > 0) rows.add(Divider(height: 1, color: AppColors.line));
       rows.add(children[i]);
     }
     return Container(
@@ -926,7 +930,7 @@ class _CollectSearchFieldState extends State<CollectSearchField> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
+          Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -963,7 +967,7 @@ class _CollectSearchFieldState extends State<CollectSearchField> {
                 setState(() {});
                 widget.onChanged?.call('');
               },
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Icon(
                   Icons.cancel_rounded,

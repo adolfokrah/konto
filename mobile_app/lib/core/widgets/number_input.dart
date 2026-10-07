@@ -161,7 +161,7 @@ class _NumberInputState extends State<NumberInput> {
                   keyboardType: TextInputType.phone,
                   cursorColor: AppColors.navy,
                   style: DsText.rowTitle.copyWith(fontSize: 15.5),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     isDense: true,
                     filled: false,
                     border: InputBorder.none,

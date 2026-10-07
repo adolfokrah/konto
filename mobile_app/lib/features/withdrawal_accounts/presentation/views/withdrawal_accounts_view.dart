@@ -102,7 +102,7 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
                   children: [
                     if (!account.isDefault) ...[
                       DsRow(
-                        leading: const AccRowIcon(
+                        leading: AccRowIcon(
                           Icons.check_rounded,
                           background: AppColors.surfaceWhite,
                         ),
@@ -114,10 +114,10 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
                           );
                         },
                       ),
-                      const Divider(height: 1, color: AppColors.line),
+                      Divider(height: 1, color: AppColors.line),
                     ],
                     DsRow(
-                      leading: const AccRowIcon(
+                      leading: AccRowIcon(
                         Icons.delete_outline_rounded,
                         background: AppColors.negativeSoft,
                         foreground: AppColors.negative,
@@ -132,7 +132,7 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
                   ],
                 ),
               ),
-              const Text(
+              Text(
                 'Jars paying out to this account switch to your default.',
                 style: DsText.caption,
               ),
@@ -221,7 +221,7 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
               ],
             ),
             const SizedBox(height: 10),
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 'Tap an account to make it the default or remove it.',
@@ -231,7 +231,7 @@ class _WithdrawalAccountsViewState extends State<WithdrawalAccountsView> {
           ],
         ),
         if (state.actionInProgress)
-          const Positioned.fill(
+          Positioned.fill(
             child: ColoredBox(
               color: Color(0x11000000),
               child: Center(

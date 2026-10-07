@@ -74,19 +74,13 @@ class JarAmountDisplay extends StatelessWidget {
       child: Text.rich(
         TextSpan(
           children: [
-            WidgetSpan(
-              alignment: PlaceholderAlignment.top,
-              child: Padding(
-                padding: EdgeInsets.only(right: 5, top: size * 0.16),
-                child: Text(
-                  currency,
-                  style: TextStyle(
-                    fontFamily: 'Supreme',
-                    fontWeight: FontWeight.w500,
-                    fontSize: size * 0.5,
-                    color: AppColors.muted,
-                  ),
-                ),
+            TextSpan(
+              text: '$currency ',
+              style: TextStyle(
+                fontFamily: 'Supreme',
+                fontWeight: FontWeight.w500,
+                fontSize: size * 0.5,
+                color: AppColors.muted,
               ),
             ),
             TextSpan(text: grouped, style: main),
@@ -291,7 +285,7 @@ class _JarDeadlineSheetState extends State<JarDeadlineSheet> {
                     fontWeight: on ? FontWeight.w700 : FontWeight.w500,
                     color:
                         on
-                            ? AppColors.lime
+                            ? AppColors.limeOnInk
                             : enabled
                             ? AppColors.navy
                             : AppColors.muted,

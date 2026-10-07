@@ -194,11 +194,7 @@ class _RegisterViewState extends State<RegisterView> {
     error: _usernameTaken,
     suffix:
         _usernameTaken
-            ? const Icon(
-              Icons.close_rounded,
-              size: 18,
-              color: AppColors.negative,
-            )
+            ? Icon(Icons.close_rounded, size: 18, color: AppColors.negative)
             : null,
     onChanged: (value) {
       // Convert to lowercase for case-insensitive username
@@ -211,7 +207,7 @@ class _RegisterViewState extends State<RegisterView> {
     },
   );
 
-  static const _linkStyle = TextStyle(
+  static TextStyle get _linkStyle => TextStyle(
     fontWeight: FontWeight.w700,
     color: AppColors.navy,
     decoration: TextDecoration.underline,
@@ -563,7 +559,7 @@ class _UsernameChip extends StatelessWidget {
       color: AppColors.surfaceWhite,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: AppColors.line),
+        side: BorderSide(color: AppColors.line),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),

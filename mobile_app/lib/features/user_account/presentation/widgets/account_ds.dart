@@ -26,7 +26,7 @@ class AccSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final sheet = Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.radiusSheet),
@@ -91,7 +91,7 @@ class AccRoundButton extends StatelessWidget {
 
   /// Defaults to the fill colour (cream inside sheets).
   final Color? background;
-  final Color foreground;
+  final Color? foreground;
   final double size;
 
   const AccRoundButton({
@@ -99,7 +99,7 @@ class AccRoundButton extends StatelessWidget {
     required this.icon,
     this.onTap,
     this.background,
-    this.foreground = AppColors.navy,
+    this.foreground,
     this.size = 36,
   });
 
@@ -114,7 +114,11 @@ class AccRoundButton extends StatelessWidget {
         child: SizedBox(
           width: size,
           height: size,
-          child: Icon(icon, size: size * 0.5, color: foreground),
+          child: Icon(
+            icon,
+            size: size * 0.5,
+            color: foreground ?? AppColors.navy,
+          ),
         ),
       ),
     );
@@ -124,7 +128,7 @@ class AccRoundButton extends StatelessWidget {
 // ---------------------------------------------------------------- type
 
 class AccText {
-  static const bigTitle = TextStyle(
+  static TextStyle get bigTitle => TextStyle(
     fontFamily: 'Chillax',
     fontWeight: FontWeight.w600,
     fontSize: 31,
@@ -132,7 +136,7 @@ class AccText {
     letterSpacing: -0.5,
     color: AppColors.navy,
   );
-  static const h1 = TextStyle(
+  static TextStyle get h1 => TextStyle(
     fontFamily: 'Chillax',
     fontWeight: FontWeight.w600,
     fontSize: 27,
@@ -140,14 +144,14 @@ class AccText {
     letterSpacing: -0.4,
     color: AppColors.navy,
   );
-  static const h2 = TextStyle(
+  static TextStyle get h2 => TextStyle(
     fontFamily: 'Chillax',
     fontWeight: FontWeight.w600,
     fontSize: 19,
     letterSpacing: -0.1,
     color: AppColors.navy,
   );
-  static const h3 = TextStyle(
+  static TextStyle get h3 => TextStyle(
     fontFamily: 'Supreme',
     fontWeight: FontWeight.w600,
     fontSize: 15,
@@ -166,7 +170,7 @@ class AccFieldGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <Widget>[];
     for (var i = 0; i < children.length; i++) {
-      if (i > 0) rows.add(const Divider(height: 1, color: AppColors.line));
+      if (i > 0) rows.add(Divider(height: 1, color: AppColors.line));
       rows.add(children[i]);
     }
     return Container(
@@ -195,7 +199,7 @@ BoxDecoration _fieldDecoration(
           grouped ? null : BorderRadius.circular(AppRadius.radiusButton),
     );
   }
-  if (grouped) return const BoxDecoration(color: AppColors.surfaceWhite);
+  if (grouped) return BoxDecoration(color: AppColors.surfaceWhite);
   return BoxDecoration(
     color: AppColors.surfaceWhite,
     borderRadius: BorderRadius.circular(AppRadius.radiusButton),
@@ -211,18 +215,15 @@ BoxDecoration _fieldDecoration(
   );
 }
 
-const _fieldValueStyle = TextStyle(
+TextStyle get _fieldValueStyle => TextStyle(
   fontFamily: 'Supreme',
   fontSize: 15.5,
   fontWeight: FontWeight.w500,
   color: AppColors.navy,
 );
 
-const _fieldLabelStyle = TextStyle(
-  fontFamily: 'Supreme',
-  fontSize: 12,
-  color: AppColors.muted,
-);
+TextStyle get _fieldLabelStyle =>
+    TextStyle(fontFamily: 'Supreme', fontSize: 12, color: AppColors.muted);
 
 /// Floating-label text field: small grey label above the value.
 class AccField extends StatefulWidget {
@@ -341,7 +342,7 @@ class _AccFieldState extends State<AccField> {
               ),
             ),
             if (widget.locked)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 8),
                 child: Icon(
                   Icons.lock_outline_rounded,
@@ -474,7 +475,7 @@ class AccHelp extends StatelessWidget {
               onTap: onLink,
               child: Text(
                 linkText!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Supreme',
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -621,7 +622,7 @@ class AccGhostButton extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Supreme',
             fontWeight: FontWeight.w600,
             fontSize: 15.5,
@@ -639,14 +640,9 @@ class AccRowIcon extends StatelessWidget {
 
   /// Defaults to the fill colour (cream inside sheets).
   final Color? background;
-  final Color foreground;
+  final Color? foreground;
 
-  const AccRowIcon(
-    this.icon, {
-    super.key,
-    this.background,
-    this.foreground = AppColors.navy,
-  });
+  const AccRowIcon(this.icon, {super.key, this.background, this.foreground});
 
   @override
   Widget build(BuildContext context) {
@@ -657,7 +653,7 @@ class AccRowIcon extends StatelessWidget {
         color: background ?? SheetSurface.fillOf(context),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(icon, size: 17, color: foreground),
+      child: Icon(icon, size: 17, color: foreground ?? AppColors.navy),
     );
   }
 }
@@ -708,8 +704,7 @@ Future<T?> showAccOptionSheet<T>(
                   child: Column(
                     children: [
                       for (var i = 0; i < options.length; i++) ...[
-                        if (i > 0)
-                          const Divider(height: 1, color: AppColors.line),
+                        if (i > 0) Divider(height: 1, color: AppColors.line),
                         DsRow(
                           leading: options[i].leading,
                           title: options[i].label,

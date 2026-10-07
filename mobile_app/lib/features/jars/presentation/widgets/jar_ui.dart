@@ -85,7 +85,7 @@ class JarBarLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const SizedBox(
+      return SizedBox(
         width: 20,
         height: 20,
         child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.navy),
@@ -96,18 +96,31 @@ class JarBarLink extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontFamily: 'Supreme',
-            fontWeight: FontWeight.w700,
-            fontSize: 15,
-            color:
-                onTap == null
-                    ? AppColors.faint
-                    : destructive
-                    ? AppColors.negative
-                    : AppColors.navy,
+        // Lime underline drawn as a border so it sits below the text like
+        // the mockup's `text-underline-offset`; disabled links stay plain.
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: onTap == null ? Colors.transparent : AppColors.lime,
+                width: 3,
+              ),
+            ),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'Supreme',
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              height: 1.2,
+              color:
+                  onTap == null
+                      ? AppColors.faint
+                      : destructive
+                      ? AppColors.negative
+                      : AppColors.navy,
+            ),
           ),
         ),
       ),
@@ -270,7 +283,7 @@ class JarInitialsAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.limeSoft,
         shape: BoxShape.circle,
       ),
@@ -379,10 +392,7 @@ class JarChip extends StatelessWidget {
       color: selected ? AppColors.navy : AppColors.surfaceWhite,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side:
-            selected
-                ? BorderSide.none
-                : const BorderSide(color: AppColors.line),
+        side: selected ? BorderSide.none : BorderSide(color: AppColors.line),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
@@ -555,7 +565,7 @@ class JarFillList extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <Widget>[];
     for (var i = 0; i < children.length; i++) {
-      if (i > 0) rows.add(const Divider(height: 1, color: AppColors.line));
+      if (i > 0) rows.add(Divider(height: 1, color: AppColors.line));
       rows.add(children[i]);
     }
     return Container(
@@ -596,11 +606,7 @@ class JarRowValue extends StatelessWidget {
           ),
         if (chevron) ...[
           const SizedBox(width: 4),
-          const Icon(
-            Icons.chevron_right_rounded,
-            size: 20,
-            color: AppColors.faint,
-          ),
+          Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.faint),
         ],
       ],
     );
@@ -632,7 +638,7 @@ class JarSheetFrame extends StatelessWidget {
   Widget _frame(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.radiusSheet),
@@ -755,8 +761,8 @@ class JarPrimaryButton extends StatelessWidget {
       child: Material(
         color:
             enabled || loading
-                ? (color ?? AppColors.navy)
-                : AppColors.navy.withValues(alpha: 0.25),
+                ? (color ?? AppColors.inkFill)
+                : AppColors.inkFill.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(AppRadius.radiusButton),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.radiusButton),
@@ -764,28 +770,28 @@ class JarPrimaryButton extends StatelessWidget {
           child: Center(
             child:
                 loading
-                    ? const SizedBox(
+                    ? SizedBox(
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.surfaceWhite,
+                        color: AppColors.onInkFill,
                       ),
                     )
                     : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (icon != null) ...[
-                          Icon(icon, size: 18, color: AppColors.surfaceWhite),
+                          Icon(icon, size: 18, color: AppColors.onInkFill),
                           const SizedBox(width: 8),
                         ],
                         Text(
                           label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Supreme',
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
-                            color: AppColors.surfaceWhite,
+                            color: AppColors.onInkFill,
                           ),
                         ),
                       ],
@@ -802,7 +808,7 @@ class JarGhostButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final bool filled;
-  final Color color;
+  final Color? color;
   final IconData? icon;
 
   const JarGhostButton({
@@ -810,7 +816,7 @@ class JarGhostButton extends StatelessWidget {
     required this.label,
     this.onTap,
     this.filled = false,
-    this.color = AppColors.navy,
+    this.color,
     this.icon,
   });
 
@@ -830,7 +836,7 @@ class JarGhostButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(icon, size: 18, color: color),
+                  Icon(icon, size: 18, color: color ?? AppColors.navy),
                   const SizedBox(width: 8),
                 ],
                 Text(
@@ -839,7 +845,7 @@ class JarGhostButton extends StatelessWidget {
                     fontFamily: 'Supreme',
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: color,
+                    color: color ?? AppColors.navy,
                   ),
                 ),
               ],
@@ -884,7 +890,7 @@ class JarBusyOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(
+              CircularProgressIndicator(
                 strokeWidth: 2.5,
                 color: AppColors.navy,
               ),

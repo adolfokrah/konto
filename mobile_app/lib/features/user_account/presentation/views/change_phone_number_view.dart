@@ -124,7 +124,7 @@ class _ChangePhoneNumberViewState extends State<ChangePhoneNumberView> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
                 children: [
-                  const Text('New phone number', style: AccText.h1),
+                  Text('New phone number', style: AccText.h1),
                   const SizedBox(height: 6),
                   Text(
                     "You'll sign in with it. Current: ${_maskPhone(_initialPhoneNumber)}",

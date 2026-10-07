@@ -110,7 +110,7 @@ class ContributionView extends StatelessWidget {
           return BlocBuilder<JarSummaryBloc, JarSummaryState>(
             builder: (context, jarState) {
               if (jarState is! JarSummaryLoaded) {
-                return const Scaffold(
+                return Scaffold(
                   backgroundColor: AppColors.cream,
                   appBar: CollectTopBar(),
                   body: ContributionDetailSkeleton(),
@@ -214,7 +214,7 @@ class _ContributionDetail extends StatelessWidget {
                           _ReceiptPage.open(context, contribution, jarData);
                         },
                       ),
-                      const Divider(height: 1, color: AppColors.line),
+                      Divider(height: 1, color: AppColors.line),
                     ],
                     if (contribution.transactionReference != null) ...[
                       DsRow(
@@ -225,7 +225,7 @@ class _ContributionDetail extends StatelessWidget {
                           _copyReference(context, contribution);
                         },
                       ),
-                      const Divider(height: 1, color: AppColors.line),
+                      Divider(height: 1, color: AppColors.line),
                     ],
                     DsRow(
                       leading: const _SheetIcon(Icons.help_outline_rounded),
@@ -489,9 +489,7 @@ class _ContributionDetail extends StatelessWidget {
                       TextSpan(
                         text: '.$cents',
                         style:
-                            struck
-                                ? null
-                                : const TextStyle(color: AppColors.faint),
+                            struck ? null : TextStyle(color: AppColors.faint),
                       ),
                     ],
                   ),
@@ -746,10 +744,10 @@ class _ReceiptPage extends StatelessWidget {
             builder:
                 (btnContext) => AppButton.filled(
                   text: localizations.share,
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.ios_share_rounded,
                     size: 18,
-                    color: Colors.white,
+                    color: AppColors.onPrimaryWhite,
                   ),
                   onPressed: () => share(btnContext),
                 ),
@@ -761,7 +759,7 @@ class _ReceiptPage extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surfaceWhite,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(20),
@@ -772,7 +770,7 @@ class _ReceiptPage extends StatelessWidget {
               children: [
                 Image.asset('assets/images/logo.png', height: 18),
                 const SizedBox(height: 16),
-                const Text('Payment received', style: DsText.caption),
+                Text('Payment received', style: DsText.caption),
                 const SizedBox(height: 2),
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -798,7 +796,7 @@ class _ReceiptPage extends StatelessWidget {
             child: _DashedLine(),
           ),
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.surfaceWhite,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(6),

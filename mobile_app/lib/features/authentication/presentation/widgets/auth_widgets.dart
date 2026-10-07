@@ -21,7 +21,7 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Where back goes when there is nothing to pop, e.g. after sign-out
   /// lands straight on this screen. Keeps the back button visible.
   final String? fallbackRoute;
-  final Color background;
+  final Color? background;
 
   const AuthTopBar({
     super.key,
@@ -30,7 +30,7 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.close = false,
     this.onBack,
     this.fallbackRoute,
-    this.background = AppColors.cream,
+    this.background,
   });
 
   @override
@@ -46,7 +46,7 @@ class AuthTopBar extends StatelessWidget implements PreferredSizeWidget {
       middle = Text(title!, style: DsText.section);
     }
     return AppBar(
-      backgroundColor: background,
+      backgroundColor: background ?? AppColors.cream,
       automaticallyImplyLeading: false,
       centerTitle: true,
       toolbarHeight: 60,
@@ -142,18 +142,14 @@ class AuthHeader extends StatelessWidget {
 /// Bottom-pinned action area that respects the safe area.
 class AuthFooter extends StatelessWidget {
   final List<Widget> children;
-  final Color background;
+  final Color? background;
 
-  const AuthFooter({
-    super.key,
-    required this.children,
-    this.background = AppColors.cream,
-  });
+  const AuthFooter({super.key, required this.children, this.background});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: background,
+      color: background ?? AppColors.cream,
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
       child: SafeArea(
         top: false,
@@ -266,9 +262,9 @@ class _Radio extends StatelessWidget {
               ? Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.lime,
+                  color: AppColors.limeOnInk,
                 ),
               )
               : null,
@@ -286,7 +282,7 @@ class AuthFieldGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <Widget>[];
     for (var i = 0; i < children.length; i++) {
-      if (i > 0) rows.add(const Divider(height: 1, color: AppColors.line));
+      if (i > 0) rows.add(Divider(height: 1, color: AppColors.line));
       rows.add(children[i]);
     }
     return Container(
@@ -439,7 +435,7 @@ class AuthPhoneRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Country', style: DsText.caption),
+                Text('Country', style: DsText.caption),
                 const SizedBox(height: 2),
                 Text(
                   '$flag $countryCode',
@@ -463,7 +459,7 @@ class AuthPhoneRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Phone number', style: DsText.caption),
+                Text('Phone number', style: DsText.caption),
                 TextField(
                   key: fieldKey,
                   controller: controller,
@@ -472,7 +468,7 @@ class AuthPhoneRow extends StatelessWidget {
                   autofocus: true,
                   cursorColor: AppColors.navy,
                   style: DsText.rowTitle.copyWith(fontSize: 15.5),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     isDense: true,
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.only(top: 2),
@@ -519,7 +515,7 @@ class AuthKeypad extends StatelessWidget {
     );
     Text digit(String d) => Text(
       d,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'Chillax',
         fontWeight: FontWeight.w500,
         fontSize: 25,
@@ -545,7 +541,7 @@ class AuthKeypad extends StatelessWidget {
                   : key(const SizedBox(), null),
               key(digit('0'), () => onDigit('0')),
               key(
-                const Icon(Icons.backspace_outlined, color: AppColors.navy),
+                Icon(Icons.backspace_outlined, color: AppColors.navy),
                 onBackspace,
               ),
             ],

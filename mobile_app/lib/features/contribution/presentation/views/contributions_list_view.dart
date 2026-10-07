@@ -515,7 +515,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
                               positive: true,
                             ),
                           ),
-                          const VerticalDivider(
+                          VerticalDivider(
                             width: 1,
                             thickness: 1,
                             color: AppColors.line,
@@ -809,7 +809,7 @@ class _ContributionsListViewState extends State<ContributionsListView> {
       delegate: SliverChildBuilderDelegate((context, index) {
         if (index == groupedContributions.length) {
           // Loading indicator for pagination
-          return const Padding(
+          return Padding(
             padding: EdgeInsets.all(16),
             child: Center(
               child: CircularProgressIndicator(color: AppColors.navy),
@@ -1096,7 +1096,7 @@ class _JarChip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 18,
                 color: AppColors.navy,

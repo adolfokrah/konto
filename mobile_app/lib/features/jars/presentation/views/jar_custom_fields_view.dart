@@ -148,7 +148,7 @@ class JarCustomFieldsView extends StatelessWidget {
                         border:
                             index == 0
                                 ? null
-                                : const Border(
+                                : Border(
                                   top: BorderSide(color: AppColors.line),
                                 ),
                       ),
@@ -224,7 +224,7 @@ class _CustomFieldRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
                 color: AppColors.faint,

@@ -426,7 +426,7 @@ class _VerifiedNameCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
-          const AccRowIcon(
+          AccRowIcon(
             Icons.check_rounded,
             background: AppColors.surfaceWhite,
             foreground: AppColors.positive,

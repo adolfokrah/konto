@@ -72,7 +72,7 @@ class _StartupScreenState extends State<StartupScreen> {
                   ),
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 24),
                 child: Text(
                   'Licensed payments by Eganow',

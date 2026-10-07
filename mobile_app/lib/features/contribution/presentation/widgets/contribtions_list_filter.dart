@@ -275,7 +275,7 @@ class _ContributionsListFilterState extends State<ContributionsListFilter> {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.calendar_today_rounded,
                     size: 14,
                     color: AppColors.muted,

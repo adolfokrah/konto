@@ -134,7 +134,7 @@ class UserAccountView extends StatelessWidget {
           MainShell.scrollBottom(context),
         ),
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(4, 4, 4, 14),
             child: Text('Profile', style: AccText.bigTitle),
           ),
@@ -355,8 +355,7 @@ class UserAccountView extends StatelessWidget {
                 child: Column(
                   children: [
                     for (var i = 0; i < links.length; i++) ...[
-                      if (i > 0)
-                        const Divider(height: 1, color: AppColors.line),
+                      if (i > 0) Divider(height: 1, color: AppColors.line),
                       _externalRow(
                         links[i].$1,
                         links[i].$2,
@@ -381,7 +380,7 @@ class UserAccountView extends StatelessWidget {
     return DsRow(
       leading: AccRowIcon(icon, background: background),
       title: title,
-      trailing: const Icon(
+      trailing: Icon(
         Icons.open_in_new_rounded,
         size: 17,
         color: AppColors.faint,
@@ -496,14 +495,14 @@ class _UserCard extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: AppColors.navy,
+                          color: AppColors.inkFill,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.surfaceWhite,
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.camera_alt_rounded,
                           size: 11,
                           color: AppColors.lime,
@@ -543,7 +542,7 @@ class _UserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
                 color: AppColors.faint,
@@ -564,7 +563,7 @@ class _ReferralCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DsCard(
-      color: AppColors.navy,
+      color: AppColors.inkFill,
       padding: const EdgeInsets.all(14),
       onTap: onTap,
       child: Row(
@@ -573,10 +572,10 @@ class _ReferralCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: AppColors.onInkFill.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.card_giftcard_rounded,
               size: 20,
               color: AppColors.lime,
@@ -591,7 +590,7 @@ class _ReferralCard extends StatelessWidget {
                   'Invite friends, earn GHS 5',
                   style: AccText.h3.copyWith(
                     fontSize: 14,
-                    color: AppColors.surfaceWhite,
+                    color: AppColors.onInkFill,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -600,16 +599,16 @@ class _ReferralCard extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Supreme',
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: AppColors.onInkFill.withValues(alpha: 0.75),
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right_rounded,
             size: 20,
-            color: AppColors.surfaceWhite,
+            color: AppColors.onInkFill,
           ),
         ],
       ),

@@ -137,7 +137,7 @@ class _JarsListViewState extends State<JarsListView> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
+          Icon(Icons.search_rounded, size: 20, color: AppColors.muted),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -394,10 +394,10 @@ class _JarsListViewState extends State<JarsListView> {
                               width: 2,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check,
                             size: 10,
-                            color: AppColors.lime,
+                            color: AppColors.limeOnInk,
                           ),
                         ),
                       );
@@ -435,7 +435,7 @@ class _JarsListViewState extends State<JarsListView> {
               children: [
                 Text(
                   '${DsMoney.group(jar.totalContributions)}.${((jar.totalContributions.abs() * 100).round() % 100).toString().padLeft(2, '0')}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Chillax',
                     fontWeight: FontWeight.w600,
                     fontSize: 15.5,
@@ -500,7 +500,7 @@ class _InvitationsCard extends StatelessWidget {
                   color: AppColors.surfaceWhite,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.mail_outline_rounded,
                   size: 20,
                   color: AppColors.navy,

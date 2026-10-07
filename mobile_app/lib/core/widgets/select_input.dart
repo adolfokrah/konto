@@ -89,7 +89,7 @@ class SelectInput<T> extends StatelessWidget {
                 ),
               ),
               suffixIcon ??
-                  const Icon(
+                  Icon(
                     Icons.keyboard_arrow_down_rounded,
                     size: 22,
                     color: AppColors.muted,

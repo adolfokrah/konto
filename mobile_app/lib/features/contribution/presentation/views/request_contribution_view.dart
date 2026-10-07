@@ -320,10 +320,10 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                         builder:
                             (btnContext) => AppButton.filled(
                               text: 'Save image',
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.download_rounded,
                                 size: 18,
-                                color: Colors.white,
+                                color: AppColors.onPrimaryWhite,
                               ),
                               onPressed:
                                   () => _downloadQRImage(btnContext, jarName),
@@ -340,10 +340,10 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                   builder:
                       (btnContext) => AppButton.filled(
                         text: localizations.share,
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.ios_share_rounded,
                           size: 18,
-                          color: Colors.white,
+                          color: AppColors.onPrimaryWhite,
                         ),
                         onPressed:
                             () => _sharePaymentLink(
@@ -375,7 +375,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Your link', style: DsText.caption),
+                Text('Your link', style: DsText.caption),
                 const SizedBox(height: 2),
                 Text(
                   _displayLink(paymentLink),
@@ -414,7 +414,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                 height: 200,
                 child: PrettyQrView.data(
                   data: paymentLink,
-                  decoration: const PrettyQrDecoration(
+                  decoration: PrettyQrDecoration(
                     shape: PrettyQrDotsSymbol(color: AppColors.navy),
                     background: Colors.transparent,
                   ),
@@ -434,7 +434,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
         const SizedBox(height: 12),
         _linkRow(paymentLink, localizations),
         const SizedBox(height: 12),
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             'Payments through your link are credited to you as collector.',
@@ -467,7 +467,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Sent with the link', style: DsText.caption),
+              Text('Sent with the link', style: DsText.caption),
               const SizedBox(height: 4),
               Text(
                 _shareText(paymentLink, jarName, localizations),
@@ -561,8 +561,8 @@ class _RequestContributionViewState extends State<RequestContributionView> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    Color background = AppColors.surfaceWhite,
-    Color foreground = AppColors.navy,
+    Color? background,
+    Color? foreground,
   }) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -573,10 +573,10 @@ class _RequestContributionViewState extends State<RequestContributionView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: background,
+              color: background ?? AppColors.surfaceWhite,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: foreground),
+            child: Icon(icon, size: 20, color: foreground ?? AppColors.navy),
           ),
           const SizedBox(height: 6),
           Text(
@@ -618,7 +618,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                     Text(
                       'Scan to contribute',
                       style: DsText.section.copyWith(
-                        color: Colors.white,
+                        color: AppColors.onPrimaryWhite,
                         fontSize: 15,
                       ),
                     ),
@@ -676,7 +676,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                             style: DsText.section.copyWith(
-                              color: Colors.white,
+                              color: AppColors.onPrimaryWhite,
                               height: 1.2,
                             ),
                           ),
@@ -684,7 +684,9 @@ class _RequestContributionViewState extends State<RequestContributionView> {
                           Text(
                             'MoMo or card · no app needed',
                             style: DsText.caption.copyWith(
-                              color: Colors.white.withValues(alpha: 0.65),
+                              color: AppColors.onPrimaryWhite.withValues(
+                                alpha: 0.65,
+                              ),
                             ),
                           ),
                         ],
@@ -714,7 +716,7 @@ class _RequestContributionViewState extends State<RequestContributionView> {
           ),
         ),
         const SizedBox(height: 12),
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             'Print it for the venue or post it in WhatsApp groups.',

@@ -81,9 +81,7 @@ class LanguageSettingsView extends StatelessWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const CircularProgressIndicator(
-                                color: AppColors.navy,
-                              ),
+                              CircularProgressIndicator(color: AppColors.navy),
                               const SizedBox(height: 16),
                               Text(
                                 l10n.updatingLanguageSettings,

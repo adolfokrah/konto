@@ -1,3 +1,4 @@
+import 'package:Hoga/dev_preview_hook.dart';
 import 'package:Hoga/core/services/fcm_service.dart';
 import 'package:Hoga/core/services/local_notification_service.dart';
 import 'package:Hoga/features/collaborators/logic/bloc/reminder_bloc.dart';
@@ -14,7 +15,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:Hoga/core/config/app_config.dart';
 import 'package:Hoga/core/di/service_locator.dart';
 import 'package:Hoga/core/services/translation_service.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/theme/app_theme.dart';
+import 'package:Hoga/core/theme/theme_controller.dart';
 import 'package:Hoga/core/enums/app_theme.dart' as theme_enum;
 import 'package:Hoga/features/contribution/logic/bloc/add_contribution_bloc.dart';
 import 'package:Hoga/features/contribution/logic/bloc/contributions_list_bloc.dart';
@@ -140,9 +143,17 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   GoRouter? _router;
+  // Created once: build() re-runs on theme changes and must not re-check
+  // onboarding each time, or the walkthrough pushes again.
+  late final OnboardingBloc _onboardingBloc =
+      getIt<OnboardingBloc>()..add(CheckOnboardingStatus());
 
   GoRouter _getRouter(BuildContext context) {
-    return _router ??= createRouter(getIt<AuthBloc>());
+    if (_router == null) {
+      _router = createRouter(getIt<AuthBloc>());
+      startDevPreviewHook(_router!);
+    }
+    return _router!;
   }
 
   @override
@@ -165,6 +176,8 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() {
     _updateSystemOverlay();
+    // "System" theme follows the phone, so re-resolve it.
+    setState(() {});
   }
 
   void _updateSystemOverlay() {
@@ -189,9 +202,7 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(
-          value: getIt<OnboardingBloc>()..add(CheckOnboardingStatus()),
-        ),
+        BlocProvider.value(value: _onboardingBloc),
         BlocProvider.value(value: getIt<AuthBloc>()),
         BlocProvider.value(value: getIt<VerificationBloc>()),
         BlocProvider.value(value: getIt<JarSummaryBloc>()),
@@ -216,128 +227,164 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
         BlocProvider.value(value: getIt<JarInviteActionBloc>()),
         BlocProvider.value(value: getIt<ReminderBloc>()),
       ],
-      child: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, authState) {
-          return BlocBuilder<UserAccountBloc, UserAccountState>(
-            // Only rebuild when theme or language value changes compared to previous snapshot
-            buildWhen: (prev, curr) {
-              // Helper to extract (theme, language) tuple
-              (theme_enum.AppTheme, String)? extract(UserAccountState s) {
-                if (s is UserAccountSuccess) {
-                  return (
-                    s.updatedUser.appSettings.theme,
-                    s.updatedUser.appSettings.language.value,
-                  );
-                }
-                return null;
-              }
+      child: ValueListenableBuilder<theme_enum.AppTheme?>(
+        valueListenable: themeOverride,
+        builder:
+            (context, override, _) => BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                return BlocBuilder<UserAccountBloc, UserAccountState>(
+                  // Only rebuild when theme or language value changes compared to previous snapshot
+                  buildWhen: (prev, curr) {
+                    // Helper to extract (theme, language) tuple
+                    (theme_enum.AppTheme, String)? extract(UserAccountState s) {
+                      if (s is UserAccountSuccess) {
+                        return (
+                          s.updatedUser.appSettings.theme,
+                          s.updatedUser.appSettings.language.value,
+                        );
+                      }
+                      return null;
+                    }
 
-              final prevVals = extract(prev);
-              final currVals = extract(curr);
+                    final prevVals = extract(prev);
+                    final currVals = extract(curr);
 
-              // If neither had values, don't rebuild
-              if (prevVals == null && currVals == null) return false;
-              // If one is null and the other not, rebuild (first load)
-              if (prevVals == null || currVals == null) return true;
-              // Rebuild only when theme or language changed
-              return prevVals != currVals;
-            },
-            builder: (context, userAccountState) {
-              // Determine selected theme from UserAccount updates first, else fall back to authenticated user
-              theme_enum.AppTheme? appTheme;
-              if (userAccountState is UserAccountSuccess) {
-                appTheme = userAccountState.updatedUser.appSettings.theme;
-              } else if (authState is AuthAuthenticated) {
-                appTheme = authState.user.appSettings.theme;
-              }
-              appTheme ??= theme_enum.AppTheme.dark;
+                    // If neither had values, don't rebuild
+                    if (prevVals == null && currVals == null) return false;
+                    // If one is null and the other not, rebuild (first load)
+                    if (prevVals == null || currVals == null) return true;
+                    // Rebuild only when theme or language changed
+                    return prevVals != currVals;
+                  },
+                  builder: (context, userAccountState) {
+                    // Determine selected theme from UserAccount updates first, else fall back to authenticated user
+                    theme_enum.AppTheme? appTheme;
+                    if (userAccountState is UserAccountSuccess) {
+                      appTheme = userAccountState.updatedUser.appSettings.theme;
+                    } else if (authState is AuthAuthenticated) {
+                      appTheme = authState.user.appSettings.theme;
+                    }
+                    appTheme =
+                        override ?? appTheme ?? theme_enum.AppTheme.light;
 
-              // Determine selected language locale from appSettings; fallback to system locale
-              String? languageCode;
-              if (userAccountState is UserAccountSuccess) {
-                languageCode =
-                    userAccountState.updatedUser.appSettings.language.value;
-              } else if (authState is AuthAuthenticated) {
-                languageCode = authState.user.appSettings.language.value;
-              }
+                    // Determine selected language locale from appSettings; fallback to system locale
+                    String? languageCode;
+                    if (userAccountState is UserAccountSuccess) {
+                      languageCode =
+                          userAccountState
+                              .updatedUser
+                              .appSettings
+                              .language
+                              .value;
+                    } else if (authState is AuthAuthenticated) {
+                      languageCode = authState.user.appSettings.language.value;
+                    }
 
-              // If no user preference, use system language (only if supported)
-              if (languageCode == null || languageCode.isEmpty) {
-                final systemLocale =
-                    WidgetsBinding.instance.platformDispatcher.locale;
-                if (systemLocale.languageCode == 'en' ||
-                    systemLocale.languageCode == 'fr') {
-                  languageCode = systemLocale.languageCode;
-                }
-              }
-              final Locale? resolvedLocale =
-                  (languageCode == null || languageCode.isEmpty)
-                      ? null
-                      : Locale(languageCode);
+                    // If no user preference, use system language (only if supported)
+                    if (languageCode == null || languageCode.isEmpty) {
+                      final systemLocale =
+                          WidgetsBinding.instance.platformDispatcher.locale;
+                      if (systemLocale.languageCode == 'en' ||
+                          systemLocale.languageCode == 'fr') {
+                        languageCode = systemLocale.languageCode;
+                      }
+                    }
+                    final Locale? resolvedLocale =
+                        (languageCode == null || languageCode.isEmpty)
+                            ? null
+                            : Locale(languageCode);
 
-              // The redesign is light-only, whatever the saved preference.
-              const ThemeMode resolvedThemeMode = ThemeMode.light;
+                    final brightness = switch (appTheme) {
+                      theme_enum.AppTheme.light => Brightness.light,
+                      theme_enum.AppTheme.dark => Brightness.dark,
+                      theme_enum.AppTheme.system =>
+                        WidgetsBinding
+                            .instance
+                            .platformDispatcher
+                            .platformBrightness,
+                    };
+                    // AppColors is a static palette; widgets that read it directly
+                    // only repaint if marked dirty, so do that after this frame.
+                    if (AppColors.setBrightness(brightness)) {
+                      WidgetsBinding.instance.addPostFrameCallback(
+                        (_) => rebuildAllWidgets(),
+                      );
+                    }
+                    final resolvedThemeMode =
+                        brightness == Brightness.dark
+                            ? ThemeMode.dark
+                            : ThemeMode.light;
+                    final theme = AppTheme.current;
 
-              return MaterialApp.router(
-                routerConfig: _getRouter(context),
-                title: 'hoga',
-                theme: AppTheme.lightTheme,
-                themeMode: resolvedThemeMode,
-                // Use user-selected locale or fallback (null lets Flutter resolve)
-                locale: resolvedLocale,
-                debugShowCheckedModeBanner: false,
-                localizationsDelegates: const [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: const [
-                  Locale('en'), // English
-                  Locale('fr'), // French
-                ],
-                localeResolutionCallback: (locale, supportedLocales) {
-                  // If we already have a resolvedLocale, use that.
-                  if (resolvedLocale != null) {
-                    getIt<TranslationService>().updateLocale(resolvedLocale);
-                    return resolvedLocale;
-                  }
-                  // Else use system provided locale if supported
-                  if (locale != null) {
-                    final match = supportedLocales.firstWhere(
-                      (l) => l.languageCode == locale.languageCode,
-                      orElse: () => supportedLocales.first,
+                    return MaterialApp.router(
+                      routerConfig: _getRouter(context),
+                      title: 'hoga',
+                      theme: theme,
+                      darkTheme: theme,
+                      themeMode: resolvedThemeMode,
+                      // AppColors switch instantly; keep Theme in step with them.
+                      themeAnimationDuration: Duration.zero,
+                      // Use user-selected locale or fallback (null lets Flutter resolve)
+                      locale: resolvedLocale,
+                      debugShowCheckedModeBanner: false,
+                      localizationsDelegates: const [
+                        AppLocalizations.delegate,
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      supportedLocales: const [
+                        Locale('en'), // English
+                        Locale('fr'), // French
+                      ],
+                      localeResolutionCallback: (locale, supportedLocales) {
+                        // If we already have a resolvedLocale, use that.
+                        if (resolvedLocale != null) {
+                          getIt<TranslationService>().updateLocale(
+                            resolvedLocale,
+                          );
+                          return resolvedLocale;
+                        }
+                        // Else use system provided locale if supported
+                        if (locale != null) {
+                          final match = supportedLocales.firstWhere(
+                            (l) => l.languageCode == locale.languageCode,
+                            orElse: () => supportedLocales.first,
+                          );
+                          getIt<TranslationService>().updateLocale(match);
+                          return match;
+                        }
+                        // Fallback to first supported
+                        getIt<TranslationService>().updateLocale(
+                          supportedLocales.first,
+                        );
+                        return supportedLocales.first;
+                      },
+
+                      // Add builder to handle Android navigation bar overlay
+                      builder: (context, child) {
+                        // Tap anywhere outside a field to close the keyboard. iOS
+                        // number and phone keyboards have no return key, so this is
+                        // the only way out. Buttons and fields still get their taps.
+                        return GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap:
+                              () =>
+                                  FocusManager.instance.primaryFocus?.unfocus(),
+                          child: SafeArea(
+                            bottom:
+                                Theme.of(context).platform ==
+                                TargetPlatform.android,
+                            top: false,
+                            child: child ?? Container(),
+                          ),
+                        );
+                      },
                     );
-                    getIt<TranslationService>().updateLocale(match);
-                    return match;
-                  }
-                  // Fallback to first supported
-                  getIt<TranslationService>().updateLocale(
-                    supportedLocales.first,
-                  );
-                  return supportedLocales.first;
-                },
-
-                // Add builder to handle Android navigation bar overlay
-                builder: (context, child) {
-                  // Tap anywhere outside a field to close the keyboard. iOS
-                  // number and phone keyboards have no return key, so this is
-                  // the only way out. Buttons and fields still get their taps.
-                  return GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                    child: SafeArea(
-                      bottom:
-                          Theme.of(context).platform == TargetPlatform.android,
-                      top: false,
-                      child: child ?? Container(),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
+                  },
+                );
+              },
+            ),
       ),
     );
   }

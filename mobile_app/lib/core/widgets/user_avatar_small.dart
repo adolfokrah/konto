@@ -1,4 +1,6 @@
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:Hoga/core/widgets/contributor_avatar.dart';
 import 'package:Hoga/features/authentication/logic/bloc/auth_bloc.dart';
@@ -42,7 +44,7 @@ class UserAvatarSmall extends StatelessWidget {
                     backgroundColor ??
                     (isDark
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.white),
+                        : AppColors.surfaceWhite),
                 radius: radius,
                 avatarUrl: avatarUrl,
               ),

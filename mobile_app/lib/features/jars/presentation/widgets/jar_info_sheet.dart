@@ -159,7 +159,7 @@ class _JarInfoSheetState extends State<JarInfoSheet> {
                                         : '${payoutAccount.label?.isNotEmpty == true ? payoutAccount.label! : withdrawalAccountLabel(payoutAccount)} ${payoutAccount.maskedAccountNumber}',
                                   ),
                                 ),
-                                const Padding(
+                                Padding(
                                   padding: EdgeInsets.only(right: 12),
                                   child: Icon(
                                     Icons.chevron_right_rounded,
