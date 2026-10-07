@@ -164,7 +164,9 @@ export default async function BusinessVerificationDetailPage({
                 {directors.map((dir: any, i: number) => (
                   <div key={dir.id ?? i}>
                     {i > 0 && <Separator className="mb-4" />}
-                    <p className="text-sm font-medium mb-2">{dir.fullName || `Director ${i + 1}`}</p>
+                    <p className="text-sm font-medium mb-2">
+                      {dir.fullName || `Director ${i + 1}`}
+                    </p>
                     <div className="flex flex-col gap-2">
                       <DocLink doc={dir.idDocument} label="ID Document (Front)" />
                       {dir.idDocumentBack && (
@@ -209,9 +211,8 @@ export default async function BusinessVerificationDetailPage({
                         )}
                         <p className="mt-1 text-xs text-muted-foreground">
                           {changedBy
-                            ? [changedBy.firstName, changedBy.lastName]
-                                .filter(Boolean)
-                                .join(' ') || changedBy.email
+                            ? [changedBy.firstName, changedBy.lastName].filter(Boolean).join(' ') ||
+                              changedBy.email
                             : 'System'}
                           {h.changedAt ? ` • ${formatDate(h.changedAt)}` : ''}
                         </p>

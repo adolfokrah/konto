@@ -1,9 +1,9 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TransactionsDataTable } from '@/components/dashboard/transactions-data-table'
 import { ExportTransactionsButton } from '@/components/dashboard/export-transactions-button'
 import { type TransactionRow } from '@/components/dashboard/data-table/columns/transaction-columns'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
@@ -112,7 +112,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
     const snap = tx.collectorSnapshot
 
     // Prefer snapshot (survives account deletion) → fall back to populated relationship
-    const collectorName = snap?.name || (collectorObj ? `${collectorObj.firstName || ''} ${collectorObj.lastName || ''}`.trim() : '')
+    const collectorName =
+      snap?.name ||
+      (collectorObj ? `${collectorObj.firstName || ''} ${collectorObj.lastName || ''}`.trim() : '')
     const collectorEmail = snap?.email || collectorObj?.email || ''
 
     return {
@@ -132,42 +134,46 @@ export default async function TransactionsPage({ searchParams }: Props) {
       payoutFeeAmount: tx.payoutFeeAmount ?? null,
       payoutNetAmount: tx.payoutNetAmount ?? null,
       transactionReference: tx.transactionReference || null,
-      collector: (collectorName || collectorEmail)
-        ? {
-            id: collectorObj?.id || null,
-            firstName: snap?.name ? snap.name.split(' ')[0] : (collectorObj?.firstName || ''),
-            lastName: snap?.name ? snap.name.split(' ').slice(1).join(' ') : (collectorObj?.lastName || ''),
-            email: collectorEmail,
-          }
-        : null,
+      collector:
+        collectorName || collectorEmail
+          ? {
+              id: collectorObj?.id || null,
+              firstName: snap?.name ? snap.name.split(' ')[0] : collectorObj?.firstName || '',
+              lastName: snap?.name
+                ? snap.name.split(' ').slice(1).join(' ')
+                : collectorObj?.lastName || '',
+              email: collectorEmail,
+            }
+          : null,
       viaPaymentLink: tx.viaPaymentLink ?? false,
       createdAt: tx.createdAt,
     }
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader title="Transactions" subtitle="Contributions and payouts across all jars" />
       {/* Transactions Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Transactions</CardTitle>
-              <CardDescription>
-                {transactionsResult.totalDocs} transaction{transactionsResult.totalDocs !== 1 ? 's' : ''} found
-              </CardDescription>
-            </div>
-            <ExportTransactionsButton />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <TransactionsDataTable
-            transactions={transactions}
-            pagination={{ currentPage: page, totalPages: transactionsResult.totalPages, totalRows: transactionsResult.totalDocs, rowsPerPage: limit }}
-          />
-        </CardContent>
-      </Card>
+      <TableCard
+        title="All transactions"
+        description={
+          <>
+            {transactionsResult.totalDocs} transaction
+            {transactionsResult.totalDocs !== 1 ? 's' : ''} found
+          </>
+        }
+        actions={<ExportTransactionsButton />}
+      >
+        <TransactionsDataTable
+          transactions={transactions}
+          pagination={{
+            currentPage: page,
+            totalPages: transactionsResult.totalPages,
+            totalRows: transactionsResult.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

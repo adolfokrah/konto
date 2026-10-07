@@ -1,10 +1,11 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers as getHeaders } from 'next/headers'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { BusinessVerificationsDataTable } from '@/components/dashboard/business-verifications-data-table'
 import { type BusinessVerificationRow } from '@/components/dashboard/data-table/columns/business-verification-columns'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+import { MetricCard } from '@/components/dashboard/metric-card'
 
 const DEFAULT_LIMIT = 20
 
@@ -41,6 +42,20 @@ export default async function BusinessVerificationsPage({ searchParams }: Props)
     toDate.setHours(23, 59, 59, 999)
     where.createdAt = { ...where.createdAt, less_than_equal: toDate.toISOString() }
   }
+
+  const countStatus = (value: string) =>
+    payload.count({
+      collection: 'business-verifications' as any,
+      where: { status: { equals: value } },
+      overrideAccess: true,
+    })
+  const [pendingCount, reviewCount, approvedCount, rejectedCount] = await Promise.all([
+    countStatus('pending'),
+    countStatus('under-review'),
+    countStatus('approved'),
+    countStatus('rejected'),
+  ])
+  const waiting = pendingCount.totalDocs + reviewCount.totalDocs
 
   const result = await payload.find({
     collection: 'business-verifications' as any,
@@ -84,30 +99,37 @@ export default async function BusinessVerificationsPage({ searchParams }: Props)
   })
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="mb-4">
-        <PageHeader title="Business verifications" subtitle="Organizations awaiting KYB review" />
+    <div className="flex flex-col gap-4 h-full">
+      <PageHeader
+        title="Business verifications"
+        subtitle={`${waiting.toLocaleString()} waiting for review`}
+      />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard title="Pending" value={pendingCount.totalDocs.toLocaleString()} />
+        <MetricCard title="Under review" value={reviewCount.totalDocs.toLocaleString()} />
+        <MetricCard title="Approved" value={approvedCount.totalDocs.toLocaleString()} />
+        <MetricCard title="Rejected" value={rejectedCount.totalDocs.toLocaleString()} />
       </div>
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Business Verifications</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All submissions"
+        description={
+          <>
             {result.totalDocs} verification{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <BusinessVerificationsDataTable
-            rows={rows}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <BusinessVerificationsDataTable
+          rows={rows}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

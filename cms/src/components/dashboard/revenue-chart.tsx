@@ -22,7 +22,7 @@ const chartConfig = {
   },
   payouts: {
     label: 'Payouts',
-    color: 'hsl(var(--chart-4))',
+    color: 'hsl(75 62% 58%)',
   },
 } satisfies ChartConfig
 

@@ -30,7 +30,15 @@ const txStatusStyles: Record<string, string> = {
   failed: 'bg-red-900/40 text-red-300 border-red-700',
 }
 
-function Row({ label, value, icon }: { label: string; value: React.ReactNode; icon?: React.ReactNode }) {
+function Row({
+  label,
+  value,
+  icon,
+}: {
+  label: string
+  value: React.ReactNode
+  icon?: React.ReactNode
+}) {
   if (!value && value !== 0) return null
   return (
     <div className="flex items-start justify-between py-2">
@@ -60,12 +68,14 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
   const requestHeaders = await getHeaders()
   await payload.auth({ headers: requestHeaders })
 
-  const result = await payload.findByID({
-    collection: 'disputes' as any,
-    id,
-    depth: 3,
-    overrideAccess: true,
-  }).catch(() => null)
+  const result = await payload
+    .findByID({
+      collection: 'disputes' as any,
+      id,
+      depth: 3,
+      overrideAccess: true,
+    })
+    .catch(() => null)
 
   if (!result) notFound()
 
@@ -113,9 +123,12 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                 value={
                   raisedBy ? (
                     <Link href={`/dashboard/users/${raisedBy.id}`} className="hover:underline">
-                      {[raisedBy.firstName, raisedBy.lastName].filter(Boolean).join(' ') || raisedBy.email}
+                      {[raisedBy.firstName, raisedBy.lastName].filter(Boolean).join(' ') ||
+                        raisedBy.email}
                     </Link>
-                  ) : '—'
+                  ) : (
+                    '—'
+                  )
                 }
               />
               <Row label="Date Raised" value={formatDate(d.createdAt)} />
@@ -148,7 +161,11 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                         className="block w-28 h-28 rounded-lg overflow-hidden border border-border hover:opacity-80 transition-opacity"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt={`Evidence ${i + 1}`} className="w-full h-full object-cover" />
+                        <img
+                          src={url}
+                          alt={`Evidence ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </a>
                     )
                   })}
@@ -170,7 +187,10 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                 <Row
                   label="ID"
                   value={
-                    <Link href={`/dashboard/transactions?id=${tx.id}`} className="font-mono text-xs hover:underline">
+                    <Link
+                      href={`/dashboard/transactions?id=${tx.id}`}
+                      className="font-mono text-xs hover:underline"
+                    >
                       {tx.id}
                     </Link>
                   }
@@ -195,7 +215,11 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                   label="Amount"
                   value={
                     <span className="font-semibold">
-                      GHS {Math.abs(tx.amountContributed ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      GHS{' '}
+                      {Math.abs(tx.amountContributed ?? 0).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </span>
                   }
                 />
@@ -233,7 +257,9 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
                   resolvedBy
                     ? {
                         id: resolvedBy.id,
-                        name: [resolvedBy.firstName, resolvedBy.lastName].filter(Boolean).join(' ') || resolvedBy.email,
+                        name:
+                          [resolvedBy.firstName, resolvedBy.lastName].filter(Boolean).join(' ') ||
+                          resolvedBy.email,
                       }
                     : null
                 }

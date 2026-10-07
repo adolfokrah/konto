@@ -1,9 +1,13 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { MetricCard } from '@/components/dashboard/metric-card'
 import { CashbacksDataTable } from '@/components/dashboard/cashbacks-data-table'
 import { type CashbackRow } from '@/components/dashboard/data-table/columns/cashback-columns'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
+
+const formatGhs = (n: number) =>
+  `GHS ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const DEFAULT_LIMIT = 20
 
@@ -100,55 +104,42 @@ export default async function CashbacksPage({ searchParams }: Props) {
   )
 
   return (
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-4 h-full">
       <PageHeader title="Cashbacks" subtitle="Cashback awarded to contributors" />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Cashbacks</CardDescription>
-            <CardTitle className="text-2xl">{result.totalDocs}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Discount (this page)</CardDescription>
-            <CardTitle className="text-2xl text-green-400">
-              GHS {totalDiscountAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Unpaid Cashbacks</CardDescription>
-            <CardTitle className="text-2xl text-yellow-400">
-              GHS {totalUnpaidAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-3 pt-0">
-            <p className="text-xs text-muted-foreground">{totalUnpaidCount} record{totalUnpaidCount !== 1 ? 's' : ''} unpaid</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard title="Total cashbacks" value={result.totalDocs.toLocaleString()} />
+        <MetricCard
+          title="Discount · this page"
+          value={formatGhs(totalDiscountAmount)}
+          valueClassName="text-[#0F9F61]"
+        />
+        <MetricCard
+          title="Unpaid cashbacks"
+          value={formatGhs(totalUnpaidAmount)}
+          valueClassName="text-[#D9840A]"
+          description={`${totalUnpaidCount} record${totalUnpaidCount !== 1 ? 's' : ''} unpaid`}
+        />
       </div>
 
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Cashbacks</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All cashbacks"
+        description={
+          <>
             {result.totalDocs} cashback record{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <CashbacksDataTable
-            cashbacks={cashbacks}
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <CashbacksDataTable
+          cashbacks={cashbacks}
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

@@ -1,12 +1,12 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
-import { Bell, Plus } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { CampaignsDataTable } from '@/components/dashboard/campaigns-data-table'
 import { AdminOnly } from '@/components/dashboard/dashboard-user-context'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
@@ -77,46 +77,45 @@ export default async function PushNotificationsPage({ searchParams }: Props) {
   }))
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <PageHeader title="Push notifications" subtitle="Campaigns sent to app users" />
-      <div className="flex items-center justify-between">
-        <div className="w-[220px]">
-          <MetricCard
-            title="Campaigns Sent"
-            value={totalSent.totalDocs.toLocaleString()}
-            icon={Bell}
-          />
-        </div>
-        <AdminOnly>
-          <Link href="/dashboard/push-notifications/compose">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Campaign
-            </Button>
-          </Link>
-        </AdminOnly>
+    <div className="flex flex-col gap-4 h-full">
+      <PageHeader
+        title="Push notifications"
+        subtitle="Campaigns sent to app users"
+        actions={
+          <AdminOnly>
+            <Link href="/dashboard/push-notifications/compose">
+              <Button>
+                <Plus className="h-4 w-4" />
+                New campaign
+              </Button>
+            </Link>
+          </AdminOnly>
+        }
+      />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard title="Campaigns sent" value={totalSent.totalDocs.toLocaleString()} />
       </div>
 
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Push Campaigns</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All push campaigns"
+        description={
+          <>
             {campaignsResult.totalDocs} campaign{campaignsResult.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <CampaignsDataTable
-            campaigns={campaigns}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: campaignsResult.totalPages,
-              totalRows: campaignsResult.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <CampaignsDataTable
+          campaigns={campaigns}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: campaignsResult.totalPages,
+            totalRows: campaignsResult.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

@@ -1,9 +1,9 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers as getHeaders } from 'next/headers'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DisputesDataTable } from '@/components/dashboard/disputes-data-table'
 import { type DisputeRow } from '@/components/dashboard/data-table/columns/dispute-columns'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
@@ -82,7 +82,9 @@ export default async function DisputesPage({ searchParams }: Props) {
         : 'Unknown',
       resolvedById: resolver?.id ?? null,
       resolvedByName: resolver
-        ? [resolver.firstName, resolver.lastName].filter(Boolean).join(' ') || resolver.email || null
+        ? [resolver.firstName, resolver.lastName].filter(Boolean).join(' ') ||
+          resolver.email ||
+          null
         : null,
       description: d.description || '',
       status: d.status || 'open',
@@ -95,26 +97,26 @@ export default async function DisputesPage({ searchParams }: Props) {
       <div className="mb-4">
         <PageHeader title="Disputes" subtitle="Payment disputes raised by users" />
       </div>
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Disputes</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All disputes"
+        description={
+          <>
             {result.totalDocs} dispute{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <DisputesDataTable
-            disputes={disputes}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <DisputesDataTable
+          disputes={disputes}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

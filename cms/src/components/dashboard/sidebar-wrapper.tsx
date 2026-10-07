@@ -19,11 +19,7 @@ export function SidebarWrapper({ user }: { user: User }) {
       style={{ width: collapsed ? '3.5rem' : '14.5rem' }}
     >
       <div className="sticky top-0 h-screen">
-        <Sidebar
-          user={user}
-          collapsed={collapsed}
-          onToggle={() => setCollapsed((v) => !v)}
-        />
+        <Sidebar user={user} collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
       </div>
     </div>
   )

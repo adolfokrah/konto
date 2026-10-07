@@ -157,7 +157,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
             <Link href="/dashboard" className="flex flex-1 items-center gap-2 overflow-hidden">
               <img src="/logo_icon.png" alt="" className="h-[30px] w-[30px] rounded-[9px]" />
               <span className="truncate font-chillax text-lg font-semibold tracking-tight text-white">
-                Hogapay
+                hogapay
               </span>
               <span className="rounded-[5px] bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shrink-0">
                 Admin
@@ -214,7 +214,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                           : 'h-[34px] gap-2.5 px-2.5 text-[13px] font-medium',
                         isActive
                           ? 'bg-primary font-semibold text-primary-foreground'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                          : 'text-[#C9CDD3] hover:bg-white/[0.06] hover:text-white',
                       )}
                     >
                       <item.icon className="h-[17px] w-[17px] shrink-0" />
@@ -222,14 +222,19 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                         <>
                           <span className="flex-1 truncate">{item.label}</span>
                           {count !== null && (
-                            <span className="ml-auto rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white tabular-nums">
+                            <span
+                              className={cn(
+                                'ml-auto rounded-md px-1.5 py-px text-[10.5px] font-medium tabular-nums',
+                                isActive ? 'bg-[#1B232E] text-[#D9F57A]' : 'bg-white/10 text-white',
+                              )}
+                            >
                               {count}
                             </span>
                           )}
                         </>
                       )}
                       {collapsed && count !== null && (
-                        <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-orange-500" />
+                        <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-[#D9F57A]" />
                       )}
                     </Link>
                   )
@@ -241,7 +246,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
                         <TooltipContent side="right" className="flex items-center gap-2">
                           {item.label}
                           {count !== null && (
-                            <span className="rounded bg-orange-500 px-1.5 py-0.5 text-[10px] font-semibold text-white tabular-nums">
+                            <span className="rounded-md bg-white/10 px-1.5 py-px text-[10.5px] font-medium tabular-nums">
                               {count}
                             </span>
                           )}
@@ -263,7 +268,7 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex justify-center py-1">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground cursor-default">
+                  <span className="flex h-8 w-8 shrink-0 cursor-default items-center justify-center rounded-full bg-[#FFE8CC] text-[11px] font-semibold text-[#1B232E]">
                     {initials}
                   </span>
                 </div>
@@ -274,12 +279,16 @@ export function Sidebar({ className, user, collapsed, onToggle }: Props) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex w-full items-center gap-2.5 rounded-xl bg-white/[0.06] px-2.5 py-2.5 text-left transition-colors hover:bg-white/10">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FFE8CC] text-[11px] font-semibold text-[#1B232E]">
                     {initials}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[12px] font-medium leading-tight">{displayName}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
+                    <p className="truncate text-[12.5px] font-semibold leading-tight text-white">
+                      {displayName}
+                    </p>
+                    <p className="truncate text-[11px] capitalize text-[#8B8F96]">
+                      {user.role ?? 'Admin'}
+                    </p>
                   </div>
                   <MoreHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </button>

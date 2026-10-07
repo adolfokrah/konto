@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { LogOut, Menu, Settings } from 'lucide-react'
+import { Bell, LogOut, Menu, Search, Settings } from 'lucide-react'
 import useSWRMutation from 'swr/mutation'
 import { Sidebar } from '@/components/dashboard/sidebar'
 
@@ -82,9 +82,8 @@ export function TopBar({ user }: Props) {
   const pageGroup = pageGroups[pathname.split('/')[2] ?? ''] ?? null
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'A'
 
-  const { trigger: logout } = useSWRMutation(
-    '/api/users/logout',
-    (url: string) => fetch(url, { method: 'POST', credentials: 'include' }),
+  const { trigger: logout } = useSWRMutation('/api/users/logout', (url: string) =>
+    fetch(url, { method: 'POST', credentials: 'include' }),
   )
 
   const handleLogout = async () => {
@@ -93,7 +92,7 @@ export function TopBar({ user }: Props) {
   }
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:px-6">
+    <header className="flex h-[60px] shrink-0 items-center gap-3 border-b bg-background px-4 lg:px-6">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="lg:hidden">
@@ -110,17 +109,38 @@ export function TopBar({ user }: Props) {
         <b className="font-semibold text-foreground">{pageTitle}</b>
       </div>
 
-      <div className="ml-auto">
+      <form
+        className="ml-auto hidden h-9 w-[300px] items-center gap-2 rounded-xl border bg-card px-3 text-[13px] md:flex"
+        onSubmit={(e) => {
+          e.preventDefault()
+          const q = new FormData(e.currentTarget).get('q')?.toString().trim()
+          if (q) router.push(`/dashboard/users?search=${encodeURIComponent(q)}`)
+        }}
+      >
+        <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <input
+          name="q"
+          placeholder="Search users by name or phone"
+          className="h-full w-full border-0 bg-transparent p-0 outline-none placeholder:text-muted-foreground"
+        />
+      </form>
+
+      <div className="ml-auto flex items-center gap-2 md:ml-0">
+        <Link
+          href="/dashboard/disputes"
+          aria-label="Open disputes"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border bg-card text-foreground transition-colors hover:bg-secondary"
+        >
+          <Bell className="h-4 w-4" />
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                {initials}
-              </div>
-              <span className="hidden text-sm sm:inline-block">
-                {user.firstName} {user.lastName}
-              </span>
-            </Button>
+            <button
+              aria-label="Account menu"
+              className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-[#FFE8CC] text-[11px] font-semibold text-[#1B232E]"
+            >
+              {initials}
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {user.role === 'admin' && (

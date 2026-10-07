@@ -1,8 +1,8 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralsDataTable } from '@/components/dashboard/referrals-data-table'
 import { type ReferralRow } from '@/components/dashboard/data-table/columns/referral-columns'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
@@ -79,26 +79,26 @@ export default async function ReferralsPage({ searchParams }: Props) {
       <div className="mb-4">
         <PageHeader title="Referrals" subtitle="Who invited whom" />
       </div>
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Referrals</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All referrals"
+        description={
+          <>
             {result.totalDocs} referral{result.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <ReferralsDataTable
-            referrals={referrals}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: result.totalPages,
-              totalRows: result.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <ReferralsDataTable
+          referrals={referrals}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: result.totalPages,
+            totalRows: result.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

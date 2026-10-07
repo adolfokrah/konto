@@ -22,7 +22,14 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      <ProfileForm user={{ id: user!.id, firstName: (user as any).firstName, lastName: (user as any).lastName, email: user!.email }} />
+      <ProfileForm
+        user={{
+          id: user!.id,
+          firstName: (user as any).firstName,
+          lastName: (user as any).lastName,
+          email: user!.email,
+        }}
+      />
     </div>
   )
 }

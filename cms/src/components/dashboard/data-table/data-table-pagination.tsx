@@ -1,8 +1,6 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -14,7 +12,12 @@ import { type PaginationProps } from './types'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
-export function DataTablePagination({ currentPage, totalPages, totalRows, rowsPerPage }: PaginationProps) {
+export function DataTablePagination({
+  currentPage,
+  totalPages,
+  totalRows,
+  rowsPerPage,
+}: PaginationProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -43,69 +46,46 @@ export function DataTablePagination({ currentPage, totalPages, totalRows, rowsPe
   const to = Math.min(currentPage * rowsPerPage, totalRows)
 
   return (
-    <div className="flex items-center justify-between mt-4">
-      <p className="text-sm text-muted-foreground">
-        Showing {from}–{to} of {totalRows}
-      </p>
+    <div className="mt-3 flex items-center justify-between gap-4 px-1">
+      <div className="flex items-center gap-3 text-[11.5px] text-muted-foreground">
+        <span>
+          Showing {totalRows === 0 ? 0 : from.toLocaleString()}–{to.toLocaleString()} of{' '}
+          {totalRows.toLocaleString()}
+        </span>
+        <Select value={String(rowsPerPage)} onValueChange={changePageSize}>
+          <SelectTrigger className="h-7 w-[92px] text-[11.5px]" aria-label="Rows per page">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PAGE_SIZE_OPTIONS.map((size) => (
+              <SelectItem key={size} value={String(size)}>
+                {size} / page
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">Rows per page</p>
-          <Select value={String(rowsPerPage)} onValueChange={changePageSize}>
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => goToPage(1)}
-            disabled={currentPage <= 1}
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage <= 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm text-muted-foreground px-2">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => goToPage(totalPages)}
-            disabled={currentPage >= totalPages}
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="mr-1 text-[11.5px] tabular-nums text-muted-foreground">
+          Page {currentPage} of {Math.max(totalPages, 1)}
+        </span>
+        <button
+          type="button"
+          className="h-8 rounded-[9px] bg-secondary px-3 text-[12.5px] font-semibold text-foreground transition-opacity disabled:opacity-40"
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage <= 1}
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          className="h-8 rounded-[9px] bg-primary px-3 text-[12.5px] font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   )

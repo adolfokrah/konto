@@ -22,7 +22,7 @@ const chartConfig = {
   },
   payoutCount: {
     label: 'Payouts',
-    color: 'hsl(var(--chart-4))',
+    color: 'hsl(75 62% 58%)',
   },
 } satisfies ChartConfig
 
@@ -63,7 +63,11 @@ export function TransactionCountChart({ data }: Props) {
               }
             />
             <ChartLegend content={<ChartLegendContent />} />
-            <Bar dataKey="contributionCount" fill="var(--color-contributionCount)" radius={[3, 3, 0, 0]} />
+            <Bar
+              dataKey="contributionCount"
+              fill="var(--color-contributionCount)"
+              radius={[3, 3, 0, 0]}
+            />
             <Bar dataKey="payoutCount" fill="var(--color-payoutCount)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ChartContainer>

@@ -16,7 +16,8 @@ import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
 import { cn } from '@/utilities/ui'
 import { DataTableFilterHeader } from './data-table-filter-header'
-import { DataTableActiveFilters } from './data-table-active-filters'
+import { DataTableToolbar } from './data-table-toolbar'
+import { useTableCardHeader } from '../table-card'
 import { DataTablePagination } from './data-table-pagination'
 import { useTableFilters } from './use-table-filters'
 import { type DataTableProps, type DataTableColumnMeta } from './types'
@@ -51,17 +52,9 @@ export function DataTable<TData>({
   tableMeta,
   fillParent,
 }: DataTableProps<TData>) {
-  const {
-    updateParam,
-    batchUpdateParams,
-    toggleParam,
-    getParam,
-    clearAll,
-    activeFilters,
-    sortBy,
-    sortOrder,
-    updateSort,
-  } = useTableFilters(columns)
+  const cardHeader = useTableCardHeader()
+  const { updateParam, batchUpdateParams, toggleParam, getParam, sortBy, sortOrder, updateSort } =
+    useTableFilters(columns)
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({})
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -94,8 +87,6 @@ export function DataTable<TData>({
     [tableId],
   )
 
-  const rowOffset = pagination ? (pagination.currentPage - 1) * pagination.rowsPerPage : 0
-
   const checkboxColumn: ColumnDef<TData, any> = {
     id: '_select',
     header: ({ table }) => (
@@ -124,20 +115,8 @@ export function DataTable<TData>({
     meta: { headerClassName: 'w-[40px]', cellClassName: 'w-[40px]' } satisfies DataTableColumnMeta,
   }
 
-  const numberColumn: ColumnDef<TData, any> = {
-    id: '_number',
-    header: '#',
-    cell: ({ row }) => (
-      <span className="text-muted-foreground text-xs">{rowOffset + row.index + 1}</span>
-    ),
-    size: 50,
-    enableResizing: false,
-    meta: { headerClassName: 'w-[50px]', cellClassName: 'w-[50px]' } satisfies DataTableColumnMeta,
-  }
-
   const allColumns: ColumnDef<TData, any>[] = [
     ...(bulkActions ? [checkboxColumn] : []),
-    numberColumn,
     ...columns,
     ...(renderRowActions
       ? [
@@ -180,16 +159,35 @@ export function DataTable<TData>({
 
   const inner = (
     <>
-      {!readOnly && (
-        <DataTableActiveFilters
-          filters={activeFilters}
-          onRemove={(paramKey, extraParamKeys) => {
-            const updates = [{ key: paramKey, value: '' }]
-            extraParamKeys?.forEach((key) => updates.push({ key, value: '' }))
-            batchUpdateParams(updates)
-          }}
-          onClearAll={clearAll}
-        />
+      {(cardHeader || !readOnly) && (
+        <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
+          {cardHeader ? (
+            <div className="min-w-0">
+              <h3 className="font-chillax text-[15px] font-semibold leading-tight">
+                {cardHeader.title}
+              </h3>
+              {cardHeader.description && (
+                <div className="mt-0.5 text-[11.5px] text-muted-foreground">
+                  {cardHeader.description}
+                </div>
+              )}
+            </div>
+          ) : (
+            <span />
+          )}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {!readOnly && cardHeader?.filters !== false && (
+              <DataTableToolbar
+                columns={columns}
+                getParam={getParam}
+                updateParam={updateParam}
+                batchUpdateParams={batchUpdateParams}
+                toggleParam={toggleParam}
+              />
+            )}
+            {cardHeader?.actions}
+          </div>
+        </div>
       )}
 
       {/* Bulk action toolbar */}
@@ -235,6 +233,7 @@ export function DataTable<TData>({
                   key={header.id}
                   header={header}
                   readOnly={readOnly}
+                  hideFilter
                   getParam={getParam}
                   updateParam={updateParam}
                   batchUpdateParams={batchUpdateParams}

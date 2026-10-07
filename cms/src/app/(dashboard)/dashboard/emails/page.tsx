@@ -18,7 +18,11 @@ const DEFAULT_LIMIT = 50
 function extractName(addr: string): string {
   const m = addr.match(/^([^<]+)</)
   const raw = m ? m[1].trim() : addr.split('@')[0]
-  return raw.replace(/[._-]/g, ' ').split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+  return raw
+    .replace(/[._-]/g, ' ')
+    .split(' ')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ')
 }
 
 function getInitials(addr: string): string {
@@ -63,10 +67,30 @@ export default async function EmailsPage({ searchParams }: Props) {
   }
 
   const [inboxCount, unreadCount, sentCount, emailsResult] = await Promise.all([
-    payload.count({ collection: 'emails', where: { direction: { equals: 'inbound' } }, overrideAccess: true }),
-    payload.count({ collection: 'emails', where: { direction: { equals: 'inbound' }, isRead: { equals: false } }, overrideAccess: true }),
-    payload.count({ collection: 'emails', where: { direction: { equals: 'outbound' } }, overrideAccess: true }),
-    payload.find({ collection: 'emails', where, page, limit, sort: '-createdAt', depth: 2, overrideAccess: true }),
+    payload.count({
+      collection: 'emails',
+      where: { direction: { equals: 'inbound' } },
+      overrideAccess: true,
+    }),
+    payload.count({
+      collection: 'emails',
+      where: { direction: { equals: 'inbound' }, isRead: { equals: false } },
+      overrideAccess: true,
+    }),
+    payload.count({
+      collection: 'emails',
+      where: { direction: { equals: 'outbound' } },
+      overrideAccess: true,
+    }),
+    payload.find({
+      collection: 'emails',
+      where,
+      page,
+      limit,
+      sort: '-createdAt',
+      depth: 2,
+      overrideAccess: true,
+    }),
   ])
 
   // Group into threads
@@ -94,12 +118,24 @@ export default async function EmailsPage({ searchParams }: Props) {
       bodyText: e.bodyText ?? null,
       status: e.status,
       isRead: emails.every((m: any) => m.isRead),
-      linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
-        ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '', photoUrl: typeof e.linkedUser.photo === 'object' && e.linkedUser.photo?.url ? e.linkedUser.photo.url : null }
-        : null,
+      linkedUser:
+        e.linkedUser && typeof e.linkedUser === 'object'
+          ? {
+              id: e.linkedUser.id,
+              firstName: e.linkedUser.firstName ?? '',
+              lastName: e.linkedUser.lastName ?? '',
+              email: e.linkedUser.email ?? '',
+              photoUrl:
+                typeof e.linkedUser.photo === 'object' && e.linkedUser.photo?.url
+                  ? e.linkedUser.photo.url
+                  : null,
+            }
+          : null,
       createdAt: e.createdAt,
       messageCount: emails.length,
-      participants: [...new Set(emails.flatMap((m: any) => [m.from, ...(m.to ?? []).map((t: any) => t.email)]))],
+      participants: [
+        ...new Set(emails.flatMap((m: any) => [m.from, ...(m.to ?? []).map((t: any) => t.email)])),
+      ],
     }))
 
   // Fetch selected email + its thread
@@ -107,7 +143,12 @@ export default async function EmailsPage({ searchParams }: Props) {
   let threadMessages: ThreadMessage[] = []
   if (emailId) {
     try {
-      selectedEmail = await payload.findByID({ collection: 'emails', id: emailId, depth: 2, overrideAccess: true })
+      selectedEmail = await payload.findByID({
+        collection: 'emails',
+        id: emailId,
+        depth: 2,
+        overrideAccess: true,
+      })
       const threadRootId: string = selectedEmail.threadId || selectedEmail.id
       const threadResult = await payload.find({
         collection: 'emails',
@@ -121,7 +162,16 @@ export default async function EmailsPage({ searchParams }: Props) {
       await Promise.all(
         threadResult.docs
           .filter((e: any) => e.direction === 'inbound' && !e.isRead)
-          .map((e: any) => payload.update({ collection: 'emails', id: e.id, data: { isRead: true }, overrideAccess: true }).catch(() => {}))
+          .map((e: any) =>
+            payload
+              .update({
+                collection: 'emails',
+                id: e.id,
+                data: { isRead: true },
+                overrideAccess: true,
+              })
+              .catch(() => {}),
+          ),
       )
       threadMessages = threadResult.docs.map((e: any) => ({
         id: e.id,
@@ -135,39 +185,68 @@ export default async function EmailsPage({ searchParams }: Props) {
         isRead: e.isRead ?? false,
         createdAt: e.createdAt,
         resendEmailId: e.resendEmailId ?? null,
-        linkedUser: e.linkedUser && typeof e.linkedUser === 'object'
-          ? { id: e.linkedUser.id, firstName: e.linkedUser.firstName ?? '', lastName: e.linkedUser.lastName ?? '', email: e.linkedUser.email ?? '', photoUrl: typeof e.linkedUser.photo === 'object' && e.linkedUser.photo?.url ? e.linkedUser.photo.url : null }
-          : null,
-        attachments: Array.isArray(e.attachments) ? e.attachments.map((a: any) => ({
-          filename: a.filename ?? 'attachment',
-          contentType: a.contentType ?? null,
-        })) : [],
+        linkedUser:
+          e.linkedUser && typeof e.linkedUser === 'object'
+            ? {
+                id: e.linkedUser.id,
+                firstName: e.linkedUser.firstName ?? '',
+                lastName: e.linkedUser.lastName ?? '',
+                email: e.linkedUser.email ?? '',
+                photoUrl:
+                  typeof e.linkedUser.photo === 'object' && e.linkedUser.photo?.url
+                    ? e.linkedUser.photo.url
+                    : null,
+              }
+            : null,
+        attachments: Array.isArray(e.attachments)
+          ? e.attachments.map((a: any) => ({
+              filename: a.filename ?? 'attachment',
+              contentType: a.contentType ?? null,
+            }))
+          : [],
       }))
     } catch {}
   }
 
   const folders = [
-    { id: 'inbox', label: 'Inbox', icon: Inbox, count: inboxCount.totalDocs, unread: unreadCount.totalDocs },
+    {
+      id: 'inbox',
+      label: 'Inbox',
+      icon: Inbox,
+      count: inboxCount.totalDocs,
+      unread: unreadCount.totalDocs,
+    },
     { id: 'sent', label: 'Sent', icon: Send, count: sentCount.totalDocs, unread: 0 },
   ]
 
   const primaryAddr = selectedEmail
-    ? (selectedEmail.direction === 'inbound' ? selectedEmail.from : (selectedEmail.to?.[0]?.email ?? ''))
+    ? selectedEmail.direction === 'inbound'
+      ? selectedEmail.from
+      : (selectedEmail.to?.[0]?.email ?? '')
     : ''
   const replyTo = primaryAddr
-  const linkedUser = selectedEmail?.linkedUser && typeof selectedEmail.linkedUser === 'object'
-    ? { ...selectedEmail.linkedUser, photoUrl: typeof selectedEmail.linkedUser.photo === 'object' && selectedEmail.linkedUser.photo?.url ? selectedEmail.linkedUser.photo.url : null }
-    : null
+  const linkedUser =
+    selectedEmail?.linkedUser && typeof selectedEmail.linkedUser === 'object'
+      ? {
+          ...selectedEmail.linkedUser,
+          photoUrl:
+            typeof selectedEmail.linkedUser.photo === 'object' &&
+            selectedEmail.linkedUser.photo?.url
+              ? selectedEmail.linkedUser.photo.url
+              : null,
+        }
+      : null
   const allAddresses = selectedEmail
-    ? [...new Set(threadMessages.flatMap(m => [m.from, ...m.to.map(t => t.email)]))] as string[]
+    ? ([
+        ...new Set(threadMessages.flatMap((m) => [m.from, ...m.to.map((t) => t.email)])),
+      ] as string[])
     : []
-  const threadRootId = selectedEmail ? (selectedEmail.threadId || selectedEmail.id) : ''
+  const threadRootId = selectedEmail ? selectedEmail.threadId || selectedEmail.id : ''
   const threadColorMap = threadMessages.length > 0 ? buildColorMap(threadMessages) : undefined
 
   return (
     <>
       <div className="flex h-[calc(100vh-3.5rem-2rem)] lg:h-[calc(100vh-3.5rem-3rem)] max-h-full overflow-hidden rounded-xl border bg-card shadow-sm">
-
         {/* ── Nav sidebar ── */}
         <aside className="flex w-52 shrink-0 flex-col border-r">
           <AdminOnly>
@@ -200,23 +279,31 @@ export default async function EmailsPage({ searchParams }: Props) {
                     {f.unread}
                   </span>
                 ) : f.count > 0 ? (
-                  <span className="text-[11px] tabular-nums text-muted-foreground/60">{f.count}</span>
+                  <span className="text-[11px] tabular-nums text-muted-foreground/60">
+                    {f.count}
+                  </span>
                 ) : null}
               </Link>
             ))}
           </nav>
 
           <div className="border-t p-3 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">Receiving at</p>
-            <p className="text-[11px] font-medium text-foreground/70 break-all">support@hogapay.com</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
+              Receiving at
+            </p>
+            <p className="text-[11px] font-medium text-foreground/70 break-all">
+              support@hogapay.com
+            </p>
           </div>
         </aside>
 
         {/* ── Email list ── */}
-        <div className={cn(
-          'flex flex-col border-r overflow-hidden',
-          selectedEmail ? 'w-72 shrink-0' : 'flex-1',
-        )}>
+        <div
+          className={cn(
+            'flex flex-col border-r overflow-hidden',
+            selectedEmail ? 'w-72 shrink-0' : 'flex-1',
+          )}
+        >
           <div className="flex items-center gap-2 border-b px-3 py-2 shrink-0">
             <div className="flex-1">
               <EmailSearchInput tab={tab} defaultValue={search} />
@@ -229,7 +316,12 @@ export default async function EmailsPage({ searchParams }: Props) {
               emails={threads}
               tab={tab}
               activeId={emailId ?? undefined}
-              pagination={{ currentPage: page, totalPages: emailsResult.totalPages, totalRows: emailsResult.totalDocs, rowsPerPage: limit }}
+              pagination={{
+                currentPage: page,
+                totalPages: emailsResult.totalPages,
+                totalRows: emailsResult.totalDocs,
+                rowsPerPage: limit,
+              }}
             />
           </div>
         </div>
@@ -242,7 +334,15 @@ export default async function EmailsPage({ searchParams }: Props) {
             messageCount={threadMessages.length}
             direction={selectedEmail.direction}
             body={<EmailThreadView messages={threadMessages} />}
-            replyBox={replyTo ? <InlineReplyBox to={replyTo} subject={selectedEmail.subject} threadId={threadRootId} /> : null}
+            replyBox={
+              replyTo ? (
+                <InlineReplyBox
+                  to={replyTo}
+                  subject={selectedEmail.subject}
+                  threadId={threadRootId}
+                />
+              ) : null
+            }
             sidebarProps={{
               primaryAddr: primaryAddr.replace(/^.*<(.+)>$/, '$1'),
               primaryInitials: getInitials(primaryAddr),
@@ -250,7 +350,12 @@ export default async function EmailsPage({ searchParams }: Props) {
               primaryName: extractName(primaryAddr),
               linkedUser,
               messageCount: threadMessages.length,
-              startedDate: threadMessages[0] ? new Date(threadMessages[0].createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '',
+              startedDate: threadMessages[0]
+                ? new Date(threadMessages[0].createdAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : '',
               direction: selectedEmail.direction,
               allAddresses: allAddresses.map((addr) => ({
                 addr,

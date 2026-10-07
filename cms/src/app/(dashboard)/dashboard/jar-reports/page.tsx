@@ -1,9 +1,9 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { Flag } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { ReportsDataTable } from '@/components/dashboard/reports-data-table'
+import { TableCard } from '@/components/dashboard/table-card'
 import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
@@ -25,10 +25,7 @@ export default async function JarReportsPage({ searchParams }: Props) {
   // Build where clause
   const where: Record<string, any> = {}
   if (search) {
-    where.or = [
-      { message: { like: search } },
-      { 'jar.name': { like: search } },
-    ]
+    where.or = [{ message: { like: search } }, { 'jar.name': { like: search } }]
   }
   if (from) {
     where.createdAt = { ...where.createdAt, greater_than_equal: new Date(from).toISOString() }
@@ -63,16 +60,18 @@ export default async function JarReportsPage({ searchParams }: Props) {
       message: report.message,
       reporterId: userObj?.id || null,
       reporterName: userObj
-        ? `${userObj.firstName || ''} ${userObj.lastName || ''}`.trim() || userObj.email || 'Unknown'
+        ? `${userObj.firstName || ''} ${userObj.lastName || ''}`.trim() ||
+          userObj.email ||
+          'Unknown'
         : 'Anonymous',
       createdAt: report.createdAt,
     }
   })
 
   return (
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-4 h-full">
       <PageHeader title="Jar reports" subtitle="Jars reported by contributors" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard
           title="Total Reports"
           value={totalReports.totalDocs.toLocaleString()}
@@ -80,26 +79,26 @@ export default async function JarReportsPage({ searchParams }: Props) {
         />
       </div>
 
-      <Card className="flex flex-col flex-1 min-h-0">
-        <CardHeader>
-          <CardTitle>Jar Reports</CardTitle>
-          <CardDescription>
+      <TableCard
+        title="All jar reports"
+        description={
+          <>
             {reportsResult.totalDocs} report{reportsResult.totalDocs !== 1 ? 's' : ''} found
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <ReportsDataTable
-            reports={reports}
-            fillParent
-            pagination={{
-              currentPage: page,
-              totalPages: reportsResult.totalPages,
-              totalRows: reportsResult.totalDocs,
-              rowsPerPage: limit,
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        className="flex-1 min-h-0"
+      >
+        <ReportsDataTable
+          reports={reports}
+          fillParent
+          pagination={{
+            currentPage: page,
+            totalPages: reportsResult.totalPages,
+            totalRows: reportsResult.totalDocs,
+            rowsPerPage: limit,
+          }}
+        />
+      </TableCard>
     </div>
   )
 }

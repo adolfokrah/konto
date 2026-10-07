@@ -1,11 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { Wallet, ArrowDownToLine } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MetricCard } from '@/components/dashboard/metric-card'
 import { LedgerClient } from '@/components/dashboard/ledger-client'
 import { getEganow } from '@/utilities/initalise'
-import { PageHeader } from '@/components/dashboard/page-header'
 
 const DEFAULT_LIMIT = 20
 
@@ -87,27 +83,16 @@ export default async function LedgerPage({ searchParams }: Props) {
   }))
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-      <PageHeader title="Ledger" subtitle="Top-ups and balance movements" />
-      <div className="grid gap-4 md:grid-cols-2">
-        <MetricCard
-          title="Total Top-Ups (Completed)"
-          value={`GHS ${totalTopupAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-          icon={ArrowDownToLine}
-          description={`${completedTotal.totalDocs} completed top-up${completedTotal.totalDocs !== 1 ? 's' : ''}`}
-        />
-        <MetricCard
-          title="All Top-Ups"
-          value={topupsResult.totalDocs.toLocaleString()}
-          icon={Wallet}
-          description="Total top-up records"
-        />
-      </div>
-
+    <div className="flex flex-col h-full">
       <LedgerClient
         initialCollectionBalance={balances.collectionBalance}
         initialPayoutBalance={balances.payoutBalance}
         topups={topups}
+        stats={{
+          completedAmount: totalTopupAmount,
+          completedCount: completedTotal.totalDocs,
+          total: topupsResult.totalDocs,
+        }}
         fillParent
         pagination={{
           currentPage: page,
