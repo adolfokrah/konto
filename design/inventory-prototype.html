@@ -4411,11 +4411,13 @@ function missing(){return cur.p.gs.filter(g=>g.req&&!cur.picks[g.id].length)}
 function renderI(){const p=cur.p;let h='';
 if(p.vs.length>1)h+='<div class="gt">Choose one <span class="rq">Required</span></div>'+p.vs.map(v=>'<button class="op '+(cur.vid===v.id?'on':'')+'" data-v="'+v.id+'"><div class="mk"></div><div class="l">'+e(v.n)+'</div><b>'+fmt(basePr(p,v.id,cur.ul)||basePr(p,v.id,'')||0)+'</b></button>').join('');
 if(p.us.length>1)h+='<div class="gt">Sold as</div>'+p.us.filter(u=>basePr(p,cur.vid,u.id)!=null).map(u=>'<button class="op '+(cur.ul===u.id?'on':'')+'" data-u="'+u.id+'"><div class="mk"></div><div class="l">'+e(u.n)+'</div><b>'+fmt(basePr(p,cur.vid,u.id))+'</b></button>').join('');
-p.gs.forEach(g=>{const sel=cur.picks[g.id];h+='<div class="gt">'+e(g.n)+' <span class="'+(g.req&&!sel.length?'rq':'')+'">'+(g.req?'Required':'Optional')+(g.one?' · pick one':' · pick any')+'</span></div>'+g.os.map(o=>'<button class="op '+(sel.includes(o.id)?'on':'')+(o.out?' out':'')+'" data-g="'+g.id+'|'+o.id+'"><div class="mk '+(g.one?'':'sq')+'"></div><div class="l">'+e(o.n)+'<small>'+(o.out?'Out of stock':o.pr?'+ '+fmt(o.pr):'No extra cost')+'</small></div></button>').join('')});
+p.gs.forEach(g=>{const sel=cur.picks[g.id];h+='<div class="gt">'+e(g.n)+' <span data-gh="'+g.id+'" class="'+(g.req&&!sel.length?'rq':'')+'">'+(g.req?'Required':'Optional')+(g.one?' · pick one':' · pick any')+'</span></div>'+g.os.map(o=>'<button class="op '+(sel.includes(o.id)?'on':'')+(o.out?' out':'')+'" data-g="'+g.id+'|'+o.id+'"><div class="mk '+(g.one?'':'sq')+'"></div><div class="l">'+e(o.n)+'<small>'+(o.out?'Out of stock':o.pr?'+ '+fmt(o.pr):'No extra cost')+'</small></div></button>').join('')});
 h+='<textarea class="note" id="inote" rows="2" placeholder="Special request for this item (optional)">'+e(cur.note)+'</textarea><div style="height:14px"></div>';
 const keep=$('ib').scrollTop;$('ib').innerHTML=h;$('ib').scrollTop=keep;$('inote').oninput=ev=>{cur.note=ev.target.value};
-const price=(basePr(p,cur.vid,cur.ul)||0)+p.gs.reduce((a,g)=>a+g.os.filter(o=>cur.picks[g.id].includes(o.id)).reduce((b,o)=>b+o.pr,0),0),m=missing();
+updI()}
+function updI(){const p=cur.p,price=(basePr(p,cur.vid,cur.ul)||0)+p.gs.reduce((a,g)=>a+g.os.filter(o=>cur.picks[g.id].includes(o.id)).reduce((b,o)=>b+o.pr,0),0),m=missing();
 $('iq').textContent=cur.qty;$('iadd').classList.toggle('off',!!m.length);$('iadd').innerHTML=m.length?'<div>Choose '+e(m.map(g=>g.n).join(', '))+'</div>':'<div>Add to order</div><div>'+fmt(price*cur.qty)+'</div>'}
+function pickI(gid){const g=cur.p.gs.find(x=>x.id===gid),sel=cur.picks[gid];$('ib').querySelectorAll('[data-g]').forEach(b=>{const k=b.dataset.g.split('|');if(k[0]===gid)b.classList.toggle('on',sel.includes(k[1]))});const sp=$('ib').querySelector('[data-gh="'+gid+'"]');if(sp)sp.className=g.req&&!sel.length?'rq':'';updI()}
 function addCur(){const p=cur.p;if(missing().length)return;const addons=[];p.gs.forEach(g=>g.os.forEach(o=>{if(cur.picks[g.id].includes(o.id))addons.push({gid:g.id,oid:o.id,name:o.n,price:o.pr,cost:o.cost,stockItem:o.si,stockQty:o.sq})}));addLine({pid:p.id,vid:cur.vid,ul:cur.ul,qty:cur.qty,addons,note:cur.note.trim()});cur=null;closeAll();draw()}
 function closeAll(){$('isheet').classList.remove('on');$('sheet').classList.remove('on');$('scrim').classList.remove('on')}
 document.addEventListener('click',ev=>{const t=ev.target.closest('button,.card');if(!t)return;const d=t.dataset;
@@ -4426,7 +4428,7 @@ else if(d.ls!==undefined){const l=L[+d.ls];l.qty--;if(l.qty<1)L.splice(+d.ls,1);
 else if(d.lp!==undefined){L[+d.lp].qty++;draw()}
 else if(d.v!==undefined){cur.vid=d.v;if(basePr(cur.p,cur.vid,cur.ul)==null)cur.ul='';renderI()}
 else if(d.u!==undefined){cur.ul=d.u;renderI()}
-else if(d.g){const [gid,oid]=d.g.split('|'),g=cur.p.gs.find(x=>x.id===gid),s=cur.picks[gid],i=s.indexOf(oid);if(g.one)cur.picks[gid]=i<0?[oid]:(g.req?s:[]);else if(i<0)s.push(oid);else s.splice(i,1);renderI()}
+else if(d.g){const [gid,oid]=d.g.split('|'),g=cur.p.gs.find(x=>x.id===gid),s=cur.picks[gid],i=s.indexOf(oid);if(g.one)cur.picks[gid]=i<0?[oid]:(g.req?s:[]);else if(i<0)s.push(oid);else s.splice(i,1);pickI(gid)}
 });
 $('iminus').onclick=()=>{if(cur.qty>1){cur.qty--;renderI()}};$('iplus').onclick=()=>{cur.qty++;renderI()};$('iadd').onclick=addCur;
 $('q').oninput=ev=>{term=ev.target.value.trim().toLowerCase();draw()};$('view').onclick=()=>{$('sheet').classList.add('on');$('scrim').classList.add('on')};$('scrim').onclick=()=>{cur=null;closeAll()};
