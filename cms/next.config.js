@@ -127,6 +127,8 @@ const nextConfig = {
       { source: '/:locale/next/:path*', destination: '/next/:path*' },
       // Static redesign preview (public/redesign/index.html)
       { source: '/redesign', destination: '/redesign/index.html' },
+      // Static cashier prototype (public/cashier/index.html)
+      { source: '/cashier', destination: '/cashier/index.html' },
     ]
   },
 }
