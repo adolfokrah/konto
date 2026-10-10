@@ -3396,7 +3396,7 @@ function bkRows(tab) {
   const want = { new: ['new'], confirmed: ['confirmed'], past: ['done', 'declined'] }[tab];
   const l = S.bookings.filter(b => want.includes(b.status)).sort((a, b) => b.t - a.t);
   if (!l.length) return empty('clock', tab === 'new' ? 'No new requests' : tab === 'confirmed' ? 'Nothing confirmed yet' : 'Nothing here yet', tab === 'new' ? 'When the agent takes a booking, it shows up here and you get a notification.' : 'Confirmed bookings are listed here until they are done.');
-  return l.map(b => lrow(`data-act="openBooking" data-arg="${b.id}"`, `<div class="mini" style="background:var(--sub);color:var(--ink)">${ic('clock', 18)}</div>`, esc(b.cust), esc(bkSvc(b) + ' · ' + bkWhen(b)), `<span>${pill(BK_ST[b.status][0], BK_ST[b.status][1])}</span>`, esc(b.ch + ' · ' + bkAgo(b.t)))).join('');
+  return l.map(b => lrow(`data-act="openBooking" data-arg="${b.id}"`, `<div class="mini" style="background:var(--sub);color:var(--ink)">${ic('clock', 18)}</div>`, esc(b.cust), esc(bkSvc(b) + ((b.addons || []).length ? ' + ' + b.addons.map(o => o.name).join(', ') : '') + ' · ' + bkWhen(b)), `<span>${pill(BK_ST[b.status][0], BK_ST[b.status][1])}</span>`, esc(b.ch + ' · ' + bkAgo(b.t)))).join('');
 }
 SCREENS.bookings = () => {
   const tab = UI.bkTab || 'new', n = bkNew();
@@ -3409,10 +3409,11 @@ SCREENS.booking = () => {
   const kv = (k, v) => !v ? '' : String(k).length > 16 ? `<div class="kv" style="flex-direction:column;gap:2px"><span>${esc(k)}</span><b style="white-space:normal;text-align:left">${esc(v)}</b></div>` : `<div class="kv"><span>${k}</span><b style="white-space:normal">${esc(v)}</b></div>`;
   const edit = b.status === 'new' || b.status === 'confirmed';
   const acts = b.status === 'new' ? cta(btn('Confirm booking', 'bkConfirm'), `<div class="two">${btn('Message', 'bkContact', null, { k: 's', icon: 'share' })}${btn('Decline', 'bkDecline', null, { k: 'g' })}</div>`)
-    : b.status === 'confirmed' ? cta(btn('Mark as done', 'bkDone'), `<div class="two">${btn('Message', 'bkContact', null, { k: 's', icon: 'share' })}${btn('Cancel booking', 'bkDecline', null, { k: 'g' })}</div>`) : cta(btn('Back', 'back', null, { k: 's' }));
+    : b.status === 'confirmed' ? cta(btn('Charge', 'bkCharge'), `<div class="two">${btn('Mark as done', 'bkDone', null, { k: 's' })}${btn('Message', 'bkContact', null, { k: 's', icon: 'share' })}</div>`, btn('Cancel booking', 'bkDecline', null, { k: 'g' })) : cta(btn('Back', 'back', null, { k: 's' }));
   return `${nav(b.no)}<div class="pad" id="pad" style="gap:12px">
-    <div class="card"><div class="between"><span class="t-bs">Collected by the agent on ${esc(b.ch)}</span>${pill(st[0], st[1])}</div><div class="t-bs mute" style="margin-top:2px">${bkAgo(b.t)}. Nothing is booked until you confirm.</div></div>
-    <div class="card w"><div class="kv"><span>Customer</span><b>${esc(b.cust)}</b></div>${kv('Phone', b.phone)}${kv('Service', bkSvc(b))}${p ? kv('Takes', durTxt(p.duration)) : ''}${kv('Where', PLACES[b.place])}${(b.addons || []).length ? kv('Extras', b.addons.map(o => o.name + (o.price ? ' (+' + money(o.price) + ')' : '')).join(', ')) : ''}${kv('Price', p ? (isSvc(p) && p.priceMode === 'quote' ? 'You quote after hearing the details' : (p.priceMode === 'from' ? 'From ' : '') + money(p.price)) : '')}${p && p.ask ? kv(p.ask, b.answer || 'No answer') : kv('Details', b.answer)}</div>
+    <div class="card"><div class="between"><span class="t-bs">Collected by the agent on ${esc(b.ch)}</span>${pill(st[0], st[1])}</div><div class="t-bs mute" style="margin-top:2px">${bkAgo(b.t)}.${b.status === 'new' ? ' Nothing is booked until you confirm.' : ''}</div></div>
+    <div class="card w"><div class="kv"><span>Customer</span><b>${esc(b.cust)}</b></div>${kv('Phone', b.phone)}${kv('Service', bkSvc(b))}${p ? kv('Takes', durTxt(p.duration)) : ''}${kv('Where', PLACES[b.place])}${kv('Price', p ? (isSvc(p) && p.priceMode === 'quote' ? 'You quote after hearing the details' : (p.priceMode === 'from' ? 'From ' : '') + money(bkBase(b))) : '')}${(b.addons || []).length && p && !(isSvc(p) && p.priceMode === 'quote') ? kv('Extras', '+ ' + money(bkExtraSum(b))) + kv('Total', money(bkBase(b) + bkExtraSum(b))) : ''}${b.sale ? kv('Charged as', b.sale) : ''}${p && p.ask ? kv(p.ask, b.answer || 'No answer') : kv('Details', b.answer)}</div>
+    ${(b.addons || []).length ? sect('Extras chosen') + `<div class="card w" style="padding:2px 14px">${b.addons.map(o => `<div class="kv"><span>${esc(o.name)}</span><b>${o.price ? '+ ' + money(o.price) : 'No extra cost'}</b></div>`).join('')}</div>` : ''}
     ${edit ? `${sect(b.status === 'new' ? 'Day and time · asked by the customer' : 'Day and time')}${dateField('Day', 'f.day')}${field('Time', 'f.time', { ph: 'For example, 10:00 or 2pm' })}${bkHint(b, f)}<div class="hint">Change them if you offer the customer another slot. Message the customer after you confirm.</div>` : `<div class="card w"><div class="kv"><span>When</span><b>${esc(bkWhen(b))}</b></div></div>`}
   </div>${acts}`;
 };
@@ -5091,6 +5092,8 @@ ART.services = '<rect x="58" y="26" width="204" height="132" rx="14" fill="#fff"
 Object.assign(ADDON_ACT, Object.fromEntries('newService openBookings openBooking openHours openBookingPage copyBookLink openBookPreview'.split(' ').map(a => [a, 'services'])));
 Object.assign(ACT_GUARD, { openBookings: ['services.read', 'see bookings'], openBooking: ['services.read', 'see bookings'], openBookingPage: ['services.read', 'see the booking page'], openBookPreview: ['services.read', 'see the booking page'], copyBookLink: ['services.read', 'share the booking page'], bkConfirm: ['services.update', 'manage bookings'], bkDecline: ['services.update', 'manage bookings'], bkDone: ['services.update', 'manage bookings'] });
 const bookUrl = () => { try { const u = new URL(location.href); u.search = ''; u.hash = ''; u.searchParams.set('book', '1'); return u.href; } catch (e) { return location.href; } };
+const bkBase = b => { const p = pById(b.pid); if (!p) return null; const v = (p.variants || []).find(x => x.name === b.vname), x = v ? sellPrice(p, v.id, '', '', sellBr()) : null; return x != null ? x : (p.price || 0); };
+const bkExtraSum = b => (b.addons || []).reduce((a, o) => a + (o.price || 0), 0);
 const bkNextNo = () => 'BK-' + String(S.bookings.reduce((a, b) => Math.max(a, parseInt(String(b.no || '').replace(/\D/g, ''), 10) || 0), 0) + 1).padStart(4, '0');
 function bookData() {
   const br = sellBr(), abs = u => { try { return new URL(u, location.href).href; } catch (e) { return u; } };
@@ -5176,11 +5179,20 @@ SCREENS.bookingPage = () => { const u = bookUrl();
   ${btn('Copy link', 'copyBookLink')}<a class="b s" style="text-decoration:none;display:flex;align-items:center;justify-content:center" href="${esc(u)}" target="_blank" rel="noopener">Open booking page in a new tab</a>${btn('Preview in the app', 'openBookPreview', null, { k: 'g' })}
   ${note('Free times come from your working hours and the bookings you have confirmed. Customers can only ask. Nothing is booked until you confirm.')}</div>`; };
 SCREENS.bookPreview = () => `${nav('Booking page')}<div style="flex:1;min-height:0;display:flex"><iframe style="flex:1;width:100%;border:0" srcdoc="${esc(bookPageHtml())}"></iframe></div>`;
+Object.assign(ACT_GUARD, { bkCharge: ['sales.create', 'make sales'] });
+ADDON_ACT.bkCharge = 'services';
 Object.assign(A, {
+  bkCharge() { const f = cur().f, b = S.bookings.find(x => x.id === f.id), p = b && pById(b.pid); if (!p) { toast('That service was removed.', 1); return; }
+    const digits = x => String(x || '').replace(/\D/g, ''); let cu = S.customers.find(x => digits(x.phone) && digits(x.phone) === digits(b.phone)) || S.customers.find(x => x.name === b.cust);
+    if (!cu) { cu = { id: uid('c'), name: b.cust, phone: b.phone || '', email: '', address: '' }; S.customers.push(cu); }
+    const v = (p.variants || []).find(x => x.name === b.vname) || activeVariants(p)[0] || {}, c = newCart(), ad = (b.addons || []).map(o => { const g = (p.addonGroups || []).find(y => y.id === o.gid), op = g && (g.options || []).find(z => z.id === o.oid); return { gid: o.gid, oid: o.oid, name: o.name, price: o.price || 0, cost: op ? op.cost : undefined, stockItem: op ? op.stockItem : undefined, stockQty: op ? op.stockQty : undefined }; });
+    c.cust = cu.id; c.fromBooking = b.id; c.lines.push({ id: uid('c'), pid: p.id, vid: v.id || '', ul: '', qty: '1', addons: ad, note: '' });
+    UI.cart = c; UI.stack = [{ name: 'sell' }]; A.openCart(); toast('Charging ' + b.no + '. Check the cart, then pay.'); },
   openBookingPage() { push('bookingPage', {}); },
   openBookPreview() { push('bookPreview', {}); },
   copyBookLink() { try { navigator.clipboard.writeText(bookUrl()).then(() => toast('Link copied.'), () => toast('Copy is blocked here.', 1)); } catch (e) { toast('Copy is blocked here.', 1); } }
 });
+(() => { const cs = A.completeSale; A.completeSale = function (m) { const bid = UI.cart && UI.cart.fromBooking, n0 = S.sales.length; cs.apply(A, arguments); if (bid && S.sales.length > n0) { const b = S.bookings.find(x => x.id === bid), sl = S.sales[0]; if (b && b.status !== 'done') { b.status = 'done'; b.sale = sl.no; audit('Sales', b.no + ' charged as ' + sl.no); save(); } } }; })();
 /* ===== v2: filter sales by date and by who made them ===== */
 const SD_RANGES = [['', 'Any time'], ['today', 'Today'], ['yday', 'Yesterday'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['month', 'This month'], ['custom', 'Pick dates']];
 const dayStart = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); };
