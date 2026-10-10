@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
-import 'package:Hoga/core/widgets/snacbar_message.dart';
 import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
 
 /// App shell for the signed-in tabs: Home, Jars, Activity,
@@ -28,20 +27,11 @@ class MainShell extends StatelessWidget {
     _TabSpec('Profile', Icons.person_outline_rounded, Icons.person_rounded),
   ];
 
-  /// Jars, Activity and Insights open only once onboarding is complete.
-  static const _lockedUntilOnboarded = {1, 2, 3};
+  /// Jars, Activity and Insights stay hidden until onboarding is complete.
+  static const _hiddenUntilOnboarded = {1, 2, 3};
 
-  void _onTap(BuildContext context, int index, bool locked) {
+  void _onTap(int index) {
     HapticUtils.light();
-    if (locked && _lockedUntilOnboarded.contains(index)) {
-      AppSnackBar.showInfo(
-        context,
-        message:
-            'Finish setting up your account to open ${_tabs[index].label}.',
-      );
-      navigationShell.goBranch(0);
-      return;
-    }
     // Tapping the current tab again returns it to its first screen.
     navigationShell.goBranch(
       index,
@@ -52,10 +42,10 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     JarActions.watchOnboarding(context);
-    // Null while jars load: only lock once we know setup isn't done.
-    final locked = JarActions.onboardingComplete(context) == false;
-    if (locked &&
-        _lockedUntilOnboarded.contains(navigationShell.currentIndex)) {
+    // Null while jars load: only hide once we know setup isn't done.
+    final hideTabs = JarActions.onboardingComplete(context) == false;
+    if (hideTabs &&
+        _hiddenUntilOnboarded.contains(navigationShell.currentIndex)) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => navigationShell.goBranch(0),
       );
@@ -79,15 +69,19 @@ class MainShell extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Two tabs (Home, Profile) sit centred instead of at the edges.
+              mainAxisAlignment:
+                  hideTabs
+                      ? MainAxisAlignment.spaceEvenly
+                      : MainAxisAlignment.spaceBetween,
               children: [
                 for (var i = 0; i < _tabs.length; i++)
-                  _TabButton(
-                    spec: _tabs[i],
-                    selected: i == navigationShell.currentIndex,
-                    locked: locked && _lockedUntilOnboarded.contains(i),
-                    onTap: () => _onTap(context, i, locked),
-                  ),
+                  if (!hideTabs || !_hiddenUntilOnboarded.contains(i))
+                    _TabButton(
+                      spec: _tabs[i],
+                      selected: i == navigationShell.currentIndex,
+                      onTap: () => _onTap(i),
+                    ),
               ],
             ),
           ),
@@ -107,13 +101,11 @@ class _TabSpec {
 class _TabButton extends StatelessWidget {
   final _TabSpec spec;
   final bool selected;
-  final bool locked;
   final VoidCallback onTap;
 
   const _TabButton({
     required this.spec,
     required this.selected,
-    this.locked = false,
     required this.onTap,
   });
 
@@ -140,11 +132,7 @@ class _TabButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                locked
-                    ? Icons.lock_outline_rounded
-                    : selected
-                    ? spec.selectedIcon
-                    : spec.icon,
+                selected ? spec.selectedIcon : spec.icon,
                 size: 22,
                 color:
                     selected
