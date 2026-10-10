@@ -24,6 +24,7 @@ const BYPASS_PREFIXES = [
   '/icons',
   '/images',
   '/redesign',
+  '/cashier',
 ]
 
 export function middleware(request: NextRequest) {

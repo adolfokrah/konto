@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:Hoga/core/constants/app_colors.dart';
 import 'package:Hoga/core/utils/haptic_utils.dart';
+import 'package:Hoga/features/jars/presentation/widgets/jar_actions.dart';
 
 /// App shell for the signed-in tabs: Home, Jars, Activity,
 /// Insights, Profile.
@@ -26,6 +27,9 @@ class MainShell extends StatelessWidget {
     _TabSpec('Profile', Icons.person_outline_rounded, Icons.person_rounded),
   ];
 
+  /// Jars, Activity and Insights stay hidden until onboarding is complete.
+  static const _hiddenUntilOnboarded = {1, 2, 3};
+
   void _onTap(int index) {
     HapticUtils.light();
     // Tapping the current tab again returns it to its first screen.
@@ -37,6 +41,15 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    JarActions.watchOnboarding(context);
+    // Null while jars load: only hide once we know setup isn't done.
+    final hideTabs = JarActions.onboardingComplete(context) == false;
+    if (hideTabs &&
+        _hiddenUntilOnboarded.contains(navigationShell.currentIndex)) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => navigationShell.goBranch(0),
+      );
+    }
     // extendBody: tab content scrolls under the capsule, so the bar floats.
     // Tabs pad their lists with [MainShell.scrollBottom].
     return Scaffold(
@@ -56,14 +69,19 @@ class MainShell extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Two tabs (Home, Profile) sit centred instead of at the edges.
+              mainAxisAlignment:
+                  hideTabs
+                      ? MainAxisAlignment.spaceEvenly
+                      : MainAxisAlignment.spaceBetween,
               children: [
                 for (var i = 0; i < _tabs.length; i++)
-                  _TabButton(
-                    spec: _tabs[i],
-                    selected: i == navigationShell.currentIndex,
-                    onTap: () => _onTap(i),
-                  ),
+                  if (!hideTabs || !_hiddenUntilOnboarded.contains(i))
+                    _TabButton(
+                      spec: _tabs[i],
+                      selected: i == navigationShell.currentIndex,
+                      onTap: () => _onTap(i),
+                    ),
               ],
             ),
           ),

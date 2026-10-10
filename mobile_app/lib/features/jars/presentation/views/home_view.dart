@@ -325,6 +325,16 @@ class _HomeViewState extends State<HomeView> {
     ];
 
     if (jars.isEmpty) return _firstDay(context, user);
+    // Onboarding gate: until every step is done (verified, profile photo,
+    // payout account, own jar), Home shows only the checklist, in any order
+    // the steps were skipped.
+    JarActions.watchSetup(context);
+    final onboarded =
+        user != null &&
+        user.photo != null &&
+        own.isNotEmpty &&
+        !JarActions.needsSetup(context);
+    if (!onboarded) return [_getStarted(user, hasJar: own.isNotEmpty)];
     if (openJars.isEmpty) return _allClosed(context, jars);
 
     final collectorOnly = own.isEmpty;
@@ -514,12 +524,6 @@ class _HomeViewState extends State<HomeView> {
 
   /// No jars yet: a get-started checklist.
   List<Widget> _firstDay(BuildContext context, User? user) {
-    final verified =
-        user == null
-            ? false
-            : user.isOrganization
-            ? user.kybStatus == 'approved'
-            : user.kycStatus == 'verified';
     return [
       const _TotalBlock(
         label: 'Total in your jars',
@@ -527,46 +531,57 @@ class _HomeViewState extends State<HomeView> {
         currency: 'GHS',
       ),
       const SizedBox(height: 14),
-      BlocBuilder<WithdrawalAccountsBloc, WithdrawalAccountsState>(
-        builder: (context, wa) {
-          final hasPayout = wa.accounts.isNotEmpty;
-          final steps = <_Step>[
-            _Step(
-              user?.isOrganization == true
-                  ? 'Verify your business'
-                  : 'Verify your ID',
-              subtitle: 'About 3 minutes',
-              done: verified,
-              onStart:
-                  () => context.push(
-                    user?.isOrganization == true
-                        ? AppRoutes.businessKyb
-                        : AppRoutes.kycView,
-                  ),
-            ),
-            _Step(
-              'Set up your profile',
-              subtitle: 'Add a photo so contributors know it\'s you',
-              done: user?.photo != null,
-              onStart: () => context.push(AppRoutes.userAccountView),
-            ),
-            _Step(
-              'Add a payout account',
-              subtitle: 'Where your money goes',
-              done: hasPayout,
-              onStart: () => context.push(AppRoutes.withdrawalAccounts),
-            ),
-            _Step(
-              'Create your first jar',
-              subtitle: 'Takes two minutes',
-              done: false,
-              onStart: () => JarActions.createJar(context),
-            ),
-          ];
-          return _GetStartedCard(steps: steps);
-        },
-      ),
+      _getStarted(user, hasJar: false),
     ];
+  }
+
+  /// Onboarding steps: verify, profile photo, payout account, first jar.
+  Widget _getStarted(User? user, {required bool hasJar}) {
+    final verified =
+        user == null
+            ? false
+            : user.isOrganization
+            ? user.kybStatus == 'approved'
+            : user.kycStatus == 'verified';
+    return BlocBuilder<WithdrawalAccountsBloc, WithdrawalAccountsState>(
+      builder: (context, wa) {
+        final hasPayout = wa.accounts.isNotEmpty;
+        final steps = <_Step>[
+          _Step(
+            user?.isOrganization == true
+                ? 'Verify your business'
+                : 'Verify your ID',
+            subtitle: 'About 3 minutes',
+            done: verified,
+            onStart:
+                () => context.push(
+                  user?.isOrganization == true
+                      ? AppRoutes.businessKyb
+                      : AppRoutes.kycView,
+                ),
+          ),
+          _Step(
+            'Set up your profile',
+            subtitle: 'Add a photo so contributors know it\'s you',
+            done: user?.photo != null,
+            onStart: () => context.push(AppRoutes.userAccountView),
+          ),
+          _Step(
+            'Add a payout account',
+            subtitle: 'Where your money goes',
+            done: hasPayout,
+            onStart: () => context.push(AppRoutes.withdrawalAccounts),
+          ),
+          _Step(
+            'Create your first jar',
+            subtitle: 'Takes two minutes',
+            done: hasJar,
+            onStart: () => JarActions.createJar(context),
+          ),
+        ];
+        return _GetStartedCard(steps: steps);
+      },
+    );
   }
 
   /// Every jar is closed: invite to start the next one, list the closed ones.
