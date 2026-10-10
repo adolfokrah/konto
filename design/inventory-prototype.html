@@ -4549,10 +4549,10 @@ const hm = t => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2
 const dur = ms => { const m = Math.max(0, Math.round(ms / 6e4)); return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm'; };
 const canSeeAll = () => isOwner() || can('team.read');
 const clockOn = () => S.clockOn !== false, clockSet = k => k === 'clockRequire' ? !!S.clockRequire : S[k] !== false;
-const CKV = { v: 'tap' };
-const clockIn = (mid, who) => { if (clockOpen(mid)) return null; const e = { id: uid('ck'), mid, who, t: Date.now(), out: null, br: sellBr(), sh: (shiftHere() || {}).id || '', via: CKV.v, by: myName() }; CKV.v = 'tap'; S.clock.log.unshift(e); return e; };
+const CKV = { v: 'tap', br: '' };
+const clockIn = (mid, who) => { if (clockOpen(mid)) return null; const e = { id: uid('ck'), mid, who, t: Date.now(), out: null, br: CKV.br || sellBr(), sh: CKV.br && CKV.br !== sellBr() ? '' : (shiftHere() || {}).id || '', via: CKV.v, by: myName() }; CKV.v = 'tap'; CKV.br = ''; S.clock.log.unshift(e); return e; };
 const clockOut = mid => { const e = clockOpen(mid); if (e) e.out = Date.now(); return e; };
-const clockCard = link => { const e = clockOpen(myId()), sh = shiftHere(); return `<div class="card ${e ? 'w' : 'warn'}"${e ? ` style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"` : ''}><div class="between" style="gap:10px"><div class="lm"><b class="t-bm">${e ? 'You are clocked in' : 'You are not clocked in'}</b><span class="t-bs" style="white-space:normal">${e ? 'Since ' + hm(e.t) + ' · ' + dur(Date.now() - e.t) + (e.sh ? ' · on this till shift' : '') : (sh ? 'The till is open. Clock in to log your hours.' : 'Opening the till clocks you in.')}</span></div>${btn(e ? 'Clock out' : 'Clock in', e ? 'clockOut' : 'clockIn', null, { sm: 1, k: e ? 'g' : '' })}</div>${link ? `<div style="margin-top:8px">${btn('View hours', 'openTimeclock', null, { k: 'g', sm: 1 })}</div>` : ''}</div>`; };
+const clockCard = link => { const e = clockOpen(myId()), sh = shiftHere(); return `<div class="card ${e ? 'w' : 'warn'}"${e ? ` style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"` : ''}><div class="between" style="gap:10px"><div class="lm"><b class="t-bm">${e ? 'You are clocked in' : 'You are not clocked in'}</b><span class="t-bs" style="white-space:normal">${e ? 'Since ' + hm(e.t) + ' · ' + dur(Date.now() - e.t) + (multi() ? ' · ' + esc(branchName(e.br || firstBr())) : '') + (e.sh ? ' · on this till shift' : '') : (sh ? 'The till is open. Clock in to log your hours.' : 'Opening the till clocks you in.')}</span></div>${btn(e ? 'Clock out' : 'Clock in', e ? 'clockOut' : 'clockIn', null, { sm: 1, k: e ? 'g' : '' })}</div>${link ? `<div style="margin-top:8px">${btn('View hours', 'openTimeclock', null, { k: 'g', sm: 1 })}</div>` : ''}</div>`; };
 SCREENS.timeclock = () => { const L = ensureClock().log, all = canSeeAll(), me = myId(), bf = brFilter(), vis = L.filter(e => (all || e.mid === me) && (!bf || (e.br || firstBr()) === bf)), now = Date.now(), wk = now - 7 * 864e5, inNow = vis.filter(e => !e.out).sort((a, b) => a.t - b.t), done = vis.filter(e => e.out).sort((a, b) => b.out - a.out).slice(0, 40);
   const people = (S.team || []).filter(m => m.status === 'active' && (all || m.id === me) && (!bf || m.branches === 'all' || m.branches === bf)), tot = {}; vis.filter(e => e.t > wk).forEach(e => { tot[e.mid] = (tot[e.mid] || 0) + ((e.out || now) - e.t); });
   const days = []; done.forEach(e => { const d = new Date(e.out).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }); let g = days.find(x => x.d === d); if (!g) days.push(g = { d, list: [] }); g.list.push(e); });
@@ -4560,20 +4560,20 @@ SCREENS.timeclock = () => { const L = ensureClock().log, all = canSeeAll(), me =
   return `${nav('Time clock')}<div class="pad" id="pad" style="gap:12px">${clockCard()}${btn('Clock in or out with a PIN', 'openClockKiosk', null, { k: 's', sm: 1 })}${meMember() && !meMember().pin ? '<div class="hint">You have no Till PIN yet. Add one under Team so only you can clock in and out.</div>' : ''}
   ${isOwner() || can('settings.update') ? `<div class="card w" style="padding:2px 14px">${lay('Time clock settings', S.clockRequire ? 'Clock in is needed before selling' : 'Clock in is optional', '', 'openClockSettings')}</div>` : ''}
   ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${sect('Clocked in now')}${inNow.length ? `<div class="col g8">${inNow.map(e => `<div class="vrow" style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"><div class="lm"><b>${esc(e.who)}</b><span>Since ${hm(e.t)} · ${dur(now - e.t)}${e.sh ? ' · till shift' : ''}${multi() ? ' · ' + esc(branchName(e.br)) : ''}</span></div>${all ? btn('Clock out', 'clockOutFor', e.mid, { sm: 1, k: 'g' }) : pill('In', 'ok')}${ic('chev', 18)}</div>`).join('')}</div>` : '<div class="t-bs mute">Nobody is clocked in.</div>'}
-  ${all && out.length ? sect('Not clocked in') + `<div class="col g8">${out.map(m => `<div class="vrow"><div class="lm"><b>${esc(m.name)}</b><span>${esc((roleOf(m) || {}).name || '')}</span></div>${btn('Clock in', 'clockInFor', m.id, { sm: 1, k: 's' })}</div>`).join('')}</div>` : ''}
+  ${all && out.length ? sect('Not clocked in') + `<div class="col g8">${out.map(ckOutRow).join('')}</div>` : ''}
   ${all ? sect('Hours this week') + `<div class="col g8">${people.map(m => `<div class="vrow"><div class="lm"><b>${esc(m.name)}</b></div><b>${dur(tot[m.id] || 0)}</b></div>`).join('')}</div>` : `${sect('Your hours this week')}<div class="card w"><div class="between"><span class="t-bm">Total</span><b class="t-hs">${dur(tot[me] || 0)}</b></div></div>`}
   ${days.length ? days.map(g => sect(g.d) + `<div class="col g8">${g.list.map(e => `<div class="vrow" style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"><div class="lm"><b>${all ? esc(e.who) : hm(e.t) + ' to ' + hm(e.out)}</b><span>${all ? hm(e.t) + ' to ' + hm(e.out) : ''}${e.sh ? (all ? ' · ' : '') + 'On a till shift' : ''}</span></div><div class="row g8"><b>${dur(e.out - e.t)}</b>${ic('chev', 18)}</div></div>`).join('')}</div>`).join('') : ''}</div>`; };
 function tillClosed(sh) { if (!clockOn() || !clockSet('clockTillOut')) return ''; ensureClock(); const opener = (S.team || []).find(m => m.name === sh.who), mine = clockOpen(myId()); [myId()].concat(opener ? [opener.id] : []).forEach(clockOut); return ' You are clocked out' + (mine ? ' · ' + dur(mine.out - mine.t) + ' today.' : '.'); }
 (() => { const os = A.openShift, comp = A.completeSale, st = SCREENS.till;
-  A.openShift = function () { const had = shiftHere(); os.call(A); const sh = shiftHere(); if (!had && sh && clockOn() && clockSet('clockTillIn')) { ensureClock(); const mid = myId(), e = clockOpen(mid); if (e) e.sh = sh.id; else { CKV.v = 'till'; clockIn(mid, myName()); toast('Till is open and you are clocked in.'); } save(); render(true); } };
-  A.completeSale = function (m) { if (clockOn() && S.clockRequire && !clockOpen(myId())) { toast('Clock in before you sell.', 1); return; } return comp.apply(A, arguments); };
+  A.openShift = function () { const had = shiftHere(); os.call(A); const sh = shiftHere(); if (!had && sh && clockOn() && clockSet('clockTillIn')) { ensureClock(); const mid = myId(), e = clockOpen(mid); if (e) { if ((e.br || firstBr()) === sh.br) e.sh = sh.id; } else { CKV.v = 'till'; clockIn(mid, myName()); toast('Till is open and you are clocked in.'); } save(); render(true); } };
+  A.completeSale = function (m) { if (clockOn() && S.clockRequire && !clockHere(myId())) { toast('Clock in at this branch before you sell.', 1); return; } return comp.apply(A, arguments); };
   SCREENS.till = () => { const h = st(), i = h.indexOf('id="pad"'); if (i < 0 || !clockOn()) return h; const j = h.indexOf('>', i) + 1; return h.slice(0, j) + clockCard(true) + h.slice(j); };
 })();
 Object.assign(A, {
   openTimeclock() { push('timeclock', {}); },
   clockIn() { clockIn(myId(), myName()); save(); render(true); toast('Clocked in at ' + hm(Date.now()) + '.'); },
   clockOut() { const e = clockOut(myId()); save(); render(true); if (e) toast('Clocked out · ' + dur(e.out - e.t) + ' worked.'); },
-  clockInFor(mid) { if (!canSeeAll()) { toast('You do not have permission to change this.', 1); return; } const m = S.team.find(x => x.id === mid); CKV.v = 'manager'; clockIn(mid, m ? m.name : ''); save(); render(true); toast((m ? m.name : 'They') + ' clocked in.'); },
+  clockInFor(mid) { if (!canSeeAll()) { toast('You do not have permission to change this.', 1); return; } const m = S.team.find(x => x.id === mid), e0 = clockOpen(mid); if (e0) { toast((m ? m.name : 'They') + ' is already clocked in at ' + branchName(e0.br || firstBr()) + '.', 1); return; } CKV.v = 'manager'; CKV.br = m && m.branches !== 'all' && S.branches.some(b => b.id === m.branches) ? m.branches : (listBr() || sellBr()); clockIn(mid, m ? m.name : ''); save(); render(true); toast((m ? m.name : 'They') + ' clocked in.'); },
   clockOutFor(mid) { if (!canSeeAll()) { toast('You do not have permission to change this.', 1); return; } const e = clockOut(mid); save(); render(true); if (e) toast(e.who + ' clocked out · ' + dur(e.out - e.t) + '.'); },
   openClockSettings() { push('clockSettings', {}); },
   toggleClockSet(k) { if (k === 'clockRequire') S.clockRequire = !S.clockRequire; else S[k] = S[k] === false; save(); render(true); }
@@ -4670,19 +4670,20 @@ Object.assign(GUARD_FN, {
 /* clock in first: when clock in is required, the first sale action asks for a PIN (or one tap) and then carries on */
 (() => {
   const GATED = ['sellTap', 'addScan', 'addKeyAmount', 'openCart', 'chargeNow', 'takeCash', 'resumeHeld', 'acceptGuest'];
-  const need = () => clockOn() && S.clockRequire && !clockOpen(myId());
+  const need = () => clockOn() && S.clockRequire && !clockHere(myId());
   const resume = p => { if (p && A[p.a]) A[p.a](p.arg); };
   GATED.forEach(a => {
     const orig = A[a]; if (!orig) return;
     A[a] = function (arg) {
       if (!need()) return orig.apply(A, arguments);
-      const m = meMember(); UI.pendingSell = { a, arg };
+      const m = meMember(); UI.pendingSell = { a, arg }; const away = clockAway(myId());
+      if (away) { const at = branchName(away.br || firstBr()); confirmSheet({ title: 'Clock out first', text: 'You are clocked in at ' + esc(at) + '. Clock out there before you sell at ' + esc(branchName(sellBr())) + ', or go back to ' + esc(at) + '.', label: 'Go back to ' + esc(at), onConfirm: () => { UI.pendingSell = null; UI.sheet = null; A.setSellBr(away.br || firstBr()); } }); return; }
       if (m && m.pin && clockSet('clockPin')) { push('clockPin', { mode: 'self', mid: m.id, act: 'in', pin: '', err: '', after: 'sell' }); return; }
       confirmSheet({ title: 'Clock in to start selling', text: 'Clock in is needed before selling. Your hours are logged from now.', label: 'Clock in', onConfirm: () => { const p = UI.pendingSell; UI.pendingSell = null; A.clockDo(myId(), 'in'); render(true); resume(p); } });
     };
   });
   const ps = A.pinSubmit;
-  A.pinSubmit = function () { const f = cur().f, after = f && f.after, was = clockOpen(myId()); CKV.v = 'pin'; ps.call(A); CKV.v = 'tap'; if (after === 'sell' && !was && clockOpen(myId())) { const p = UI.pendingSell; UI.pendingSell = null; resume(p); } };
+  A.pinSubmit = function () { const f = cur().f, after = f && f.after, was = clockOpen(myId()); CKV.v = 'pin'; ps.call(A); CKV.v = 'tap'; if (after === 'sell' && !was && clockOpen(myId())) { const p = UI.pendingSell; UI.pendingSell = null; resume(p); } if (after === 'switch' && !clockOpen(myId()) && UI.switchTo) { const to = UI.switchTo; UI.switchTo = ''; A.setSellBr(to); toast('Clocked out. Now at ' + branchName(to) + '.'); } };
 })();
 V2_MORE.push(['Set up', 'settings', () => lay('Time clock settings', clockOn() ? (S.clockRequire ? 'Clock in needed before selling' : 'Clock in is optional') : 'Off', '', 'openClockSettings')]);
 V2_MORE.push(['Sales', null, () => { if (!clockOn()) return ''; const e = clockOpen(myId()); return lay('Time clock', e ? 'Clocked in since ' + hm(e.t) : 'Clock in and out, and see hours', e ? dur(Date.now() - e.t) : '', 'openTimeclock'); }]);
@@ -5133,6 +5134,15 @@ Object.assign(A, {
 const firstBr = () => (S.branches[0] || {}).id;
 const stashNote = () => Object.entries(UI.bcarts || {}).filter(([b, c]) => c && c.lines.length && b !== sellBr() && S.branches.some(x => x.id === b)).map(([b, c]) => `<button class="vrow" style="width:100%;text-align:left;cursor:pointer;min-height:48px" data-act="setSellBr" data-arg="${b}"><div class="lm"><b>${esc(branchName(b))} has a saved cart</b><span>${pdesc(c.lines.length, 'item', 'items')} · tap to go back to it</span></div>${ic('chev', 18)}</button>`).join('');
 const tbr = t => t.br || firstBr();
+const clockHere = mid => { const e = clockOpen(mid); return e && (e.br || firstBr()) === sellBr() ? e : null; };
+const clockAway = mid => { const e = clockOpen(mid); return e && (e.br || firstBr()) !== sellBr() ? e : null; };
+const ckOutRow = m => { const el = clockOpen(m.id), at = el && branchName(el.br || firstBr()); return `<div class="vrow"><div class="lm"><b>${esc(m.name)}</b><span>${el ? 'Clocked in at ' + esc(at) + ' since ' + hm(el.t) : esc((roleOf(m) || {}).name || '')}</span></div>${el ? pill('At ' + at, 'n') : btn('Clock in', 'clockInFor', m.id, { sm: 1, k: 's' })}</div>`; };
+(() => { const sb = A.setSellBr; A.setSellBr = function (id) { const from = sellBr(), e = clockOn() ? clockOpen(myId()) : null;
+  if (id && id !== from && e && (e.br || firstBr()) !== id) { const at = branchName(e.br || firstBr()), to = branchName(id);
+    confirmSheet({ title: 'Clock out first', text: 'You are clocked in at ' + esc(at) + '. Clock out before you switch to ' + esc(to) + '.', label: 'Clock out and switch', cancel: 'Stay at ' + esc(at), onConfirm: () => { UI.sheet = null; const me = meMember();
+      if (me && me.pin && clockSet('clockPin')) { UI.switchTo = id; push('clockPin', { mode: 'self', mid: me.id, act: 'out', pin: '', err: '', after: 'switch' }); return; }
+      clockOut(myId()); save(); sb.call(A, id); toast('Clocked out of ' + at + '. Now at ' + to + '.'); } }); return; }
+  return sb.call(A, id); }; })();
 const tablesHere = () => S.tables.filter(t => tbr(t) === sellBr());
 const heldHere = () => S.held.filter(h => !multi() || (h.br || firstBr()) === sellBr());
 const bkBr = b => b.br || firstBr();
