@@ -1845,7 +1845,7 @@ SCREENS.sell = () => {
   const br = sellBr(), c = UI.cart, n = c ? c.lines.length : 0, mode = UI.sellMode === 'tables' && !feat('tables') ? 'keypad' : (UI.sellMode || 'keypad'), amt = keyAmt(), tot = (n || amt) ? cartCalc(cartPlusKey(), br).total : 0, cc = n ? cartCalc(c, br) : null;
   const head = `<div class="ph-title" style="padding-top:6px;padding-bottom:12px"><div class="t-hl">POS</div><div class="row g8"><div style="position:relative">${ibtn('register', 'openTill')}<span class="tdot ${shiftHere() ? 'yes' : 'no'}"></span></div>${notifBell()}${ibtn('dots', 'sellMenu')}</div></div>`;
   const heldRow = heldHere().length ? `<button class="vrow" style="width:100%;text-align:left;cursor:pointer;min-height:48px" data-act="openHeld"><div class="lm"><b>${pdesc(heldHere().length, 'held sale', 'held sales')}</b><span>Tap to resume</span></div>${ic('chev', 18)}</button>` : '';
-  const top = `${multi() && !scoped() ? brChips('setSellBr', br, false) : scoped() ? `<div class="t-bs mute row g8">${ic('store', 16)}Selling at ${esc(branchName(br))}</div>` : ''}${seg([['keypad', 'Keypad'], ['items', 'Items'], ['favs', 'Favourites']].concat(feat('tables') && tablesHere().length ? [['tables', 'Tables']] : []), mode, 'setSellMode')}${heldRow}`;
+  const top = `${multi() && !scoped() ? brChips('setSellBr', br, false) + stashNote() : scoped() ? `<div class="t-bs mute row g8">${ic('store', 16)}Selling at ${esc(branchName(br))}</div>` : ''}${seg([['keypad', 'Keypad'], ['items', 'Items'], ['favs', 'Favourites']].concat(feat('tables') && tablesHere().length ? [['tables', 'Tables']] : []), mode, 'setSellMode')}${heldRow}`;
   if (mode === 'tables') {
     return `${head}<div class="pad" id="pad" style="gap:12px">${top}<div class="tiles">${tablesHere().map(t => { const st = tableState(t); return `<button class="tile" data-act="openTable" data-arg="${t.id}" style="${st.k !== 'free' ? 'border-color:var(--ink)' : ''}"><b>${esc(t.name)}</b><span>${esc(st.k === 'free' ? 'Tap to seat' : st.label)}</span>${pill(st.k === 'free' ? 'Free' : st.k === 'held' ? 'Open' : 'Unpaid', st.k === 'free' ? 'ok' : 'warn')}</button>`; }).join('')}</div>${btn('Manage tables', 'openTables', null, { k: 'g', sm: 1 })}</div>
       ${n ? `<div class="cta edge">${btn(`View cart · ${rnd(cartCount())} item${cartCount() === 1 ? '' : 's'} · ${money(cc.total)}`, 'openCart')}</div>` : ''}${tabBar('sell')}`;
@@ -2367,7 +2367,11 @@ const A = {
   writeOffExpired() { const rows = expiredRows(); if (!rows.length) return; confirmSheet({ title: 'Write off expired stock?', text: rows.length + ' expired batch' + (rows.length === 1 ? '' : 'es') + ' will be taken out of stock as Expired. It is logged in stock history.', label: 'Write off', danger: 1, onConfirm: () => { rows.forEach(x => { stockBranches().forEach(b => { const q = qtyAt(x.p, x.it.key, b); if (q > 0) { moveStock(x.p, x.it.key, b, -q, 'remove', 'Expired'); log(x.p.id, 'Stock -' + q + ' (Expired)'); } }); }); save(); UI.sheet = null; render(); toast('Expired stock written off.'); } }); },
   openAltSuppliers() { const p = UI.draft, alt = p.alt || []; UI.sheet = { type: 'menu', title: 'Other suppliers', items: S.suppliers.filter(n => n !== p.supplier).map(n => [(alt.includes(n) ? '✓ ' : '') + esc(n), 'toggleAlt', n, 0, 'truck']) }; render(true); },
   toggleAlt(n) { const p = UI.draft; p.alt = p.alt || []; p.alt = p.alt.includes(n) ? p.alt.filter(x => x !== n) : p.alt.concat(n); UI.dirty = true; A.openAltSuppliers(); },
-  setSellBr(id) { UI.sellBr = id; if (UI.cart && UI.cart.lines.length) { UI.cart = null; toast('Cart cleared. It was for another branch.'); } render(true); },
+  setSellBr(id) { const from = sellBr(); if (id === from) { render(true); return; } UI.bcarts = UI.bcarts || {};
+    /* each branch keeps its own cart: leave it here, pick up the one waiting there */
+    const had = !!(UI.cart && UI.cart.lines.length); if (had) UI.bcarts[from] = UI.cart; else delete UI.bcarts[from];
+    UI.sellBr = id; UI.cart = UI.bcarts[id] || null; const back = !!(UI.cart && UI.cart.lines.length); delete UI.bcarts[id];
+    if (had || back) toast((had ? 'Cart saved for ' + branchName(from) + '.' : '') + (back ? (had ? ' ' : '') + 'Back to the cart for ' + branchName(id) + '.' : '')); render(true); },
   sellTap(pid) {
     const p = pById(pid), br = sellBr(), vs = activeVariants(p);
     if (vs.length > 1) { UI.sheet = { type: 'menu', title: esc(p.name), items: vs.map(v => { const pr = sellPrice(p, v.id, '', curList(cartOf()), br); return [esc(v.name), 'pickSellVariant', pid + '|' + v.id, 0, 'box', esc((pr != null ? money(pr) : 'No price') + (p.track ? ' · ' + availIn(p, sellAvail(p, v.id, br), '', v.id) + ' in stock' : ''))]; }) }; render(true); return; }
@@ -5120,6 +5124,7 @@ Object.assign(A, {
 
 /* ===== v2: what belongs to a branch ===== */
 const firstBr = () => (S.branches[0] || {}).id;
+const stashNote = () => Object.entries(UI.bcarts || {}).filter(([b, c]) => c && c.lines.length && b !== sellBr() && S.branches.some(x => x.id === b)).map(([b, c]) => `<button class="vrow" style="width:100%;text-align:left;cursor:pointer;min-height:48px" data-act="setSellBr" data-arg="${b}"><div class="lm"><b>${esc(branchName(b))} has a saved cart</b><span>${pdesc(c.lines.length, 'item', 'items')} · tap to go back to it</span></div>${ic('chev', 18)}</button>`).join('');
 const tbr = t => t.br || firstBr();
 const tablesHere = () => S.tables.filter(t => tbr(t) === sellBr());
 const heldHere = () => S.held.filter(h => !multi() || (h.br || firstBr()) === sellBr());
