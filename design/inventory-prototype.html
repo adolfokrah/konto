@@ -2095,7 +2095,7 @@ SCREENS.countStart = () => {
   const f = cur().f, cats = [...new Set(S.products.filter(p => p.track).map(p => p.cat).filter(Boolean))].sort();
   const n = countItems(f).length;
   return `${nav('Take stock')}<div class="pad" id="pad" style="gap:14px"><div class="t-bm">Count what is on the shelf. Nothing changes until you review and apply.</div>
-    ${multi() && !scoped() ? `<div class="fld"><label>Branch</label>${brChips('setCountBranch', f.br, false)}</div>` : ''}
+    ${multi() ? card(`<div class="t-bs mute">Counting at</div><div class="b7">${esc(branchName(f.br))}</div>`, 'w') : ''}
     <div class="fld"><label>What to count</label><div class="chips"><button class="chip ${!f.cat ? 'on' : ''}" data-act="setCountCat" data-arg="">Everything</button>${cats.map(c => `<button class="chip ${f.cat === c ? 'on' : ''}" data-act="setCountCat" data-arg="${esc(c)}">${esc(c)}</button>`).join('')}</div></div>
     <div class="card"><div class="t-bs">${n} item${n === 1 ? '' : 's'} to count${S.branches.length > 1 ? ' at ' + esc(branchName(f.br)) : ''}. The expected amounts stay hidden, so the count is honest.</div></div>
   </div>${cta(btn('Start counting', 'beginCount', null, { off: !n }), btn('Cancel', 'back', null, { k: 'g' }))}`;
@@ -2784,7 +2784,6 @@ const A = {
     t.status = 'received'; const i = S.transfers.findIndex(x => x.id === t.id); S.transfers[i] = clone(t); save(); UI.stack.pop(); UI.stack.pop(); UI.errs = {}; render(); toast(t.no + ' received at ' + branchName(t.to) + (short ? '. Short by ' + short + ' recorded.' : '.'));
   },
   startCount() { if (S.count) push('counting', S.count); else push('countStart', { br: sellBr(), cat: '' }); },
-  setCountBranch(b) { cur().f.br = b; render(true); },
   setCountCat(c) { cur().f.cat = c; render(true); },
   beginCount() { const f = cur().f; S.count = { id: uid('c'), br: f.br, cat: f.cat, t: Date.now(), rows: countItems(f).map(x => ({ pid: x.pid, key: x.key, qtyS: '', snText: '', exp0: qtyAt(pById(x.pid), x.key, f.br) })) }; save(); UI.stack.pop(); push('counting', S.count); },
   pauseCount() { save(); pop(); toast('Count saved. Continue it from Stock.'); },
@@ -3674,7 +3673,7 @@ SCREENS.order = () => {
   const st = PO_ST[f.status];
   return `${nav(f.no || (isNew ? 'New purchase' : 'New order'), { right: f.id && !ro ? ibtn('dots', 'orderMenu') : '<div class="ib"></div>' })}<div class="pad" id="pad" style="gap:12px">
     ${f.id ? `<div class="between"><span class="t-bs mute">${ago(f.t)}</span>${pill(st[0], st[1])}</div>` : ''}
-    ${multi() ? (ro || scoped() ? card(`<div class="t-bs mute">Deliver to</div><div class="b7">${esc(branchName(f.br || S.branches[0].id))}</div>`, 'w') : `<div class="fld"><label>Deliver to</label>${brChips('setOrderBranch', f.br || S.branches[0].id, false)}</div>`) : ''}
+    ${multi() ? card(`<div class="t-bs mute">Deliver to</div><div class="b7">${esc(branchName(f.br || S.branches[0].id))}</div>`, 'w') : ''}
     ${sups.map(n => { const i = supInfo(n), t = [i.terms && 'Pay: ' + i.terms, i.lead && 'Delivery ' + i.lead + ' days'].filter(Boolean); return t.length ? `<div class="t-bs mute">${esc(n)} · ${t.map(esc).join(' · ')}</div>` : ''; }).join('')}
     ${sect('Items')}${f.lines.length ? `<div class="col g8">${f.lines.map(line).join('')}</div>` : empty('plus', 'No items yet', 'Pick the products you want to order.')}
     ${ro ? '' : `<div class="col g8">${btn('Add a product', 'addPoSheet', null, { k: 's', sm: 1, icon: 'plus' })}${f.defSup ? btn('Add all from ' + esc(f.defSup), 'addSupplierAll', null, { k: 'g', sm: 1 }) : ''}</div>`}
@@ -3745,7 +3744,6 @@ Object.assign(A, {
   newOrderFor(n) { const f = { supplier: '', defSup: n, br: sellBr(), lines: [], note: '', status: 'draft' }; UI.stack.pop(); push('order', f); },
   openOrder(id) { const o = clone(S.orders.find(x => x.id === id)); push('order', o); },
   setPoUnit(a) { const [lid, uidv] = a.split('|'), l = cur().f.lines.find(x => x.id === lid), p = pById(l.pid), it = poItems(p).find(x => x.key === l.key) || poItems(p)[0], c = it.isNew ? poCost(p, { vid: it.vid, key: it.vid }) : poCost(p, it); l.ul = uidv; l.costS = c == null ? '' : fromPes(Math.round(c * unitFactor(p, uidv))); render(true); },
-  setOrderBranch(b) { const f = cur().f; f.br = b; const n = f.lines.length; f.lines = f.lines.filter(l => { const p = pById(l.pid); return p && soldAt(p, b); }); render(true); if (f.lines.length < n) toast((n - f.lines.length) + ' item' + (n - f.lines.length === 1 ? '' : 's') + ' not sold at ' + branchName(b) + ' removed.'); },
   addPoSheet() { UI.sheet = { type: 'poitem', q: '' }; render(true); },
   addPoLine(a) { const [id, key] = a.split('|'), f = cur().f, p = pById(id), it = poItems(p).find(x => x.key === key) || poItems(p)[0], ln = poLineFor(p, it); ln.sup = f.defSup || p.supplier || ''; f.lines.push(ln); UI.sheet = null; render(true); },
   openPoLineSup(id) { const f = cur().f, l = f.lines.find(x => x.id === id), p = pById(l.pid), mine = [p.supplier].concat(p.alt || []).filter(Boolean), rest = S.suppliers.filter(n => !mine.includes(n)); UI.sheet = { type: 'select', title: 'Supplier for ' + esc(p.name), cur: l.sup || '', act: 'setPoLineSup', lid: id, items: mine.map(n => [n, n, n === p.supplier ? 'Usual supplier' : 'Other supplier for this item']).concat(rest.map(n => [n, n, ''])) }; render(true); },
