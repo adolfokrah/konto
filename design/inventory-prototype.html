@@ -2833,7 +2833,7 @@ const A = {
   },
 
   openHistory(id) { push('history', { pid: id || null }); },
-  openRole() { UI.sheet = { type: 'role' }; render(true); },
+  openViewAs() { UI.sheet = { type: 'role' }; render(true); },
   resetDemo() { confirmSheet({ title: 'Load sample products?', text: 'This replaces everything you have now with sample data.', label: 'Load samples', danger: 1, onConfirm: () => { S = seed(); fixS(); save(); toRoot(); toast('Sample products loaded.'); } }); },
   clearAll() { confirmSheet({ title: 'Clear all data?', text: 'Every product, batch, unit and history entry is removed from this browser. This cannot be undone.', label: 'Clear everything', danger: 1, onConfirm: () => { S = { products: [], units: [], cats: [], history: [], role: S.role }; fixS(); save(); toRoot(); toast('All data cleared.'); } }); },
   openStockReport() { push('stockReport', { days: '30' }); },
@@ -5061,7 +5061,7 @@ V2_MORE.push(['Set up', 'importExport', () => lay('Export your data', 'Download 
 V2_MORE.push(['Account', '', () => lay('Your account', SESSION ? SESSION.email : 'Name, email and sign out', '', 'openAccount')]);
 (() => { const la = A.logoutAsk; A.logoutAsk = function () { const e = clockOn() && clockSet('clockLogout') && clockOpen(myId()); if (!e) return la.call(A); const sh = shiftHere();
   confirmSheet({ title: 'Clock out first', text: 'You have been clocked in since ' + hm(e.t) + ' (' + dur(Date.now() - e.t) + ').' + (sh ? ' The till is still open on this shift.' : '') + ' Clock out to end your hours, then you are logged out.', label: 'Clock out and log out', danger: 1, onConfirm: () => { UI.sheet = null; const me = meMember(); if (me && me.pin && clockSet('clockPin')) { push('clockPin', { mode: 'self', mid: me.id, act: 'out', pin: '', err: '', after: 'logout' }); return; } clockOut(myId()); save(); A.logout(); } }); }; })();
-V2_MORE.push(['Try it out', '', () => lay('View as', 'See the app the way a team member sees it', (meMember() || { name: 'Owner' }).name, 'openRole')]);
+V2_MORE.push(['Try it out', '', () => lay('View as', 'See the app the way a team member sees it', (meMember() || { name: 'Owner' }).name, 'openViewAs')]);
 V2_MORE.push(['Try it out', '', () => isOwner() ? lay('Load sample products', 'Replace your products with a ready-made set', '', 'resetDemo') : '']);
 V2_MORE.push(['Try it out', '', () => isOwner() ? lay('Clear all data', 'Remove products, sales and customers from this shop', '', 'clearAll') : '']);
 V2_MORE.push(['Account', '', () => lay('Log out', SESSION ? SESSION.email : '', '', 'logoutAsk')]);
