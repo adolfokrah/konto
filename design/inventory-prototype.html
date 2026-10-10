@@ -519,7 +519,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); persistOk 
 save();
 
 /* ---------- ui state ---------- */
-const UI = { branch: '', stack: [{ name: 'sell' }], draft: null, editing: null, dirty: false, errs: {}, sheet: null, q: '', cat: '', quick: '', status: 'active', flags: {}, sel: null, toast: '', who: 'You' };
+const UI = { stack: [{ name: 'sell' }], draft: null, editing: null, dirty: false, errs: {}, sheet: null, q: '', cat: '', quick: '', status: 'active', flags: {}, sel: null, toast: '', who: 'You' };
 const cur = () => UI.stack[UI.stack.length - 1];
 function root(sc) { return sc === 'p' ? UI.draft : sc === 'f' ? cur().f : UI; }
 function getB(path) { const [sc, ...rest] = path.split('.'); let o = root(sc); for (const k of rest) { if (o == null) return ''; o = o[k]; } return o ?? ''; }
@@ -635,7 +635,7 @@ function sheetHtml() {
     const cats = [...new Set(S.products.filter(catAllowed).map(p => p.cat).filter(Boolean))].sort(), n = filtered().length;
     return wrap(`<div class="between"><div class="t-hs">Filter</div><button class="b6" data-act="resetFilters">Reset</button></div>
       <div class="sect">Status</div>${seg([['active', 'Active'], ['draft', 'Draft']], UI.status, 'setStatus')}
-      ${multi() && !scoped() ? `<div class="sect">Branch</div><div class="col g8">${radio(!UI.branch, 'All branches', '', 'setBranchFilter', '')}${S.branches.map(b => radio(UI.branch === b.id, b.name, '', 'setBranchFilter', b.id)).join('')}</div>` : ''}
+      ${multi() && !scoped() ? `<div class="sect">Branch</div><div class="col g8">${radio(!viewBranch(), 'All branches', '', 'setBranchFilter', '')}${S.branches.map(b => radio(viewBranch() === b.id, b.name, '', 'setBranchFilter', b.id)).join('')}</div>` : ''}
       <div class="sect">Category</div><div class="col g8">${radio(!UI.cat, 'All categories', '', 'setCatFilter', '')}${cats.map(c => radio(UI.cat === c, c, '', 'setCatFilter', c)).join('')}</div>
       <div class="sect">Needs attention</div>${tgRow('No barcode', 'Products without a barcode', !!UI.flags.nobarcode, 'flag', 'nobarcode')}${can('costView') ? tgRow('No cost price', 'Cost is not set', !!UI.flags.nocost, 'flag', 'nocost') + tgRow('Low margin', 'Under ' + LOW_MARGIN + '%', !!UI.flags.low, 'flag', 'low') : ''}
       ${btn('Show ' + n + ' product' + (n === 1 ? '' : 's'), 'closeSheet', null, { blk: 1 })}`);
@@ -758,17 +758,17 @@ function listScreen(svc) {
 const multi = () => S.branches.length > 1;
 const myBranch = () => { const m = meMember(); return m && m.branches !== 'all' && S.branches.some(b => b.id === m.branches) ? m.branches : S.branches[0].id; };
 const scoped = () => { const m = meMember(); return multi() && !!m && m.branches !== 'all' && S.branches.some(b => b.id === m.branches); };
-const viewBranch = () => scoped() ? myBranch() : UI.branch;
+const viewBranch = () => !multi() ? '' : scoped() ? myBranch() : (UI.branch === undefined ? sellBr() : UI.branch);
 const soldList = p => !p.branches || p.branches === 'all' ? S.branches.map(b => b.id) : p.branches;
 const soldAt = (p, b) => !p.branches || p.branches === 'all' || p.branches.includes(b);
 const branchName = id => (S.branches.find(b => b.id === id) || { name: 'Removed branch' }).name;
 const branchText = p => !p.branches || p.branches === 'all' ? 'All branches' : p.branches.length === 1 ? branchName(p.branches[0]) : p.branches.length + ' branches';
 const quickChips = (svc, cats) => { const on = !UI.cat && !UI.quick, c = (lab, arg, isOn) => `<button class="chip ${isOn ? 'on' : ''}" data-act="quickF" data-arg="${esc(arg)}">${esc(lab)}</button>`;
   return `<div class="chips scroll">${c('All', '', on)}${svc ? '' : c('Low stock', 'low', UI.quick === 'low') + c('Out of stock', 'out', UI.quick === 'out')}${cats.map(x => c(x, 'cat:' + x, UI.cat === x)).join('')}</div>`; };
-function nFilters() { return (UI.branch && !scoped() ? 1 : 0) + (UI.cat ? 1 : 0) + (UI.status !== 'active' ? 1 : 0) + Object.values(UI.flags).filter(Boolean).length; }
+function nFilters() { return (multi() && !scoped() && viewBranch() !== sellBr() ? 1 : 0) + (UI.cat ? 1 : 0) + (UI.status !== 'active' ? 1 : 0) + Object.values(UI.flags).filter(Boolean).length; }
 function filterLine() {
   const n = nFilters(); if (!n) return '';
-  const parts = [!scoped() && UI.branch && branchName(UI.branch), UI.cat, UI.status === 'draft' ? 'Draft' : '', UI.flags.nobarcode ? 'No barcode' : '', UI.flags.nocost ? 'No cost price' : '', UI.flags.low ? 'Low margin' : ''].filter(Boolean);
+  const parts = [multi() && !scoped() && viewBranch() !== sellBr() && (viewBranch() ? branchName(viewBranch()) : 'All branches'), UI.cat, UI.status === 'draft' ? 'Draft' : '', UI.flags.nobarcode ? 'No barcode' : '', UI.flags.nocost ? 'No cost price' : '', UI.flags.low ? 'Low margin' : ''].filter(Boolean);
   return `<div class="between"><span class="t-bs" style="color:var(--ink);font-weight:600">${esc(parts.join(' · '))}</span><button class="t-bs b6" style="text-decoration:underline" data-act="resetFilters">Clear</button></div>`;
 }
 function plist(list, svc) {
@@ -1205,7 +1205,7 @@ SCREENS.stockHome = () => {
   const opt = (icon, title, sub, act, arg) => `<button class="brow tap" data-act="${act}"${arg != null ? ` data-arg="${arg}"` : ''}><div class="bico">${ic(icon, 22)}</div><div class="lm"><b>${title}</b><span>${sub}</span></div>${ic('chev', 18)}</button>`;
   const own = can('stock.update');
   return `<div class="ph-title" style="padding-top:6px"><div class="t-hl">Stock</div><div class="row g8"></div></div><div class="pad" id="pad" style="gap:12px">
-    ${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : scoped() ? `<div class="t-bs mute row g8">${ic('store', 16)}Showing ${esc(branchName(myBranch()))} only</div>` : ''}
+    ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : scoped() ? `<div class="t-bs mute row g8">${ic('store', 16)}Showing ${esc(branchName(myBranch()))} only</div>` : ''}
     ${tracked ? stockStats(rows) : empty('box', 'Stock is off', 'Turn on Track stock on a product to count what you hold. Deliveries, counts and adjustments then keep it right.')}
     ${!tracked ? btn('Track stock on all products', 'trackAll', null, { blk: 1 }) : ''}
     ${S.count && own ? `<div class="card warn"><div class="b7">Count in progress</div><div class="t-bs">${S.count.rows.filter(r => r.qtyS !== '').length} of ${S.count.rows.length} counted at ${esc(branchName(S.count.br))}.</div><div style="margin-top:10px">${btn('Continue counting', 'startCount', null, { sm: 1 })}</div></div>` : ''}
@@ -1226,7 +1226,7 @@ SCREENS.stockHome = () => {
 };
 SCREENS.stockList = () => {
   const ql = ((cur().f || {}).q || '').toLowerCase(), all = stockRows(), f = UI.sf, rows = all.filter(r => (!f || (f === 'low+out' ? r.st !== 'ok' : r.st === f)) && itemHit(r.p, r.it, ql));
-  return `${nav('Stock levels')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}${stockStats(all)}${field('', 'f.q', { ph: 'Search products, variants or batches' })}
+  return `${nav('Stock levels')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${stockStats(all)}${field('', 'f.q', { ph: 'Search products, variants or batches' })}
     ${f ? `<div class="between"><span class="t-bs mute">${rows.length} shown</span><button class="b6" data-act="setStockFilter" data-arg="">Show all</button></div>` : ''}
     <div>${rows.length ? rows.map(stockRow).join('') : empty(ql ? 'search' : 'check', f || ql ? 'Nothing here' : 'No tracked products', ql ? 'No item matches your search.' : f ? 'No item is ' + (f === 'out' ? 'out of stock' : 'running low') + '.' : 'Turn on Track stock on a product.')}</div></div>`;
 };
@@ -1277,9 +1277,9 @@ const trSel = (act, cur2, ph, exclude) => selBtn('tr:' + act, ph.replace('Choose
 const TR_ST = { draft: ['Draft', 'warn'], sent: ['In transit', 'n'], received: ['Received', 'ok'], cancelled: ['Cancelled', 'bad'] };
 const trTotals = t => { if (t.status === 'draft' || t.status === 'cancelled') return ''; const anyShort = t.lines.some(l => l.short); if (t.lines.length === 1 && pById(t.lines[0].pid)) { const x = trTexts(pk(pById(t.lines[0].pid), t.lines[0].key), t.lines[0]); return ' · sent ' + x.sent + (x.recv != null ? ' · received ' + x.recv + (anyShort ? ' · short ' + x.short : '') : ''); } return t.status === 'received' && anyShort ? ' · has shortage' : ''; };
 SCREENS.transfers = () => {
-  const flt = UI.trFilter || 'all', br = scoped() ? myBranch() : UI.sbr, list = (S.transfers || []).filter(t => (flt === 'all' || t.status === flt) && (!br || t.from === br || t.to === br)).sort((a, b) => b.t - a.t);
+  const flt = UI.trFilter || 'all', br = listBr(), list = (S.transfers || []).filter(t => (flt === 'all' || t.status === flt) && (!br || t.from === br || t.to === br)).sort((a, b) => b.t - a.t);
   return `${nav('Transfers', { right: ibtn('plus', 'newTransfer') })}<div class="pad" id="pad" style="gap:12px">
-    ${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}
+    ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}
     <div class="chips scroll">${[['all', 'All'], ['draft', 'Draft'], ['sent', 'In transit'], ['received', 'Received']].map(([k, l]) => `<button class="chip ${flt === k ? 'on' : ''}" data-act="setTrFilter" data-arg="${k}">${l}</button>`).join('')}</div>
     ${list.length ? `<div class="col g8">${list.map(t => `<div class="vrow" style="cursor:pointer" data-act="openTransferRec" data-arg="${t.id}"><div class="lm"><b>${esc(t.no || 'New')} · ${esc(branchName(t.from))} to ${esc(branchName(t.to))}</b><span>${pdesc(t.lines.length, 'item', 'items')}${trTotals(t)} · ${ago(t.t)}</span></div>${pill(TR_ST[t.status][0], TR_ST[t.status][1])}</div>`).join('')}</div>` : empty('truck', 'No transfers here', 'Move stock from one branch to another.')}
     ${note('Sending takes stock out of the first branch. Receiving puts it into the second.')}</div>${cta(btn('New transfer', 'newTransfer', null, { icon: 'plus' }))}`;
@@ -1330,14 +1330,14 @@ const hCutoff = () => { const r = UI.hRange; if (!r) return 0; if (r === 'today'
 const historyMoves = (pid, key) => { const c = hCutoff(); return S.moves.filter(m => (!pid || m.pid === pid) && (!key || m.key === key) && m.t >= c && (scoped() ? m.br === myBranch() : !UI.sbr || m.br === UI.sbr)); };
 SCREENS.stockHistory = () => {
   const pid = cur().f.pid, key = cur().f.key, ms = historyMoves(pid, key), p0 = pid ? pById(pid) : null;
-  return `${nav(p0 ? 'History · ' + p0.name + (key && itemName(p0, key) ? ' · ' + itemName(p0, key) : '') : 'Stock history', { right: ibtn('share', 'exportMoves') })}<div class="pad" id="pad" style="gap:0"><div class="col g8" style="padding-bottom:10px">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}${selBtn('hr', 'Period', 'setHRange', UI.hRange || '', H_RANGES)}</div>${ms.length ? ms.map(m => { const p = pk(pById(m.pid), m.key), nm = p ? itemName(p, m.key) : ''; return `<div class="li"><div class="lm"><b>${MV[m.type] || m.type}${m.reason ? ' · ' + esc(m.reason) : ''}</b><span>${[!pid && p ? esc(p.name) : '', nm ? esc(nm) : '', multi() ? esc(branchName(m.br)) : '', esc(m.who)].filter(Boolean).join(' · ')}${m.note ? ' · ' + esc(m.note) : ''}${p && breakdown(p, Math.abs(m.type === 'short' ? m.lost : m.d)) ? ' · ' + esc(qtyFull(p, Math.abs(m.type === 'short' ? m.lost : m.d))) : ''}</span></div><div class="lr"><b class="${m.type === 'short' || m.d < 0 ? 'bad' : 'ok'}">${m.type === 'short' ? '-' + m.lost : (m.d > 0 ? '+' : '') + m.d}</b><span class="t-bs mute">${ago(m.t)}</span></div></div>`; }).join('') : empty('clock', 'No movements yet', 'Deliveries, adjustments and counts show up here.')}</div>`;
+  return `${nav(p0 ? 'History · ' + p0.name + (key && itemName(p0, key) ? ' · ' + itemName(p0, key) : '') : 'Stock history', { right: ibtn('share', 'exportMoves') })}<div class="pad" id="pad" style="gap:0"><div class="col g8" style="padding-bottom:10px">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${selBtn('hr', 'Period', 'setHRange', UI.hRange || '', H_RANGES)}</div>${ms.length ? ms.map(m => { const p = pk(pById(m.pid), m.key), nm = p ? itemName(p, m.key) : ''; return `<div class="li"><div class="lm"><b>${MV[m.type] || m.type}${m.reason ? ' · ' + esc(m.reason) : ''}</b><span>${[!pid && p ? esc(p.name) : '', nm ? esc(nm) : '', multi() ? esc(branchName(m.br)) : '', esc(m.who)].filter(Boolean).join(' · ')}${m.note ? ' · ' + esc(m.note) : ''}${p && breakdown(p, Math.abs(m.type === 'short' ? m.lost : m.d)) ? ' · ' + esc(qtyFull(p, Math.abs(m.type === 'short' ? m.lost : m.d))) : ''}</span></div><div class="lr"><b class="${m.type === 'short' || m.d < 0 ? 'bad' : 'ok'}">${m.type === 'short' ? '-' + m.lost : (m.d > 0 ? '+' : '') + m.d}</b><span class="t-bs mute">${ago(m.t)}</span></div></div>`; }).join('') : empty('clock', 'No movements yet', 'Deliveries, adjustments and counts show up here.')}</div>`;
 };
 const itemCost = (p, it) => { const v = (p.variants || []).find(x => x.id === (it.vid || it.key)); if (it.batch && v) { const b = v.batches.find(x => x.id === it.key); if (b && b.cost != null) return b.cost; } if (v && !v.def) { const c = vCost(p, v); if (c != null) return c; } return p.cost != null ? p.cost : null; };
 const itemPrice = (p, it) => { const v = (p.variants || []).find(x => x.id === (it.vid || it.key)); return v && !v.def ? vPrice(p, v) : p.price; };
 const valueRows = () => stockRows().map(r => { const c = itemCost(r.p, r.it), pr = itemPrice(r.p, r.it); return Object.assign({}, r, { cost: c, price: pr, cv: c != null ? Math.round(r.q * c) : null, rv: pr != null ? Math.round(r.q * pr) : 0 }); }).sort((a, b) => (b.cv || 0) - (a.cv || 0));
 SCREENS.stockValue = () => {
   const rows = valueRows().filter(r => r.q > 0), cv = rows.reduce((a, r) => a + (r.cv || 0), 0), rv = rows.reduce((a, r) => a + r.rv, 0), noCost = rows.filter(r => r.cv == null).length;
-  return `${nav('Stock value', { right: ibtn('share', 'exportValue') })}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}
+  return `${nav('Stock value', { right: ibtn('share', 'exportValue') })}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}
     <div class="card w"><div class="t-bs mute">At cost</div><div class="t-hl">${money(cv)}</div><div class="row g8" style="margin-top:6px"><span class="t-bs mute grow">At selling price</span><b>${money(rv)}</b></div><div class="row g8"><span class="t-bs mute grow">If all sold</span><b class="ok">${money(Math.max(0, rv - cv))} profit</b></div></div>
     ${noCost ? note(noCost + ' item' + (noCost === 1 ? ' has' : 's have') + ' no cost price, so they are not in the cost total.') : ''}
     ${rows.length ? `<div>${rows.map(r => lrow('', thumb(r.p), esc(r.p.name), esc(r.it.name || r.p.unitName), `<b style="font-size:16px">${r.cv != null ? money(r.cv) : '–'}</b><span>${r.cv == null ? pill('No cost', 'warn') : ''}</span>`, esc(qtyFull(pk(r.p, r.it.key), r.q)) + (r.cost != null ? ' × ' + money(r.cost) : ''))).join('')}</div>` : empty('box', 'No stock yet', 'Value appears once items have stock.')}</div>`;
@@ -1348,7 +1348,7 @@ SCREENS.stockReport = () => {
   const dead = valueRows().filter(r => r.q > 0 && (last[r.p.id + '|' + r.it.key] || 0) < cut);
   const lossT = { remove: 1, short: 1 }, loss = {}; S.moves.filter(m => m.t >= cut && lossT[m.type]).forEach(m => { const p = pById(m.pid), it = p ? itemsOf(p).find(i => i.key === m.key) : null, q = Math.abs(m.type === 'short' ? m.lost : m.d), c = p ? itemCost(p, it || { key: m.key }) : null, r = m.reason || (m.type === 'short' ? 'Transfer shortage' : 'No reason'); const x = loss[r] = loss[r] || { q: 0, v: 0 }; x.q += q; x.v += c != null ? Math.round(q * c) : 0; });
   const lr = Object.entries(loss).sort((a, b) => b[1].v - a[1].v), lt = lr.reduce((a, [, x]) => a + x.v, 0), dv = dead.reduce((a, r) => a + (r.cv || 0), 0);
-  return `${nav('Stock report')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}${seg([['7', '7 days'], ['30', '30 days'], ['90', '90 days']], String(f.days), 'setRepDays')}
+  return `${nav('Stock report')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${seg([['7', '7 days'], ['30', '30 days'], ['90', '90 days']], String(f.days), 'setRepDays')}
     ${sect('Lost stock, last ' + days + ' days')}<div class="card w"><div class="between"><span class="t-bm">Total lost, at cost</span><b class="bad">${money(lt)}</b></div></div>
     ${lr.length ? `<div class="col g8">${lr.map(([r, x]) => `<div class="vrow"><div class="lm"><b>${esc(r)}</b><span>${rnd(x.q)} units</span></div><b>${money(x.v)}</b></div>`).join('')}</div>` : '<div class="t-bs mute">No stock lost in this period.</div>'}
     ${sect('Not moved in ' + days + ' days')}<div class="card w"><div class="between"><span class="t-bm">Cash tied up</span><b>${money(dv)}</b></div></div>
@@ -1730,7 +1730,8 @@ SCREENS.chConvo = () => { const o = cur().f.o, k = chKey(o.ch), c = CH[k], tr = 
     <div class="card w"><div class="between"><span class="b7 t-bm">Order sent to you</span>${pill('Sent', 'ok')}</div>${items.map(i => { const p = pById(i.pid); return `<div class="kv"><span>${rnd(i.qty)} × ${esc(p.name)}</span><b>${money(Math.round((p.price || 0) * i.qty))}</b></div>`; }).join('')}</div></div>${cta(o.id ? btn('See the order', 'openAgentOrder', o.id) : '', btn('Open in ' + c.short, 'chOpenApp', k, { k: o.id ? 'g' : '' }))}`; };
 
 /* ---------- sales ---------- */
-const sellBr = () => scoped() ? myBranch() : (UI.sellBr && S.branches.some(b => b.id === UI.sellBr) ? UI.sellBr : S.branches[0].id);
+const wbKey = () => 'konto-wb:' + KEY + ':' + ACCT;
+const sellBr = () => { if (scoped()) return myBranch(); if (UI.sellBr === undefined) { try { UI.sellBr = localStorage.getItem(wbKey()) || ''; } catch (e) { UI.sellBr = ''; } } return UI.sellBr && S.branches.some(b => b.id === UI.sellBr) ? UI.sellBr : S.branches[0].id; };
 const newCart = () => ({ lines: [], list: '', disc: { mode: 'pct', val: '', reason: '' }, pays: { cash: '', momo: '', card: '' } });
 const cartOf = () => UI.cart || (UI.cart = newCart());
 const holdOf = (p, key) => { for (const v of (p.variants || [])) { const b = (v.batches || []).find(x => x.id === key); if (b) return b; } return null; };
@@ -1959,9 +1960,9 @@ SCREENS.receipt = () => { const s = S.sales.find(x => x.id === cur().f.id), st =
 const saleBody0 = s => `<div class="card w"><div class="between"><span class="t-bs mute">${esc(branchName(s.br))} · ${esc(s.who)}</span>${pill(...saleSt(s))}</div><div class="t-bs mute">${new Date(s.t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>${s.cname ? `<div class="b6" style="margin-top:6px">${esc(s.cname)}${s.cphone ? ' · ' + esc(s.cphone) : ''}</div>` : ''}</div>${orderInfo(s)}
   <div class="card w" style="padding:2px 14px">${s.lines.map(l => `<div class="kv kvp"><span>${esc(l.qty + ' × ' + l.name + (l.uname && l.ul ? ' (' + l.uname + ')' : '') + (l.dpct ? ' · ' + (l.dname ? l.dname + ' ' : '') + '−' + l.dpct + '%' : '') + (l.damt ? ' · ' + (l.dname ? l.dname + ' ' : '') + '−' + money(l.damt) : ''))}</span><b>${money(l.line)}</b></div>`).join('')}</div>
   <div class="card w">${s.approvedBy ? `<div class="hint">${esc(s.approvedBy)}</div>` : ''}${totalsHtml(Object.assign({}, s, { disc: s.disc, taxes: s.taxes }))}${s.discReason ? `<div class="hint">Discount: ${esc(s.discReason)}</div>` : ''}${(s.taxOff || []).length ? `<div class="hint">Tax removed: ${esc(s.taxOff.join(', '))}</div>` : ''}${s.status === 'quote' || s.status === 'converted' ? '<div class="hint" style="margin-top:10px">Quote only. Nothing is paid yet, and no stock moves until you convert it to a sale.</div>' : payLines(s) + (s.change > 0 ? kv('Change', money(s.change)) : '') + (dueOf(s) > 0 ? `<div class="between" style="margin-top:6px"><span class="t-bm b6" style="color:var(--warn)">Balance due</span><b class="t-hs">${money(dueOf(s))}</b></div>` : '')}</div>${(s.rets || []).length ? `<div class="card warn"><div class="b7">Returns</div>${s.rets.map(r => `<div class="kv"><span>${esc(r.lines.map(x => { const l = s.lines[x.li], p = pById(l.pid), b = x.base != null ? x.base : x.qty * perOf(l); return (p ? qtyFull(p, b) : x.qty) + ' · ' + l.name; }).join(', '))}${r.reason ? ' · ' + esc(r.reason) : ''}</span><b>−${money(r.refund)}</b></div><div class="hint">${ago(r.t)} · ${esc(r.who)}${r.approvedBy ? ' · ' + esc(r.approvedBy) : ''} · refunded by ${PAYL_LC[r.m]}${r.lines.some(x => x.mode === 'writeoff') ? ' · some written off' : ''}</div><button class="b6" style="margin:4px 0 8px" data-act="sendRefund" data-arg="${s.id}|${r.id}">Send refund slip</button>`).join('')}</div>` : ''}`;
-SCREENS.sales = () => { const br = scoped() ? myBranch() : UI.sbr, day = new Date(); day.setHours(0, 0, 0, 0);
+SCREENS.sales = () => { const br = listBr(), day = new Date(); day.setHours(0, 0, 0, 0);
   const flt = UI.sf2 || '', ql = (UI.ss || '').trim().toLowerCase(), saleHit = s => !ql || (s.no + ' ' + (s.cname || '') + ' ' + (s.cphone || '') + ' ' + (s.note || '') + ' ' + (s.channel || '') + ' ' + (s.tableName || '') + ' ' + (s.delivery ? s.delivery.addr : '') + ' ' + s.lines.map(l => l.name).join(' ')).toLowerCase().includes(ql), list = S.sales.filter(s => s.status !== 'quote' && s.status !== 'converted' && (!br || s.br === br) && (can('salesAll') || s.who === UI.who) && saleHit(s) && saleFilterOk(s) && (!flt || (flt === 'unpaid' ? dueOf(s) > 0 : flt === 'deliver' ? (s.status === 'done' && s.delivery && s.delivery.status === 'pending') : s.status === 'quote'))), all0 = S.sales.filter(s => s.status !== 'quote' && s.status !== 'converted' && (!br || s.br === br) && (can('salesAll') || s.who === UI.who)), today = all0.filter(s => s.t >= day.getTime() && s.status === 'done'), owed = all0.reduce((a, s) => a + dueOf(s), 0);
-  return `<div class="ph-title" style="padding-top:6px;padding-bottom:12px"><div class="t-hl">Sales</div><div class="row g8">${notifBell()}${ibtn('share', 'exportSales')}</div></div><div class="pad" id="pad" style="gap:12px;padding-top:0">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}
+  return `<div class="ph-title" style="padding-top:6px;padding-bottom:12px"><div class="t-hl">Sales</div><div class="row g8">${notifBell()}${ibtn('share', 'exportSales')}</div></div><div class="pad" id="pad" style="gap:12px;padding-top:0">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}
     <div class="two">${btn('Customers · ' + S.customers.length, 'openCustomers', null, { k: 'g', sm: 1 })}${btn('Sales report', 'openSalesReport', null, { k: 'g', sm: 1 })}</div>
     <div class="card w"><div class="between"><span class="t-bm">Today</span><b class="t-hs">${money(today.reduce((a, s) => a + s.total - (s.refund || 0), 0))}</b></div><div class="t-bs mute">${pdesc(today.length, 'sale', 'sales')}${can('costView') ? ' · profit ' + money(today.reduce((a, s) => a + s.profit, 0)) : ''}</div>${owed > 0 ? `<div class="between" style="margin-top:8px;padding-top:8px;border-top:1.5px solid var(--hl)"><span class="t-bs b6" style="color:var(--warn)">Owed to you</span><b>${money(owed)}</b></div>` : ''}</div>
     ${field('', 'u.ss', { ph: 'Search sale number, customer, item or note' })}${saleFilterUi()}
@@ -2056,7 +2057,7 @@ SCREENS.closeTill = () => { const sh = shiftHere(), c = shiftCalc(sh), got = toP
     ${diff != null ? `<div class="card ${diff === 0 ? 'w' : 'warn'}"><div class="between"><span class="t-bm">Expected</span><b>${money(c.expected)}</b></div><div class="between"><span class="t-bm b6">${diff === 0 ? 'Balanced' : diff > 0 ? 'Over by' : 'Short by'}</span><b class="t-hs ${diff < 0 ? 'bad' : diff > 0 ? 'ok' : ''}">${money(Math.abs(diff))}</b></div></div>` : ''}${shiftRows(sh, c)}</div>${cta(btn('Close till', 'closeShift', null, { off: got == null }), btn('Cancel', 'back', null, { k: 'g' }))}`; };
 LIVE.closeTill = () => render(true);
 const REP_P = [['today', 'Today'], ['7', '7 days'], ['30', '30 days'], ['90', '90 days']];
-SCREENS.salesReport = () => { const per = UI.rp || '7', br = scoped() ? myBranch() : UI.sbr, day = new Date(); day.setHours(0, 0, 0, 0); const cut = per === 'today' ? day.getTime() : Date.now() - parseInt(per, 10) * 864e5;
+SCREENS.salesReport = () => { const per = UI.rp || '7', br = listBr(), day = new Date(); day.setHours(0, 0, 0, 0); const cut = per === 'today' ? day.getTime() : Date.now() - parseInt(per, 10) * 864e5;
   const all = S.sales.filter(x => x.t >= cut && (!br || x.br === br)), ok = all.filter(x => x.status === 'done'), voids = all.filter(x => x.status === 'void');
   const net = x => x.total - (x.refund || 0), taxOf = x => x.total ? Math.round((x.tax || 0) * net(x) / x.total) : 0, rev = ok.reduce((a, x) => a + net(x), 0), prof = ok.reduce((a, x) => a + x.profit, 0), taxSumR = ok.reduce((a, x) => a + taxOf(x), 0), refunds = ok.reduce((a, x) => a + (x.refund || 0), 0), rcount = ok.reduce((a, x) => a + (x.rets || []).length, 0);
   const pay = { cash: 0, momo: 0, card: 0, gift: 0, pts: 0 }; ok.forEach(x => { x.pays.forEach(y => { pay[y.m] = (pay[y.m] || 0) + y.amt; }); pay.cash -= x.change || 0; });
@@ -2068,7 +2069,7 @@ SCREENS.salesReport = () => { const per = UI.rp || '7', br = scoped() ? myBranch
   const byCh = {}; ok.forEach(x => { const k0 = x.channel || 'Walk-in'; byCh[k0] = (byCh[k0] || 0) + x.total - (x.refund || 0); });
   const byBr = {}; ok.forEach(x => { byBr[x.br] = (byBr[x.br] || 0) + net(x); });
   const bar = (v, m) => `<div style="height:8px;border-radius:4px;background:var(--hl);margin-top:4px"><div style="height:8px;border-radius:4px;background:var(--ink);width:${Math.max(2, Math.round(v / m * 100))}%"></div></div>`;
-  return `${nav('Sales report')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}${seg(REP_P, per, 'setRep')}
+  return `${nav('Sales report')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${seg(REP_P, per, 'setRep')}
     <div class="card w"><div class="t-bs mute">Sales, after refunds</div><div class="t-hl">${money(rev)}</div><div class="t-bs mute">${pdesc(ok.length, 'sale', 'sales')}${ok.length ? ' · average ' + money(Math.round(rev / ok.length)) : ''}</div></div>
     ${repCharts(ok, per)}
     <div class="card w" style="padding:2px 14px"><div class="kv"><span>Tax collected</span><b>${money(taxSumR)}</b></div><div class="kv"><span>Sales before tax</span><b>${money(rev - taxSumR)}</b></div>${ok.some(x => dueOf(x) > 0) ? `<div class="kv"><span>Still owed by customers</span><b class="bad">${money(ok.reduce((a, x) => a + dueOf(x), 0))}</b></div>` : ''}${can('costView') ? `<div class="kv"><span>${feat('expenses') ? 'Profit on sales' : 'Profit'}</span><b class="ok">${money(prof)}</b></div>` : ''}${can('costView') && can('expenses.read') && feat('expenses') ? `<div class="kv"><span>Expenses</span><b class="bad">−${money(expSum)}</b></div><div class="kv"><span>Profit after expenses</span><b class="${prof - expSum < 0 ? 'bad' : 'ok'}">${prof - expSum < 0 ? '−' + money(expSum - prof) : money(prof - expSum)}</b></div>` : ''}</div>${can('expenses.read') && feat('expenses') && exps.length ? `<button class="li" style="width:100%;text-align:left" data-act="openExpenses"><div class="lm"><b>See the ${pdesc(exps.length, 'expense', 'expenses')}</b><span>${money(expSum)} spent in this period</span></div>${ic('chev', 18)}</button>` : ''}
@@ -2340,7 +2341,7 @@ const A = {
   openFilter() { UI.sheet = { type: 'filter' }; render(true); },
   setPcat(a) { UI.pcat = a || ''; render(true); },
   quickF(a) { if (a.startsWith('cat:')) { UI.cat = a.slice(4); UI.quick = ''; } else { UI.cat = ''; UI.quick = a; } render(true); },
-  resetFilters() { UI.quick = ''; UI.branch = ''; UI.cat = ''; UI.status = 'active'; UI.flags = {}; render(true); },
+  resetFilters() { UI.quick = ''; UI.branch = undefined; UI.cat = ''; UI.status = 'active'; UI.flags = {}; render(true); },
   setCatFilter(c) { UI.cat = c; render(true); },
   setStatus(s) { UI.status = s; render(true); },
   flag(k) { UI.flags[k] = !UI.flags[k]; render(true); },
@@ -2370,7 +2371,7 @@ const A = {
   setSellBr(id) { const from = sellBr(); if (id === from) { render(true); return; } UI.bcarts = UI.bcarts || {};
     /* each branch keeps its own cart: leave it here, pick up the one waiting there */
     const had = !!(UI.cart && UI.cart.lines.length); if (had) UI.bcarts[from] = UI.cart; else delete UI.bcarts[from];
-    UI.sellBr = id; UI.cart = UI.bcarts[id] || null; const back = !!(UI.cart && UI.cart.lines.length); delete UI.bcarts[id];
+    UI.sellBr = id; try { localStorage.setItem(wbKey(), id); } catch (e) { } UI.sbr = undefined; UI.branch = undefined; UI.cart = UI.bcarts[id] || null; const back = !!(UI.cart && UI.cart.lines.length); delete UI.bcarts[id];
     if (had || back) toast((had ? 'Cart saved for ' + branchName(from) + '.' : '') + (back ? (had ? ' ' : '') + 'Back to the cart for ' + branchName(id) + '.' : '')); render(true); },
   sellTap(pid) {
     const p = pById(pid), br = sellBr(), vs = activeVariants(p);
@@ -2586,7 +2587,7 @@ const A = {
   },
   rcptOpen(url) { try { const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); UI.sheet = null; render(true); toast('Opened. Press send in the app.'); } catch (e) { toast('Could not open it here.', 1); } },
   exportSales() {
-    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', br = scoped() ? myBranch() : UI.sbr, rows = [['Sale', 'Date', 'Branch', 'Staff', 'Status', 'Items', 'Subtotal', 'Discount', 'Tax', 'Total', 'Refunded', 'Cash', 'Mobile money', 'Card', 'Profit', 'Customer', 'Phone', 'Order from', 'Table', 'Delivery', 'Due on', 'Balance due', 'Note']];
+    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', br = listBr(), rows = [['Sale', 'Date', 'Branch', 'Staff', 'Status', 'Items', 'Subtotal', 'Discount', 'Tax', 'Total', 'Refunded', 'Cash', 'Mobile money', 'Card', 'Profit', 'Customer', 'Phone', 'Order from', 'Table', 'Delivery', 'Due on', 'Balance due', 'Note']];
     S.sales.filter(x => x.status !== 'quote' && x.status !== 'converted' && (!br || x.br === br) && (can('salesAll') || x.who === UI.who) && saleFilterOk(x)).forEach(x => { const pm = m => x.pays.filter(y => y.m === m).reduce((a, y) => a + y.amt, 0) - (m === 'cash' ? x.change || 0 : 0); rows.push([x.no, new Date(x.t).toISOString(), branchName(x.br), x.who, x.status, x.lines.map(l => l.qty + ' x ' + l.name).join('; '), fromPes(x.sub), fromPes(x.disc), fromPes(x.tax), fromPes(x.total), fromPes(x.refund || 0), fromPes(pm('cash')), fromPes(pm('momo')), fromPes(pm('card')), can('costView') ? fromPes(x.profit) : '', x.cname || '', x.cphone || '', x.channel || '', x.tableName || '', x.delivery ? x.delivery.status : '', x.dueOn || '', fromPes(dueOf(x)), x.note || '']); });
     try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = 'sales.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('Exported sales.csv'); } catch (e) { toast('Export is blocked here.', 1); }
   },
@@ -2716,8 +2717,8 @@ const A = {
   openTransfers() { push('transfers'); },
   setTrFilter(k) { UI.trFilter = k; render(true); },
   openTransferRec(id) { const t = clone(S.transfers.find(x => x.id === id)); push('transfer', t); },
-  newTransfer() { push('transfer', { status: 'draft', from: UI.sbr || '', to: '', lines: [], note: '' }); },
-  openTransfer(a) { const [id, key] = String(a).split('|'), p = pById(id), its = itemsOf(p), k = key || its[0].key, from = UI.sbr || S.branches.map(b => b.id).find(b => qtyAt(p, k, b) > 0) || S.branches[0].id; push('transfer', { status: 'draft', from, to: '', lines: [{ id: uid('t'), pid: id, key: k, ul: '', qtyS: '', parts: {} }], note: '' }); },
+  newTransfer() { push('transfer', { status: 'draft', from: listBr() || '', to: '', lines: [], note: '' }); },
+  openTransfer(a) { const [id, key] = String(a).split('|'), p = pById(id), its = itemsOf(p), k = key || its[0].key, from = listBr() || S.branches.map(b => b.id).find(b => qtyAt(p, k, b) > 0) || S.branches[0].id; push('transfer', { status: 'draft', from, to: '', lines: [{ id: uid('t'), pid: id, key: k, ul: '', qtyS: '', parts: {} }], note: '' }); },
   sellAtBranch(a) { const [pid, br] = a.split('|'), p = pById(pid); if (Array.isArray(p.branches)) { if (!p.branches.includes(br)) p.branches.push(br); if (p.branches.length === S.branches.length) p.branches = 'all'; } log(pid, 'Now sold at ' + branchName(br)); save(); render(true); toast(p.name + ' is now sold at ' + branchName(br) + '.'); },
   toggleLineSn(a) { const [lid, ...r] = a.split('|'), x = r.join('|'), l = cur().f.lines.find(y => y.id === lid); l.sn = (l.sn || []).includes(x) ? l.sn.filter(y => y !== x) : (l.sn || []).concat(x); l.qtyS = l.sn.length ? String(l.sn.length) : ''; render(true); },
   setTrFrom(b) { const f = cur().f; if (b !== f.from && f.lines.length) { f.lines = []; toast('Items cleared. Pick them again for the new branch.'); } f.from = b; if (f.to === b) f.to = ''; render(true); },
@@ -2772,7 +2773,7 @@ const A = {
     });
     t.status = 'received'; const i = S.transfers.findIndex(x => x.id === t.id); S.transfers[i] = clone(t); save(); UI.stack.pop(); UI.stack.pop(); UI.errs = {}; render(); toast(t.no + ' received at ' + branchName(t.to) + (short ? '. Short by ' + short + ' recorded.' : '.'));
   },
-  startCount() { if (S.count) push('counting', S.count); else push('countStart', { br: scoped() ? myBranch() : S.branches[0].id, cat: '' }); },
+  startCount() { if (S.count) push('counting', S.count); else push('countStart', { br: sellBr(), cat: '' }); },
   setCountBranch(b) { cur().f.br = b; render(true); },
   setCountCat(c) { cur().f.cat = c; render(true); },
   beginCount() { const f = cur().f; S.count = { id: uid('c'), br: f.br, cat: f.cat, t: Date.now(), rows: countItems(f).map(x => ({ pid: x.pid, key: x.key, qtyS: '', snText: '', exp0: qtyAt(pById(x.pid), x.key, f.br) })) }; save(); UI.stack.pop(); push('counting', S.count); },
@@ -3429,7 +3430,7 @@ function bkRows(tab) {
 }
 SCREENS.bookings = () => {
   const tab = UI.bkTab || 'new', n = bkNew();
-  return `${nav('Booking requests')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}${seg([['new', 'New' + (n ? ' (' + n + ')' : '')], ['confirmed', 'Confirmed'], ['past', 'Past']], tab, 'bkTab')}<div id="plist" class="col g8">${bkRows(tab)}</div></div>`;
+  return `${nav('Booking requests')}<div class="pad" id="pad" style="gap:12px">${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${seg([['new', 'New' + (n ? ' (' + n + ')' : '')], ['confirmed', 'Confirmed'], ['past', 'Past']], tab, 'bkTab')}<div id="plist" class="col g8">${bkRows(tab)}</div></div>`;
 };
 LIVE.booking = () => { const f = cur().f, b = S.bookings.find(x => x.id === f.id), el = document.getElementById('bkhint'); if (b && el) el.outerHTML = bkHint(b, f); };
 SCREENS.hours = () => { const f = cur().f; return `${nav('Working hours')}<div class="pad" id="pad" style="gap:12px"><div class="t-bm mute">Bookings are checked against these hours, and against bookings you already confirmed.</div>${multi() ? `<div class="fld"><label>Branch</label>${scoped() ? `<div class="t-bs mute">${esc(branchName(myBranch()))}</div>` : selBtn('hrbr', 'Branch', 'setHoursBr', f.br || sellBr(), S.branches.map(b => [b.id, b.name]))}</div>` : ''}${f.h.map((h, i) => `<div class="card w" style="padding:12px 14px"><div class="between"><b class="b7">${DAYS[i]}</b>${tg(h.on, 'toggleDay', i)}</div>${h.on ? `<div class="row g8" style="margin-top:10px;align-items:center">${miniIn('f.h.' + i + '.from', '08:00', 96)}<span class="t-bs mute">to</span>${miniIn('f.h.' + i + '.to', '18:00', 96)}</div>${UI.errs['f.h.' + i] ? `<div class="hint" style="color:var(--bad);font-weight:600;margin-top:6px">${esc(UI.errs['f.h.' + i])}</div>` : ''}` : '<div class="t-bs mute">Closed</div>'}</div>`).join('')}</div>${cta(btn('Save hours', 'saveHours'), btn('Cancel', 'back', null, { k: 'g' }))}`; };
@@ -3550,11 +3551,11 @@ const dayLabel = d => d === dayStr(0) ? 'Today' : d === dayStr(-1) ? 'Yesterday'
 const EXP_M = { cash: 'Cash', momo: 'Mobile money', card: 'Card' };
 SCREENS.expenses = () => {
   runRecurring();
-  const p = UI.exP || 'month', br = scoped() ? myBranch() : UI.sbr, list = S.expenses.filter(x => expIn(x, p) && (!br || x.br === br)).sort((a, b) => b.day.localeCompare(a.day) || b.t - a.t);
+  const p = UI.exP || 'month', br = listBr(), list = S.expenses.filter(x => expIn(x, p) && (!br || x.br === br)).sort((a, b) => b.day.localeCompare(a.day) || b.t - a.t);
   const byCat = {}; list.forEach(x => { byCat[x.cat] = (byCat[x.cat] || 0) + x.amt; });
   const days = [...new Set(list.map(x => x.day))];
   return `${nav('Expenses', { right: `<div class="row g8">${ibtn('share', 'exportExpenses')}${ibtn('plus', 'newExpense')}</div>` })}<div class="pad" id="pad" style="gap:12px">
-    ${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}
+    ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}
     <div class="chips scroll">${EXP_PERIODS.map(([k, l]) => `<button class="chip ${p === k ? 'on' : ''}" data-act="setExP" data-arg="${k}">${l}</button>`).join('')}</div>
     ${S.recurring.length ? `<button class="li" style="width:100%;text-align:left" data-act="openRecurring"><div class="lm"><b>Repeating expenses · ${S.recurring.length}</b><span>Added for you when they fall due</span></div>${ic('chev', 18)}</button>` : ''}
     <div class="card w"><div class="between"><span class="t-bm">Spent</span><b class="t-hs">${money(expTotal(list))}</b></div><div class="t-bs mute">${pdesc(list.length, 'expense', 'expenses')}</div>${Object.keys(byCat).length ? `<div style="margin-top:8px;padding-top:8px;border-top:1.5px solid var(--hl)">${Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]).map(k => `<div class="kv"><span>${esc(k)}</span><b>${money(byCat[k])}</b></div>`).join('')}</div>` : ''}</div>
@@ -3586,7 +3587,7 @@ Object.assign(A, {
   removeExpPhoto() { cur().f.photo = ''; render(true); },
   openRecurring() { push('recurring'); },
   stopRepeat(id) { const t = S.recurring.find(x => x.id === id); confirmSheet({ title: 'Stop repeating?', text: (t ? t.cat + ' ' + money(t.amt) : 'This expense') + ' is no longer added by itself. Expenses already added stay.', label: 'Stop repeating', danger: 1, onConfirm: () => { S.recurring = S.recurring.filter(x => x.id !== id); S.expenses.forEach(x => { if (x.rid === id) delete x.rid; }); UI.sheet = null; save(); if (cur().name === 'expenseForm') cur().f.rid = ''; render(); toast('Stopped.'); } }); },
-  exportExpenses() { const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', p = UI.exP || 'month', br = scoped() ? myBranch() : UI.sbr, rows = [['Date', 'Category', 'Amount', 'Paid with', 'Branch', 'Note', 'Recorded by', 'Repeats', 'Receipt photo']];
+  exportExpenses() { const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', p = UI.exP || 'month', br = listBr(), rows = [['Date', 'Category', 'Amount', 'Paid with', 'Branch', 'Note', 'Recorded by', 'Repeats', 'Receipt photo']];
     S.expenses.filter(x => expIn(x, p) && (!br || x.br === br)).sort((a, b) => b.day.localeCompare(a.day)).forEach(x => rows.push([x.day, x.cat, fromPes(x.amt), EXP_M[x.method] || '', branchName(x.br), x.note || '', x.who || '', x.rid ? 'Yes' : '', x.photo ? 'Yes' : '']));
     try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = 'expenses.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('Exported expenses.csv'); } catch (e) { toast('Export is blocked here.', 1); } },
   expMethod(m) { cur().f.method = m; render(true); },
@@ -3631,9 +3632,9 @@ SCREENS.supplier = () => {
 
 /* purchase orders */
 SCREENS.orders = () => {
-  const flt = UI.poFilter || 'all', br = scoped() ? myBranch() : UI.sbr, list = S.orders.filter(o => (flt === 'all' || o.status === flt) && (!br || (o.br || S.branches[0].id) === br)).sort((a, b) => b.t - a.t);
+  const flt = UI.poFilter || 'all', br = listBr(), list = S.orders.filter(o => (flt === 'all' || o.status === flt) && (!br || (o.br || S.branches[0].id) === br)).sort((a, b) => b.t - a.t);
   return `${nav('Purchase orders', { right: ibtn('plus', 'newOrder') })}<div class="pad" id="pad" style="gap:12px">
-    ${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}
+    ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}
     <div class="chips scroll">${[['all', 'All'], ['draft', 'Draft'], ['sent', 'Sent'], ['partial', 'Partly'], ['received', 'Received']].map(([k, l]) => `<button class="chip ${flt === k ? 'on' : ''}" data-act="setPoFilter" data-arg="${k}">${l}</button>`).join('')}</div>
     ${list.length ? `<div class="col g8">${list.map(o => `<div class="vrow" style="cursor:pointer" data-act="openOrder" data-arg="${o.id}"><div class="lm"><b>${esc(o.no)} · ${esc(poSupText(o))}</b><span>${pdesc(o.lines.length, 'item', 'items')} · ${money(poTotal(o))}${multi() ? ' · ' + esc(branchName(o.br || S.branches[0].id)) : ''} · ${ago(o.t)}</span></div>${o.status !== 'draft' && o.status !== 'cancelled' && !o.paid ? pill('Unpaid', 'warn') : ''}${pill(PO_ST[o.status][0], PO_ST[o.status][1])}</div>`).join('')}</div>` : empty('file', 'No orders here', 'Make an order to send to a supplier.')}
     ${note('Receiving an order records it as delivered and adds tracked items to stock.')}</div>${cta(btn('New purchase order', 'newOrder', null, { icon: 'plus' }))}`;
@@ -3716,8 +3717,8 @@ Object.assign(A, {
   /* purchase orders */
   openOrders() { push('orders'); },
   setPoFilter(k) { UI.poFilter = k; render(true); },
-  newOrder() { push('order', { supplier: '', br: scoped() ? myBranch() : S.branches[0].id, lines: [], note: '', status: 'draft' }); },
-  newOrderFor(n) { const f = { supplier: '', defSup: n, br: scoped() ? myBranch() : S.branches[0].id, lines: [], note: '', status: 'draft' }; UI.stack.pop(); push('order', f); },
+  newOrder() { push('order', { supplier: '', br: sellBr(), lines: [], note: '', status: 'draft' }); },
+  newOrderFor(n) { const f = { supplier: '', defSup: n, br: sellBr(), lines: [], note: '', status: 'draft' }; UI.stack.pop(); push('order', f); },
   openOrder(id) { const o = clone(S.orders.find(x => x.id === id)); push('order', o); },
   setPoUnit(a) { const [lid, uidv] = a.split('|'), l = cur().f.lines.find(x => x.id === lid), p = pById(l.pid), it = poItems(p).find(x => x.key === l.key) || poItems(p)[0], c = it.isNew ? poCost(p, { vid: it.vid, key: it.vid }) : poCost(p, it); l.ul = uidv; l.costS = c == null ? '' : fromPes(Math.round(c * unitFactor(p, uidv))); render(true); },
   setOrderBranch(b) { const f = cur().f; f.br = b; const n = f.lines.length; f.lines = f.lines.filter(l => { const p = pById(l.pid); return p && soldAt(p, b); }); render(true); if (f.lines.length < n) toast((n - f.lines.length) + ' item' + (n - f.lines.length === 1 ? '' : 's') + ' not sold at ' + branchName(b) + ' removed.'); },
@@ -3740,7 +3741,7 @@ Object.assign(A, {
     save(); if (mode === 'receive') { if (fc) { UI.cart = null; UI.stack = UI.stack.filter(x => x.name !== 'cart'); } A.receiveOrder(); return; }
     if (fc) { UI.cart = null; UI.stack = [{ name: 'sell' }]; UI.sheet = null; render(); } else pop(); toast(mode === 'send' ? f.no + ' sent to ' + poSupText(f) + '.' : f.no + ' saved.');
   },
-  receiveOrder() { const o = cur().f; const lines = o.lines.filter(l => (parseFloat(l.qty) || 0) - (l.got || 0) > 0); push('receive', { order: o, add: true, close: false, br: o.br || (scoped() ? myBranch() : S.branches[0].id), rows: lines.map(l => { const p = pById(l.pid), sv = p ? stockVars(p) : [], rem = rnd((parseFloat(l.qty) || 0) - (l.got || 0)); return { ul: '', fac: 1, parts: p ? decomp(pk(p, l.key), rem) : {}, lk: l.key || '', lid: l.id, pid: l.pid, key: !p ? 'p' : (l.key && l.key.startsWith('__new:')) ? '__new' : (l.key && itemsOf(p).some(x => x.key === l.key)) ? l.key : sv.length ? '__new' : itemsOf(p)[0].key, vk: (l.key && l.key.startsWith('__new:')) ? l.key.slice(6) : sv.length ? sv[0].id : '', lot: '', exp: '', qtyS: p && p.serial ? '0' : String(rem), snText: '', ordered: String(rem), total: l.qty }; }) }); },
+  receiveOrder() { const o = cur().f; const lines = o.lines.filter(l => (parseFloat(l.qty) || 0) - (l.got || 0) > 0); push('receive', { order: o, add: true, close: false, br: o.br || (sellBr()), rows: lines.map(l => { const p = pById(l.pid), sv = p ? stockVars(p) : [], rem = rnd((parseFloat(l.qty) || 0) - (l.got || 0)); return { ul: '', fac: 1, parts: p ? decomp(pk(p, l.key), rem) : {}, lk: l.key || '', lid: l.id, pid: l.pid, key: !p ? 'p' : (l.key && l.key.startsWith('__new:')) ? '__new' : (l.key && itemsOf(p).some(x => x.key === l.key)) ? l.key : sv.length ? '__new' : itemsOf(p)[0].key, vk: (l.key && l.key.startsWith('__new:')) ? l.key.slice(6) : sv.length ? sv[0].id : '', lot: '', exp: '', qtyS: p && p.serial ? '0' : String(rem), snText: '', ordered: String(rem), total: l.qty }; }) }); },
   setRecvClose(v) { cur().f.close = v === '1'; render(true); },
   togglePaid() { const o = cur().f; o.paid = o.paid ? 0 : Date.now(); const i = S.orders.findIndex(x => x.id === o.id); if (i >= 0) S.orders[i].paid = o.paid; save(); render(true); },
   closePo() { const o = cur().f; confirmSheet({ title: 'Close ' + (o.no || 'this order') + '?', text: 'The part that has not arrived yet is dropped. Stock already added stays.', label: 'Close the order', danger: 1, onConfirm: () => { o.status = 'received'; const i = S.orders.findIndex(x => x.id === o.id); if (i >= 0) S.orders[i] = clone(o); save(); UI.sheet = null; pop(); toast((o.no || 'Order') + ' closed.'); } }); },
@@ -3978,9 +3979,9 @@ const dayCalc = (br, day) => { const t0 = new Date(day + 'T00:00:00').getTime(),
   const net = x => x.total - (x.refund || 0), items = {}; ok.forEach(x => x.lines.forEach(l => { items[l.name] = (items[l.name] || 0) + l.qty; }));
   const exps = S.expenses.filter(x => x.day === day && (!br || x.br === br)), shifts = S.shifts.filter(x => x.closed >= t0 && x.closed < t1 && (!br || x.br === br));
   return { n: ok.length, gross: ok.reduce((a, x) => a + x.gross, 0), disc: ok.reduce((a, x) => a + (x.disc || 0), 0), refunds: ok.reduce((a, x) => a + (x.refund || 0), 0), tax: ok.reduce((a, x) => a + (x.total ? Math.round((x.tax || 0) * net(x) / x.total) : 0), 0), net: ok.reduce((a, x) => a + net(x), 0), owed: ok.reduce((a, x) => a + dueOf(x), 0), pay, voids, exp: exps.reduce((a, x) => a + x.amt, 0), nExp: exps.length, shifts, top: Object.entries(items).sort((a, b) => b[1] - a[1]).slice(0, 5) }; };
-SCREENS.dayClose = () => { const br = scoped() ? myBranch() : UI.sbr || '', day = dayStr(0), c = dayCalc(br, day), key = day + '|' + br, done = (S.dayClosed || {})[key];
+SCREENS.dayClose = () => { const br = listBr(), day = dayStr(0), c = dayCalc(br, day), key = day + '|' + br, done = (S.dayClosed || {})[key];
   return `${nav('End of day')}<div class="pad" id="pad" style="gap:12px"><div class="between"><div><div class="b7 t-bm">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</div><div class="t-bs mute">${br ? esc(branchName(br)) : multi() ? 'All branches' : esc(branchName(S.branches[0].id))}</div></div>${done ? pill('Closed', 'ok') : pill('Open', 'warn')}</div>
-  ${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}
+  ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"><div class="stat"><b>${money(c.net)}</b><span>Sales, ${pdesc(c.n, 'sale', 'sales')}</span></div><div class="stat"><b>${money(c.pay.cash)}</b><span>Cash taken</span></div></div>
   <div class="card w" style="padding:2px 14px">${kv('Before discounts', money(c.gross))}${kv('Discounts', '−' + money(c.disc))}${kv('Refunds', '−' + money(c.refunds))}${kv('Tax in sales', money(c.tax))}${kv('Still owed by customers', money(c.owed))}</div>
   ${sect('How it was paid')}<div class="card w" style="padding:2px 14px">${Object.keys(PAYL).filter(k => c.pay[k] || k === 'cash' || k === 'momo' || k === 'card').map(k => kv(PAYL[k], money(c.pay[k]))).join('')}</div>
@@ -4009,7 +4010,7 @@ Object.assign(A, {
   downloadBackup() { try { const b = new Blob([JSON.stringify(S)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'shop-backup-' + dayStr(0) + '.json'; a.click(); } catch (e) { } S.backup.last = Date.now(); save(); render(true); toast('A copy was saved to this device.'); },
   openAudit() { UI.auf = ''; push('audit'); }, auditFilter(c) { UI.auf = c; render(true); },
   openDayClose() { push('dayClose'); },
-  closeDay() { const br = scoped() ? myBranch() : UI.sbr || '', day = dayStr(0), c = dayCalc(br, day); S.dayClosed = S.dayClosed || {}; S.dayClosed[day + '|' + br] = { t: Date.now(), who: UI.who, n: c.n, net: c.net }; audit('Sales', 'Day closed · ' + pdesc(c.n, 'sale', 'sales') + ' · ' + money(c.net)); save(); render(true); toast('The day is closed.'); },
+  closeDay() { const br = listBr(), day = dayStr(0), c = dayCalc(br, day); S.dayClosed = S.dayClosed || {}; S.dayClosed[day + '|' + br] = { t: Date.now(), who: UI.who, n: c.n, net: c.net }; audit('Sales', 'Day closed · ' + pdesc(c.n, 'sale', 'sales') + ' · ' + money(c.net)); save(); render(true); toast('The day is closed.'); },
   printDay() { if (!S.devices.printer.on) { toast('No printer yet. Connect one in Devices and printing.', 1); return; } toast('End-of-day report sent to ' + S.devices.printer.name + '.'); },
   shareDay() { toast('Report ready to share.'); }
 });
@@ -4050,7 +4051,7 @@ SCREENS.more = () => { let h = MORE0(); const groups = {}, order = []; V2_MORE.f
     if (!padEl.querySelector('button.li')) padEl.insertAdjacentHTML('beforeend', empty('search', 'Nothing found', 'No setting matches "' + esc((UI.ms || '').trim()) + '".'));
     h = doc.body.innerHTML;
   }
-  return h.replace(pad, pad + field('', 'u.ms', { ph: 'Search More' })); };
+  return h.replace(pad, pad + field('', 'u.ms', { ph: 'Search More' }) + (multi() && !scoped() && !q ? `<div class="fld"><label>You are working at</label>${brChips('setSellBr', sellBr(), false)}<div class="hint">The till, tables, kitchen and anything new you add use this branch. Lists can still show every branch.</div></div>` : '')); };
 LIVE.more = () => render(true);
 V2_MORE.push(['Sales', 'reports', () => lay('End of day', 'Takings, payments and tills for today', '', 'openDayClose')]);
 V2_MORE.push(['Set up', 'settings', () => lay('Receipt and tax details', 'Shop details, tax number and receipt footer', '', 'openBiz')]);
@@ -4216,7 +4217,7 @@ Object.assign(A, {
   cvWon(id) { const c = S.convos.find(x => x.id === id); c.status = 'won'; c.flag = ''; save(); render(true); toast('Marked as a sale.'); }, cvLost(id) { const c = S.convos.find(x => x.id === id); c.status = 'lost'; c.flag = ''; save(); render(true); toast('Marked as lost.'); }, cvReopen(id) { const c = S.convos.find(x => x.id === id); c.status = c.orderId ? 'order' : 'agent'; save(); render(true); },
   simulateChat() { const pool = [['Kojo Asante', '0244 100 200', 'Instagram', 'Hi, do you deliver to Madina? I want 2 cartons of Indomie.', 'Yes we deliver to Madina. A carton of Indomie is GH₵ 32.00. Delivery is GH₵ 10. Shall I place the order?'], ['Akua Frimpong', '0551 222 333', 'WhatsApp', 'Good afternoon, is the Samsung A15 available?', 'Good afternoon Akua! Yes, we have 2 left at GH₵ 2,200.00. Would you like to reserve one?']], p = pool[(S.chatN = ((S.chatN || 0) + 1)) % pool.length], now = Date.now();
     S.convos.unshift({ id: uid('cv'), cust: p[0], phone: p[1], ch: p[2], status: 'agent', by: 'agent', unread: 1, flag: '', orderId: '', msgs: [{ f: 'c', text: p[3], t: now - 6e4 }, { f: 'a', text: p[4], t: now }] }); save(); render(true); toast('New chat from ' + p[0] + '.'); },
-  reorderFor(pid) { const p = pById(pid), u = unitsByDay(pid), rate = u.reduce((a, x) => a + x, 0) / 14, sug = Math.max(1, Math.ceil(rate * 14 - onHandOf(pid))); if (deny('orders.create', 'make purchase orders')) return; push('order', { supplier: p.supplier || '', br: scoped() ? myBranch() : S.branches[0].id, lines: [{ id: uid('l'), pid, qty: String(sug), costS: p.cost ? fromPes(p.cost) : '' }], note: 'Suggested from your sales', status: 'draft' }); },
+  reorderFor(pid) { const p = pById(pid), u = unitsByDay(pid), rate = u.reduce((a, x) => a + x, 0) / 14, sug = Math.max(1, Math.ceil(rate * 14 - onHandOf(pid))); if (deny('orders.create', 'make purchase orders')) return; push('order', { supplier: p.supplier || '', br: sellBr(), lines: [{ id: uid('l'), pid, qty: String(sug), costS: p.cost ? fromPes(p.cost) : '' }], note: 'Suggested from your sales', status: 'draft' }); },
   openInsights() { push('insights'); }
 });
 (() => { const cs = A.completeSale; A.completeSale = function (m) { const ao = UI.cart && UI.cart.fromAgent, n0 = S.sales.length; cs.call(A, m); if (ao && S.sales.length > n0) { const c = S.convos.find(x => x.orderId === ao); if (c) { c.status = 'won'; c.msgs.push({ f: 's', text: 'Sale ' + S.sales[0].no + ' made.', t: Date.now() }); save(); } } }; })();
@@ -4552,7 +4553,7 @@ SCREENS.timeclock = () => { const L = ensureClock().log, all = canSeeAll(), me =
   const out = people.filter(m => !inNow.some(e => e.mid === m.id));
   return `${nav('Time clock')}<div class="pad" id="pad" style="gap:12px">${clockCard()}${btn('Clock in or out with a PIN', 'openClockKiosk', null, { k: 's', sm: 1 })}${meMember() && !meMember().pin ? '<div class="hint">You have no Till PIN yet. Add one under Team so only you can clock in and out.</div>' : ''}
   ${isOwner() || can('settings.update') ? `<div class="card w" style="padding:2px 14px">${lay('Time clock settings', S.clockRequire ? 'Clock in is needed before selling' : 'Clock in is optional', '', 'openClockSettings')}</div>` : ''}
-  ${multi() && !scoped() ? brChips('setSbr', UI.sbr, true) : ''}${sect('Clocked in now')}${inNow.length ? `<div class="col g8">${inNow.map(e => `<div class="vrow" style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"><div class="lm"><b>${esc(e.who)}</b><span>Since ${hm(e.t)} · ${dur(now - e.t)}${e.sh ? ' · till shift' : ''}${multi() ? ' · ' + esc(branchName(e.br)) : ''}</span></div>${all ? btn('Clock out', 'clockOutFor', e.mid, { sm: 1, k: 'g' }) : pill('In', 'ok')}${ic('chev', 18)}</div>`).join('')}</div>` : '<div class="t-bs mute">Nobody is clocked in.</div>'}
+  ${multi() && !scoped() ? brChips('setSbr', listBr(), true) : ''}${sect('Clocked in now')}${inNow.length ? `<div class="col g8">${inNow.map(e => `<div class="vrow" style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"><div class="lm"><b>${esc(e.who)}</b><span>Since ${hm(e.t)} · ${dur(now - e.t)}${e.sh ? ' · till shift' : ''}${multi() ? ' · ' + esc(branchName(e.br)) : ''}</span></div>${all ? btn('Clock out', 'clockOutFor', e.mid, { sm: 1, k: 'g' }) : pill('In', 'ok')}${ic('chev', 18)}</div>`).join('')}</div>` : '<div class="t-bs mute">Nobody is clocked in.</div>'}
   ${all && out.length ? sect('Not clocked in') + `<div class="col g8">${out.map(m => `<div class="vrow"><div class="lm"><b>${esc(m.name)}</b><span>${esc((roleOf(m) || {}).name || '')}</span></div>${btn('Clock in', 'clockInFor', m.id, { sm: 1, k: 's' })}</div>`).join('')}</div>` : ''}
   ${all ? sect('Hours this week') + `<div class="col g8">${people.map(m => `<div class="vrow"><div class="lm"><b>${esc(m.name)}</b></div><b>${dur(tot[m.id] || 0)}</b></div>`).join('')}</div>` : `${sect('Your hours this week')}<div class="card w"><div class="between"><span class="t-bm">Total</span><b class="t-hs">${dur(tot[me] || 0)}</b></div></div>`}
   ${days.length ? days.map(g => sect(g.d) + `<div class="col g8">${g.list.map(e => `<div class="vrow" style="cursor:pointer" data-act="openClockEntry" data-arg="${e.id}"><div class="lm"><b>${all ? esc(e.who) : hm(e.t) + ' to ' + hm(e.out)}</b><span>${all ? hm(e.t) + ' to ' + hm(e.out) : ''}${e.sh ? (all ? ' · ' : '') + 'On a till shift' : ''}</span></div><div class="row g8"><b>${dur(e.out - e.t)}</b>${ic('chev', 18)}</div></div>`).join('')}</div>`).join('') : ''}</div>`; };
@@ -5130,7 +5131,8 @@ const tablesHere = () => S.tables.filter(t => tbr(t) === sellBr());
 const heldHere = () => S.held.filter(h => !multi() || (h.br || firstBr()) === sellBr());
 const bkBr = b => b.br || firstBr();
 const hoursOf = br => (S.hoursBy && S.hoursBy[br]) || S.hours;
-const brFilter = () => scoped() ? myBranch() : (UI.sbr || '');
+const listBr = () => !multi() ? '' : scoped() ? myBranch() : (UI.sbr === undefined ? sellBr() : UI.sbr);
+const brFilter = () => listBr();
 /* ===== v2: channel orders know their branch ===== */
 const chBrOf = k => { const ch = S.channels[k]; return ch && ch.br ? ch.br : (S.branches[0] || {}).id; };
 const aoAvail = (i, br) => { const p = pById(i.pid); return !p ? 0 : p.track ? sellAvail(p, '', br) : Infinity; };
@@ -5282,7 +5284,7 @@ Object.assign(A, {
 const invNext = () => { const n = Math.max(S.invSeq || 0, ...S.sales.map(x => parseInt(String(x.inv || '').replace(/\D/g, ''), 10) || 0)) + 1; S.invSeq = n; return 'INV-' + String(n).padStart(4, '0'); };
 const invDue = s => s.status === 'quote' ? s.total : dueOf(s);
 const openQuoteCount = () => S.sales.filter(x => x.status === 'quote').length;
-SCREENS.quotes = () => { const T = UI.qt || 'open', br = scoped() ? myBranch() : UI.sbr, mine = x => (!br || x.br === br) && (can('salesAll') || x.who === UI.who), open = S.sales.filter(x => x.status === 'quote' && mine(x)).sort((a, b) => (quoteExpired(b) - quoteExpired(a)) || b.t - a.t), done = S.sales.filter(x => x.status === 'converted' && mine(x)).sort((a, b) => b.t - a.t), list = T === 'done' ? done : open, total = open.reduce((a, x) => a + x.total, 0), late = open.filter(quoteExpired).length;
+SCREENS.quotes = () => { const T = UI.qt || 'open', br = listBr(), mine = x => (!br || x.br === br) && (can('salesAll') || x.who === UI.who), open = S.sales.filter(x => x.status === 'quote' && mine(x)).sort((a, b) => (quoteExpired(b) - quoteExpired(a)) || b.t - a.t), done = S.sales.filter(x => x.status === 'converted' && mine(x)).sort((a, b) => b.t - a.t), list = T === 'done' ? done : open, total = open.reduce((a, x) => a + x.total, 0), late = open.filter(quoteExpired).length;
   return `${nav('Quotes')}<div class="pad" id="pad" style="gap:12px"><div class="t-bm mute">A quote is not a sale, and no stock moves, until you convert it to a sale. Send it as an invoice so the customer can pay.</div>${total > 0 ? `<div class="card w"><div class="between"><span class="t-bm b6" style="color:var(--warn)">Waiting to be paid</span><b class="t-hs">${money(total)}</b></div>${late ? `<div class="t-bs bad" style="margin-top:2px">${pdesc(late, 'quote is', 'quotes are')} past the due date</div>` : ''}</div>` : ''}
   <div class="chips">${[['open', 'Open · ' + open.length], ['done', 'Converted']].map(([v, l]) => `<button class="chip ${T === v ? 'on' : ''}" data-act="setQuoteTab" data-arg="${v}">${l}</button>`).join('')}</div>
   ${list.length ? `<div class="col g8">${list.map(x => `<div class="vrow" style="cursor:pointer" data-act="openSale" data-arg="${x.id}"><div class="lm"><b>${esc(x.no)} · ${money(x.total)}</b><span>${x.cname ? esc(x.cname) + ' · ' : ''}${pdesc(x.lines.length, 'item', 'items')}${T === 'open' ? (x.validTill ? ' · due ' + fmtDate(x.validTill) : '') : ' · became ' + esc(x.convertedTo || 'a sale')} · ${ago(x.t)}</span></div>${pill(...saleSt(x))}</div>`).join('')}</div>` : empty('file', T === 'done' ? 'Nothing converted yet' : 'No quotes', T === 'done' ? 'Quotes that became sales are listed here.' : 'On the POS, add the items, pick a customer and tap Save as quote. It shows here until you convert it to a sale.')}</div>${cta(btn('New quote', 'newQuoteCart'))}`; };
