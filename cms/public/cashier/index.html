@@ -4842,7 +4842,7 @@ SCREENS.shops = () => { const gate = UI.stack.length === 1, list = REG.list.filt
   return `${head}<div class="pad" id="pad" style="gap:12px">${gate ? '' : `<div class="t-bm mute">Each shop has its own products, stock, sales and team. Switching does not change the shop you leave.</div>`}
     <div class="col g8">${list.map(r => `<button class="brow tap" style="width:100%;text-align:left" data-act="openShop" data-arg="${r.id}"><div class="bico" style="${r.id === REG.cur ? 'background:var(--ink);color:var(--bg);font-weight:700' : 'font-weight:700'}">${esc(initials(r.name))}</div><div class="lm"><b>${esc(r.name)}</b><span>${esc(shopMeta(r))}</span></div>${r.id === REG.cur ? `<span class="pill n">Current</span>` : ic('chev', 18)}</button>`).join('')}</div>
     ${btn('Add another shop', 'addShop', null, { k: 's', blk: 1, icon: 'plus' })}
-    ${SESSION ? `<div class="between" style="padding:4px 2px"><span class="t-bs mute">Signed in as ${esc(SESSION.email)}</span><button class="b6 t-bs" style="text-decoration:underline;padding:6px 2px" data-act="logout">Log out</button></div>` : ''}
+    ${SESSION ? `<div class="between" style="padding:4px 2px"><span class="t-bs mute">Signed in as ${esc(SESSION.email)}</span><button class="b6 t-bs" style="text-decoration:underline;padding:6px 2px" data-act="logoutAsk">Log out</button></div>` : ''}
     ${note('A new shop starts with its own setup. Branches are for one shop with several places. Use another shop for a separate business.')}</div>`; };
 Object.assign(A, {
   openShops() { push('shops', {}); },
