@@ -604,6 +604,7 @@ function pSummary(p) {
   if ((p.units || []).length) out.push(p.units.length + ' selling unit' + (p.units.length > 1 ? 's' : ''));
   if ((p.addonGroups || []).length) out.push(p.addonGroups.length + ' addon group' + (p.addonGroups.length > 1 ? 's' : ''));
   if (hasWhole(p)) { const nm = S.priceLists.filter(l => p.lists.includes(l.id)).map(l => l.name).join(', '); out.push(p.sellRetail === false ? nm + ' only' : 'Retail, ' + nm); }
+  if (multi() && !viewBranch() && Array.isArray(p.branches) && p.branches.length < S.branches.length) out.push('Sold at ' + branchText(p));
   if (p.serial) out.unshift('Serial tracked');
   else if (p.weighed) out.unshift('Weighed');
   return out.length ? out.join(' · ') : isSvc(p) ? 'Service' : 'Sold by the ' + p.unitName.toLowerCase();
@@ -632,13 +633,13 @@ function sheetHtml() {
     return wrap(`<div class="between"><div class="t-hs">Sold at</div><button class="b6" data-act="soldAtAll">${sel.size === S.branches.length ? 'Clear' : 'Select all'}</button></div><div class="col g8">${S.branches.map(b => ckrow(sel.has(b.id), b.name, b.id === S.branches[0].id ? 'Main branch' : '', 'soldAtToggle', b.id)).join('')}</div>${sel.size ? '' : '<div class="hint" style="color:var(--bad);font-weight:600">Pick at least one branch.</div>'}<div class="hint">Need it different at one branch? Duplicate the product from its menu, then set Sold at on each.</div>${btn('Done, ' + (sel.size === S.branches.length ? 'all branches' : sel.size + ' selected'), 'closeSoldAt', null, { blk: 1, off: !sel.size })}`);
   }
   if (sh.type === 'filter') {
-    const cats = [...new Set(S.products.filter(catAllowed).map(p => p.cat).filter(Boolean))].sort(), n = filtered().length;
+    const svc = svcNow(), cats = catsFor(svc), n = filtered(svc).length, W = svc ? 'service' : 'product';
     return wrap(`<div class="between"><div class="t-hs">Filter</div><button class="b6" data-act="resetFilters">Reset</button></div>
       <div class="sect">Status</div>${seg([['active', 'Active'], ['draft', 'Draft']], UI.status, 'setStatus')}
       ${multi() && !scoped() ? `<div class="sect">Branch</div><div class="col g8">${radio(!viewBranch(), 'All branches', '', 'setBranchFilter', '')}${S.branches.map(b => radio(viewBranch() === b.id, b.name, '', 'setBranchFilter', b.id)).join('')}</div>` : ''}
-      <div class="sect">Category</div><div class="col g8">${radio(!UI.cat, 'All categories', '', 'setCatFilter', '')}${cats.map(c => radio(UI.cat === c, c, '', 'setCatFilter', c)).join('')}</div>
-      <div class="sect">Needs attention</div>${tgRow('No barcode', 'Products without a barcode', !!UI.flags.nobarcode, 'flag', 'nobarcode')}${can('costView') ? tgRow('No cost price', 'Cost is not set', !!UI.flags.nocost, 'flag', 'nocost') + tgRow('Low margin', 'Under ' + LOW_MARGIN + '%', !!UI.flags.low, 'flag', 'low') : ''}
-      ${btn('Show ' + n + ' product' + (n === 1 ? '' : 's'), 'closeSheet', null, { blk: 1 })}`);
+      <div class="sect">Category</div><div class="col g8">${radio(!effCat(svc), 'All categories', '', 'setCatFilter', '')}${cats.map(c => radio(effCat(svc) === c, c, '', 'setCatFilter', c)).join('')}</div>
+      <div class="sect">Needs attention</div>${svc ? '' : tgRow('No barcode', 'Products without a barcode', !!UI.flags.nobarcode, 'flag', 'nobarcode')}${can('costView') ? tgRow('No cost price', 'Cost is not set', !!UI.flags.nocost, 'flag', 'nocost') + tgRow('Low margin', 'Under ' + LOW_MARGIN + '%', !!UI.flags.low, 'flag', 'low') : ''}
+      ${btn('Show ' + n + ' ' + W + (n === 1 ? '' : 's'), 'closeSheet', null, { blk: 1 })}`);
   }
   if (sh.type === 'attr') { const row = cur().f.attrs[sh.i]; return wrap(`<div class="t-hs">${sh.kind === 'k' ? 'Attribute' : 'Value for ' + esc(row.k)}</div>${searchbox('Search or create', 'sq', sh.q || '')}<div id="sheetlist" class="col g8">${attrList(sh)}</div>`); }
   if (sh.type === 'saletax') { const c = cartOf(), k = cartCalc(c, sellBr()), off = c.taxOff || [], add = c.taxAdd || [], present = [...new Set(c.lines.flatMap(l => taxesOf(pById(l.pid))))], extra = [...new Set(TAXES.concat(S.taxes))].filter(n => taxRate(n) > 0 && !present.includes(n));
@@ -719,7 +720,7 @@ function filtered(svc) {
     if (isSvc(p) !== !!svc) return false;
     if (!catAllowed(p)) return false;
     if (UI.status !== p.status) return false;
-    if (UI.cat && p.cat !== UI.cat) return false;
+    if (effCat(svc) && p.cat !== effCat(svc)) return false;
     if (viewBranch() && !soldAt(p, viewBranch())) return false;
     if (q && !pHit(p, q)) return false;
     const m = margin(p.price, p.cost);
@@ -741,11 +742,11 @@ SCREENS.products = () => listScreen(false);
 SCREENS.services = () => listScreen(true);
 function listScreen(svc) {
   const list = filtered(svc), sel = UI.sel, W = svc ? 'service' : 'product';
-  const cats = [...new Set(S.products.filter(p => isSvc(p) === svc && catAllowed(p)).map(p => p.cat).filter(Boolean))].sort();
+  const cats = catsFor(svc);
   const nActive = S.products.filter(p => p.status === 'active' && catAllowed(p)).length;
   const head = sel
     ? nav(sel.size + ' selected', { noBack: true, right: `<button class="ib" style="width:auto;padding:0 12px;font-weight:700;font-size:16px" data-act="selCancel">Cancel</button>` })
-    : `<div class="ph-title" style="padding-top:6px"><div class="t-hl">${svc ? 'Services' : 'Products'}</div><div class="row g8">${notifBell()}<div style="position:relative">${ibtn('filter', 'openFilter')}${nFilters() ? `<span class="badge">${nFilters()}</span>` : ''}</div>${ibtn('dots', 'menu')}</div></div>`;
+    : `<div class="ph-title" style="padding-top:6px"><div><div class="t-hl">${svc ? 'Services' : 'Products'}</div>${multi() ? `<div class="t-bs mute">${esc(viewBranch() ? branchName(viewBranch()) : 'All branches')}</div>` : ''}</div><div class="row g8">${notifBell()}<div style="position:relative">${ibtn('filter', 'openFilter')}${nFilters() ? `<span class="badge">${nFilters()}</span>` : ''}</div>${ibtn('dots', 'menu')}</div></div>`;
   const flags = [['nobarcode', 'No barcode']].concat(can('costView') ? [['nocost', 'No cost price'], ['low', 'Low margin']] : []);
   const inner = `${head}<div class="stickybar" id="stickybar">${searchbox(svc ? 'Search name or SKU' : 'Search name, SKU or barcode', 'sq', UI.q)}</div><div class="pad" id="pad" style="padding-top:10px;gap:10px">
     ${scoped() ? `<div class="t-bs mute row g8">${ic('store', 16)}Showing ${esc(branchName(myBranch()))} only</div>` : ''}
@@ -760,17 +761,20 @@ function listScreen(svc) {
 const multi = () => S.branches.length > 1;
 const myBranch = () => { const m = meMember(); return m && m.branches !== 'all' && S.branches.some(b => b.id === m.branches) ? m.branches : S.branches[0].id; };
 const scoped = () => { const m = meMember(); return multi() && !!m && m.branches !== 'all' && S.branches.some(b => b.id === m.branches); };
+const svcNow = () => cur().name === 'services';
+const catsFor = svc => [...new Set(S.products.filter(p => isSvc(p) === !!svc && catAllowed(p)).map(p => p.cat).filter(Boolean))].sort();
+const effCat = svc => UI.cat && catsFor(svc).includes(UI.cat) ? UI.cat : '';
 const viewBranch = () => !multi() ? '' : scoped() ? myBranch() : (UI.branch === undefined ? sellBr() : UI.branch);
 const soldList = p => !p.branches || p.branches === 'all' ? S.branches.map(b => b.id) : p.branches;
 const soldAt = (p, b) => !p.branches || p.branches === 'all' || p.branches.includes(b);
 const branchName = id => (S.branches.find(b => b.id === id) || { name: 'Removed branch' }).name;
 const branchText = p => !p.branches || p.branches === 'all' ? 'All branches' : p.branches.length === 1 ? branchName(p.branches[0]) : p.branches.length + ' branches';
-const quickChips = (svc, cats) => { const on = !UI.cat && !UI.quick, c = (lab, arg, isOn) => `<button class="chip ${isOn ? 'on' : ''}" data-act="quickF" data-arg="${esc(arg)}">${esc(lab)}</button>`;
-  return `<div class="chips scroll">${c('All', '', on)}${svc ? '' : c('Low stock', 'low', UI.quick === 'low') + c('Out of stock', 'out', UI.quick === 'out')}${cats.map(x => c(x, 'cat:' + x, UI.cat === x)).join('')}</div>`; };
-function nFilters() { return (multi() && !scoped() && viewBranch() !== sellBr() ? 1 : 0) + (UI.cat ? 1 : 0) + (UI.status !== 'active' ? 1 : 0) + Object.values(UI.flags).filter(Boolean).length; }
+const quickChips = (svc, cats) => { const on = !effCat(svc) && !UI.quick, c = (lab, arg, isOn) => `<button class="chip ${isOn ? 'on' : ''}" data-act="quickF" data-arg="${esc(arg)}">${esc(lab)}</button>`;
+  return `<div class="chips scroll">${c('All', '', on)}${svc ? '' : c('Low stock', 'low', UI.quick === 'low') + c('Out of stock', 'out', UI.quick === 'out')}${cats.map(x => c(x, 'cat:' + x, effCat(svc) === x)).join('')}</div>`; };
+function nFilters() { return (multi() && !scoped() && viewBranch() !== sellBr() ? 1 : 0) + (effCat(svcNow()) ? 1 : 0) + (UI.status !== 'active' ? 1 : 0) + Object.values(UI.flags).filter(Boolean).length; }
 function filterLine() {
   const n = nFilters(); if (!n) return '';
-  const parts = [multi() && !scoped() && viewBranch() !== sellBr() && (viewBranch() ? branchName(viewBranch()) : 'All branches'), UI.cat, UI.status === 'draft' ? 'Draft' : '', UI.flags.nobarcode ? 'No barcode' : '', UI.flags.nocost ? 'No cost price' : '', UI.flags.low ? 'Low margin' : ''].filter(Boolean);
+  const parts = [multi() && !scoped() && viewBranch() !== sellBr() && (viewBranch() ? branchName(viewBranch()) : 'All branches'), effCat(svcNow()), UI.status === 'draft' ? 'Draft' : '', UI.flags.nobarcode ? 'No barcode' : '', UI.flags.nocost ? 'No cost price' : '', UI.flags.low ? 'Low margin' : ''].filter(Boolean);
   return `<div class="between"><span class="t-bs" style="color:var(--ink);font-weight:600">${esc(parts.join(' · '))}</span><button class="t-bs b6" style="text-decoration:underline" data-act="resetFilters">Clear</button></div>`;
 }
 function plist(list, svc) {
@@ -2352,7 +2356,7 @@ const A = {
   setStatus(s) { UI.status = s; render(true); },
   flag(k) { UI.flags[k] = !UI.flags[k]; render(true); },
   newProduct() { if (deny('products.create', 'add products')) return; UI.draft = newDraft(); UI.editing = null; UI.dirty = false; push('product'); },
-  newService() { const d = newDraft(); d.kind = 'service'; d.unitName = 'Session'; if (S.svcNoTax) d.taxes = []; UI.draft = d; UI.editing = null; UI.dirty = false; push('product'); },
+  newService() { const d = newDraft(); d.kind = 'service'; d.unitName = 'Session'; if (S.svcNoTax) d.taxes = []; if (multi()) d.branches = [sellBr()]; UI.draft = d; UI.editing = null; UI.dirty = false; push('product'); },
   openProduct(id) { openDraft(S.products.find(p => p.id === id)); push('product'); },
   menu() { UI.sheet = { type: 'menu', title: 'Products', items: [['Select several', 'selStart', null, 0, 'list'], ['Archived', 'openArchived', null, 0, 'box'], ['Your lists', 'openLists', null, 0, 'list'], ['Change history', 'openHistory', '', 0, 'clock'], ['Export to CSV', 'exportCsv', null, 0, 'share'], ...(can('importExport') ? [['Import your data', 'openImport', null, 0, 'cloud']] : [])] }; render(true); },
   openArchived() { push('archived'); },
