@@ -1461,6 +1461,11 @@ function migParse(text) {
 function migAuto(hd, fields) {
   const h = hd.map(migNorm), used = new Set(), map = {};
   [0, 1].forEach(pass => fields.forEach(([k, , , syn]) => { if (map[k] != null) return; const i = pass ? h.findIndex((x, j) => x && !used.has(j) && syn.some(s => x.includes(s))) : syn.map(s => h.findIndex((x, j) => x === s && !used.has(j))).find(j => j >= 0) ?? -1; if (i >= 0) { map[k] = String(i); used.add(i); } }));
+  if (fields.some(f => f[0] === 'var1')) {
+    /* our own export puts the two option columns between Branch and Batch number, whatever the options are called */
+    const bi = h.indexOf('branch'); if (bi >= 0 && h[bi + 3] === migNorm('Batch number') && map.var1 == null && map.var2 == null && !used.has(bi + 1) && !used.has(bi + 2)) { map.var1 = String(bi + 1); map.var2 = String(bi + 2); used.add(bi + 1); used.add(bi + 2); }
+    const known = new Set(allAttrNames().map(migNorm)); h.forEach((x, j) => { if (!x || used.has(j) || !known.has(x)) return; const k = map.var1 == null ? 'var1' : map.var2 == null ? 'var2' : null; if (k) { map[k] = String(j); used.add(j); } });
+  }
   return map;
 }
 function migBuild(f) {
@@ -2985,11 +2990,30 @@ const A = {
   migDone() { const i = UI.stack.findIndex(x => x.name === 'migrate'); UI.stack = UI.stack.slice(0, Math.max(1, i)); UI.errs = {}; render(); },
   migAdvance() { const f = cur().f, n = f.qi + 1; if (n >= f.queue.length) { A.migDone(); return; } const i = UI.stack.findIndex(x => x.name === 'migrate'); UI.stack = UI.stack.slice(0, i + 1); migOpenStep(f, n); },
   exportCsv() {
-    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-    const rows = [['Product', 'Variant', 'SKU', 'Barcode', 'Category', 'Status', 'Price', 'Cost', 'Type', 'Supplier'].concat(S.priceLists.map(l => l.name + ' price'))];
-    S.products.forEach(p => { if (!p.variants.length) rows.push([p.name, '', p.sku, p.barcode, p.cat, p.status, fromPes(p.price), can('costView') ? fromPes(p.cost) : '', KIND.standard[0], can('costView') ? p.supplier : ''].concat(S.priceLists.map(l => fromPes((p.prices || {})[l.id])))); else p.variants.forEach(v => rows.push([p.name, v.name, v.sku, v.barcode, p.cat, p.status, fromPes(vPrice(p, v)), can('costView') ? fromPes(vCost(p, v)) : '', KIND.standard[0], can('costView') ? p.supplier : ''].concat(S.priceLists.map(l => fromPes((p.prices || {})[l.id]))))); });
-    const csv = rows.map(r => r.map(q).join(',')).join('\n');
-    try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'products.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('Exported products.csv'); } catch (e) { toast('Export is blocked here.', 1); }
+    /* the same layout the importer reads, so a file exported here can be imported again */
+    const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', cv = can('costView'), dmy = d => d ? String(d).split('-').reverse().join('/') : '', fp = n => n == null || n === '' ? '' : fromPes(n), real = pr => (pr.variants || []).filter(v => !v.def && !v.archived);
+    const freq = {}; S.products.forEach(pr => real(pr).forEach(v => (v.attrs || []).forEach(a => { freq[a.k] = (freq[a.k] || 0) + 1; })));
+    const an = Object.keys(freq).sort((a, b) => freq[b] - freq[a]).slice(0, 2); ['Size', 'Colour'].forEach(d => { if (an.length < 2 && !an.includes(d)) an.push(d); });
+    const C = [['name', 'Name'], ['cat', 'Category'], ['brand', 'Brand'], ['desc', 'Description'], ['price', 'Selling price'], ['cost', 'Cost price'], ['qty', 'Quantity in stock'], ['base', 'Base unit'], ['br', 'Branch'], ['v1', an[0]], ['v2', an[1]], ['lot', 'Batch number'], ['exp', 'Expiry date'], ['bcost', 'Batch cost'], ['unit', 'Unit'], ['uqty', 'Quantity in unit'], ['uprice', 'Price of unit'], ['ubc', 'Unit barcode'], ['sku', 'SKU'], ['bc', 'Barcode'], ['sup', 'Supplier'], ['tax', 'Taxes'], ['weigh', 'Sold by weight'], ['sn', 'Serial numbers'], ['agrp', 'Addon group'], ['atype', 'Group type'], ['areq', 'Group is required'], ['aopt', 'Addon option'], ['aprice', 'Addon price'], ['acost', 'Addon cost'], ['astock', 'Stock item the addon uses'], ['aqty', 'Stock used each time'], ['apre', 'Pre-selected'], ['status', 'Status'], ['type', 'Type'], ['pmode', 'Price type'], ['dur', 'Duration (minutes)'], ['where', 'Where'], ['ask', 'Question']].concat(S.priceLists.map((l, i) => ['pl' + i, l.name + ' price']));
+    const row = o => C.map(([k]) => o[k] ?? ''), rows = [C.map(c => c[1])];
+    S.products.forEach(pr => {
+      const svc = isSvc(pr), vs = real(pr), dv = (pr.variants || []).find(v => v.def && !v.archived);
+      const slots = vs.length ? vs.map(v => ({ key: v.id, bv: v, v, price: vPrice(pr, v), cost: vCost(pr, v), sku: v.sku, bc: v.barcode })) : [{ key: 'p', bv: dv || null, v: null, price: pr.price, cost: pr.cost, sku: pr.sku, bc: pr.barcode }];
+      const lists = v => Object.fromEntries(S.priceLists.map((l, i) => ['pl' + i, v && v.prices && v.prices[l.id] !== undefined && v.prices[l.id] !== '' ? v.prices[l.id] : fp((pr.prices || {})[l.id])]));
+      const head = { name: pr.name, cat: pr.cat, brand: pr.brand, desc: pr.desc, base: pr.weighed ? '' : (svc ? '' : pr.unitName), sup: cv ? pr.supplier : '', tax: Array.isArray(pr.taxes) ? (pr.taxes.length ? pr.taxes.join('; ') : 'None') : '', weigh: pr.weighed ? 'Yes' : '', status: pr.status, type: svc ? 'Service' : 'Product', pmode: svc ? (pr.priceMode || 'fixed') : '', dur: svc ? pr.duration || '' : '', where: svc ? (pr.places || []).map(k => PLACES[k]).join('; ') : '', ask: svc ? pr.ask || '' : '' };
+      const mine = [];
+      slots.forEach(sl => {
+        const opt = {}; if (sl.v) (sl.v.attrs || []).forEach(a => { if (a.k === an[0]) opt.v1 = a.v; else if (a.k === an[1]) opt.v2 = a.v; });
+        const bs = sl.bv && sl.bv.track && (sl.bv.batches || []).length ? sl.bv.batches : null, items = bs ? bs.map(b => ({ key: b.id, lot: b.lot, exp: dmy(b.exp), bcost: cv ? fp(b.cost) : '' })) : [{ key: sl.key }], lines = [];
+        items.forEach(it => { const by = (pr.qty || {})[it.key] || {}, brs = Object.keys(by).filter(b => by[b] > 0); if (!brs.length) lines.push({ it, br: '', q: '', sn: '' }); else brs.forEach(b => { const sn = (((pr.sn || {})[it.key] || {})[b] || []).join(';'); lines.push({ it, br: branchName(b), q: sn ? '' : rnd(by[b]), sn }); }); });
+        lines.forEach(ln => mine.push(Object.assign({}, head, opt, lists(sl.v), { price: fp(sl.price), cost: cv ? fp(sl.cost) : '', sku: sl.sku, bc: sl.bc, lot: ln.it.lot || '', exp: ln.it.exp || '', bcost: ln.it.bcost || '', br: ln.br, qty: ln.q, sn: ln.sn })));
+      });
+      (pr.units || []).forEach((u, i) => { const un = { unit: u.name, uqty: u.qty, uprice: fp(u.price), ubc: u.barcode || '' }; if (i < mine.length) Object.assign(mine[i], un); else mine.push(Object.assign({}, mine[0], un, { qty: '', sn: '' })); });
+      mine.forEach(o => rows.push(row(o)));
+      (pr.addonGroups || []).forEach(g => (g.options || []).forEach(o => rows.push(row({ name: pr.name, agrp: g.name, atype: g.mode === 'many' ? 'Pick many' : 'Pick one', areq: g.required ? 'Yes' : 'No', aopt: o.name, aprice: fp(o.price), acost: cv ? fp(o.cost) : '', astock: o.stockItem ? (pById(o.stockItem) || {}).name || '' : '', aqty: o.stockItem ? o.stockQty : '', apre: o.pre ? 'Yes' : '' }))));
+    });
+    const csv = '﻿' + rows.map(r => r.map(q).join(',')).join('\n');
+    try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'products.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('Exported products.csv · ' + (rows.length - 1) + ' rows'); } catch (e) { toast('Export is blocked here.', 1); }
   },
   /* select */
   selStart() { UI.sel = new Set(); render(true); },
