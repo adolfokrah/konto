@@ -4829,6 +4829,8 @@ Object.assign(A, {
 });
 V2_MORE.push(['Set up', 'importExport', () => lay('Export your data', 'Download products, sales, customers and a full backup', '', 'openExportHub')]);
 V2_MORE.push(['Account', '', () => lay('Your account', SESSION ? SESSION.email : 'Name, email and sign out', '', 'openAccount')]);
+(() => { const la = A.logoutAsk; A.logoutAsk = function () { const e = clockOpen(myId()); if (!e) return la.call(A); const sh = shiftHere();
+  confirmSheet({ title: 'Clock out first', text: 'You have been clocked in since ' + hm(e.t) + ' (' + dur(Date.now() - e.t) + ').' + (sh ? ' The till is still open on this shift.' : '') + ' Clock out to end your hours, then you are logged out.', label: 'Clock out and log out', danger: 1, onConfirm: () => { UI.sheet = null; clockOut(myId()); save(); A.logout(); } }); }; })();
 V2_MORE.push(['Account', '', () => lay('Log out', SESSION ? SESSION.email : '', '', 'logoutAsk')]);
 /* ----- several shops on one account ----- */
 const shopMeta = r => { const t = (OB_TYPES.find(x => x[0] === r.type) || [0, 'Shop'])[1]; return r.id === REG.cur ? t + ' · Open now' : t; };
