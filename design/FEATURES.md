@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 21 fixes committed in this branch, one new feature (barcode labels) and 10 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 28 fixes committed in this branch, one new feature (barcode labels) and 3 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -66,33 +66,29 @@ Result: 21 fixes committed in this branch, one new feature (barcode labels) and 
 | 19 | Stock value, stock levels | Archived products that still held stock vanished from the valuation. | They stay in Stock value (and its export) and Stock levels, marked Archived. The archive warning says so. |
 | 20 | Sales report | Category donut and top items used pre-discount line amounts, so they did not add up to net sales. | Each sale's net (after discount, tax and refunds) is shared across its lines. Totals match net sales exactly (checked on 442 sample sales). |
 | 21 | POS | Item cards counted expired and held batches as available (27 shown, 13 sellable). | Cards show sellable stock only. |
+| 22 | Loyalty | Points were earned on unpaid credit sales (41 points on a GH₵ 41.40 credit sale). | Points are earned on money actually received. A credit sale earns nothing; each part payment earns its share. Voiding still reverses them. |
+| 23 | Onboarding, tax | A new shop added 15% "Standard rated" tax to every sale, with no tax question. | New shops start with no default tax. It is on by default only when the "Receipt and tax details" add-on is chosen. Existing shops are unchanged. |
+| 24 | Tax | No tax-inclusive pricing (a shelf price of GH₵ 36.00 became GH₵ 41.40). | New setting in Stock settings, "Prices include tax". On: the price is what the customer pays and tax is worked out from it (shown as "Includes"). Off: tax is added on top, as before. Barcode labels do not add tax a second time when it is on. |
+| 25 | Sales tab, sale page | Header said "Today · 22 sales" while the list said "26 sales"; "Cost of goods" ignored partial returns. | The list counts paid sales only and shows voids separately ("2 sales · 1 voided"). Cost of goods subtracts the cost of returned items (stored on each return). |
+| 26 | End of day | Cash received for gift cards was missing from the report. | New "Gift cards sold" card (by method, total), marked as not counted as sales until the card is spent. |
+| 27 | Products | A base price was required even when every variant had its own price. | The base price is optional when every active variant has a price. |
+| 28 | Insights | "Sales from chats" showed GH₵ 0.00 after a chat order became a sale. | Chat sales are counted from the real sale an order was turned into (net of refunds), and those chats count as "Became sales". |
 
 ### 2.2 Open: needs a decision
 
-Security and money controls (highest priority for production)
 
-5. **Loyalty points are earned on unpaid sales.** A credit sale of GH₵ 41.40 awarded 41 points before any payment.
-
-Reporting and stock
-
-7. The Sales tab header says "Today · 22 sales" while the list header says "26 sales" (the list counts voided and quote rows).
-9. After a partial return the sale page still shows "Cost of goods" for the original quantity while profit reflects the restocked cost.
-11. Day-end "How it was paid" excludes gift cards sold (cash received for a gift card is in the drawer but not on the report).
 
 Product and copy
 
-12. The product form forces a base retail price even when every variant has its own price.
 13. Receive-order confirm says "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the result is the landed weighted average (GH₵ 54.52).
-14. A brand-new shop adds 15% "Standard rated" tax to every sale by default, even with the Tax invoices add-on off and no tax question in onboarding.
 
-16. There is no tax-inclusive pricing. The inclusive path in the totals code is hard-coded off, so a shelf price of GH₵ 36.00 becomes GH₵ 41.40 at the till. Barcode labels therefore print the tax-included price by default (a toggle turns it off).
 17. Zero prices and a cost above the price are accepted without a warning (a free item or a loss-maker can be saved).
 
 Small items: Activity log files a void under "Catalog"; keypad in expense mode shows `Charge GH₵ 51.75` (tax added) while the expense cart has no tax; the split sale loses its table name; the customer page lists a converted quote as a second "Paid" row; the "Full" button on a split-payment row overwrites the other rows instead of filling the rest; the receipt shows tendered cash plus "Change given", so rows add up to more than the total on part payments; view-only product page says "Tap a branch to adjust it"; Agent order "Estimated total" excludes tax; warranty months is stored but never printed.
 
 Demo data that does not match the shop
 
-15. "Demo: a customer writes in" always uses two canned chats (Samsung A15 at GH₵ 2,200; a carton of Indomie at GH₵ 32). The WhatsApp channel page shows three fake "recent chats" older than the connection time. Insights shows "Sales from chats GH₵ 0.00" even though a WhatsApp order became a GH₵ 92.58 sale.
+15. "Demo: a customer writes in" always uses two canned chats (Samsung A15 at GH₵ 2,200; a carton of Indomie at GH₵ 32). The WhatsApp channel page shows three fake "recent chats" older than the connection time.
 
 ---
 
@@ -179,7 +175,7 @@ Lists and tools
 
 - Customers list, add inline from the cart, detail page (contact, bought, orders, owed, history, credit limit, points **(Loyalty)**), new sale for a customer, payment reminder.
 - Credit limit per customer enforced on pay later and part payment.
-- Loyalty **(Loyalty)**: earn rate, redeem rate, minimum to redeem; points shown on the customer; paid with at the till, remainder by another method.
+- Loyalty **(Loyalty)**: earn rate, redeem rate, minimum to redeem; points are earned on money received (none on unpaid credit); points shown on the customer; paid with at the till, remainder by another method.
 - Gift cards **(Gift cards)**: sell at preset or any amount, buyer, paid by cash/mobile money/card, top up, history, pay at the till (full or partial).
 
 ### 3.7 Till, cash and time
@@ -199,7 +195,7 @@ Lists and tools
 - Transfers between branches: draft, send (stock leaves), receive with arrived quantities and shortage reasons; works with batches and selling units.
 - Suppliers: contact, phone, email, address, terms, lead time, account, notes.
 - Purchase orders: draft, send, already received; per-line supplier, quantity, cost; shared extra costs (freight, duty); mark paid; receive (add to stock or not), cost updates to a weighted average that includes freight.
-- Stock settings: default low-stock alert, quote validity, discount limit without the owner, held sales keep stock, returns and voids need the owner, cost method (average or latest), allow selling at zero stock, block expired batches, ask to open the till, tips, new services start tax-free.
+- Stock settings: default low-stock alert, quote validity, discount limit without the owner, held sales keep stock, returns and voids need the owner, cost method (average or latest), allow selling at zero stock, block expired batches, prices include tax (off: tax added on top), ask to open the till, tips, new services start tax-free.
 
 ### 3.9 Team, roles and branches
 
