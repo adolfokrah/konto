@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 29 fixes committed in this branch, one new feature (barcode labels) and 3 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 32 fixes committed in this branch, one new feature (barcode labels) and 1 open item (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -74,22 +74,17 @@ Result: 29 fixes committed in this branch, one new feature (barcode labels) and 
 | 27 | Products | A base price was required even when every variant had its own price. | The base price is optional when every active variant has a price. |
 | 28 | Insights | "Sales from chats" showed GH₵ 0.00 after a chat order became a sale. | Chat sales are counted from the real sale an order was turned into (net of refunds), and those chats count as "Became sales". |
 | 29 | Customer inbox | "Send a test order" crashed (`Assignment to constant variable`) when no channel was connected. | Fixed. |
+| 30 | Purchase orders | The receive screen said "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the saved cost was the landed weighted average (GH₵ 54.52). | The hint and the saved cost come from one calculation. It reads, for example, "Cost price becomes GH₵ 54.89 each (was GH₵ 55.00). Averaged with the 40 already in stock, includes GH₵ 2.00 each of delivery costs." |
+| 31 | Products | A zero price, or a cost above the price, was saved with no warning. | Still allowed (free samples, loss-leaders), but saving asks first: "The cost is above the price, so each sale loses GH₵ X" or "The price is 0", with Save anyway and Go back. Checks the product and each variant that has its own price or cost. |
+| 32 | Customer inbox | Demo chats always talked about Indomie and a Samsung phone, whatever the shop sold. | Demo and seeded chats pick products from the shop's own catalogue (name and price). With no priced product, the demo chat asks you to add one. |
 
 ### 2.2 Open: needs a decision
-
-
-
-Product and copy
-
-13. Receive-order confirm says "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the result is the landed weighted average (GH₵ 54.52).
-
-17. Zero prices and a cost above the price are accepted without a warning (a free item or a loss-maker can be saved).
 
 Small items: Activity log files a void under "Catalog"; keypad in expense mode shows `Charge GH₵ 51.75` (tax added) while the expense cart has no tax; the split sale loses its table name; the customer page lists a converted quote as a second "Paid" row; the "Full" button on a split-payment row overwrites the other rows instead of filling the rest; the receipt shows tendered cash plus "Change given", so rows add up to more than the total on part payments; view-only product page says "Tap a branch to adjust it"; Agent order "Estimated total" excludes tax; warranty months is stored but never printed.
 
 Demo data that does not match the shop
 
-15. "Demo: a customer writes in" always uses two canned chats (Samsung A15 at GH₵ 2,200; a carton of Indomie at GH₵ 32). The WhatsApp channel page shows three fake "recent chats" older than the connection time.
+15. The WhatsApp channel page shows three sample "recent chats" dated before the connection time.
 
 ---
 
@@ -146,6 +141,7 @@ Lists and tools
 - Saved discounts: percent or amount, applies to items, whole sale or both.
 - Import: sources offered are Excel/Google Sheets CSV, photo of a notebook, Square, Shopify, QuickBooks, Zoho, Lightspeed/Vend or another system; kinds are products, customers, suppliers, past sales; template download; column matching; review (ready, already here, skipped); run; undo the import. Only the CSV products path was exercised in this audit.
 - Export: products, sales, customers, stock value, expenses (CSV) and a full backup.
+- Price check on save: a zero price, or a cost above the price (for the product or any variant with its own price), is allowed after a warning.
 - Barcode labels: Products menu > Print barcode labels, a product's menu, Select several > Print labels, a batch or variant on the Stock item page, or the Batches page. Pick products, variants or batches (each batch is its own row), set copies per row or tap Use stock to print one label per unit on hand. Sizes: 40 × 25 mm, 50 × 30 mm and 60 × 40 mm rolls, or an A4 sheet of 3 × 7. Choose what shows: name (with variant), price (with tax added by default, so it matches the till), the code as text, expiry and lot on batch labels, shop name. A live preview shows the first label. Bars are Code 128 and encode the variant or product barcode, or the SKU when there is no barcode. Items with neither show "Make a barcode", which creates and saves a unique code. Printing opens a print-ready page sized to the label (set to the roll size or A4) for the label printer, or Save as PDF. Scanning a SKU at the till adds the item or variant, so SKU-only labels work. Settings (size, toggles) are remembered and each print is written to the Activity log.
 
 ### 3.4 Selling at the till
