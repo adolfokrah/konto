@@ -20,7 +20,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 12 fixes committed in this branch and 15 open items (plus a list of small ones) left for a decision (Part 2). No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 14 fixes committed in this branch, one new feature (barcode labels) and 17 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -41,6 +41,8 @@ Result: 12 fixes committed in this branch and 15 open items (plus a list of smal
 | 9 | Till | Money taken for selling or topping up a gift card never reached the till, so the expected drawer cash was short and the close showed a false overage. | Gift sales and top-ups are recorded against the open shift. |
 | 10 | Data tools | "Clear all data" replaced the whole shop state. Team, roles, add-ons, branches and devices were wiped, and More > Business then crashed (`Cannot read properties of undefined (reading 'printer')`). | Clears products, sales, customers, orders and history only. Team, branches, add-ons and settings stay. |
 | 11 | Receipts | Serial-number items were assigned a serial at the sale but the receipt, sale page and shared text never showed it. | Receipt lines show `S/N …`. |
+| 13 | Product, variant, unit and option forms | A product price of -5 was saved; so were a price of GH₵ 99,999,999,999 and a 300-character name. | Prices and costs must be 0 to GH₵ 100M, names 120 characters or fewer. |
+| 14 | Expenses, stock, purchase orders, cart | An expense of GH₵ 1,000,000,000,000, a stock add of 1,000,000,000,000 pieces and a draft purchase order with quantity -3 were accepted. A cart line of 1,000,000 passed the line check. | Size caps and a non-negative check on all four. |
 | 12 | Merge of `main` into this branch | Five conflicts in the filter sheets, expense list/form/actions and time clock. | Resolved keeping the shared filter pattern, branch filter inside the sheets, payment options from add-ons, POS-only expense entry and expense details from `main`; expense action gate moved to `posExpense`. |
 
 ### 2.2 Open: needs a decision
@@ -67,6 +69,9 @@ Product and copy
 12. The product form forces a base retail price even when every variant has its own price.
 13. Receive-order confirm says "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the result is the landed weighted average (GH₵ 54.52).
 14. A brand-new shop adds 15% "Standard rated" tax to every sale by default, even with the Tax invoices add-on off and no tax question in onboarding.
+
+16. There is no tax-inclusive pricing. The inclusive path in the totals code is hard-coded off, so a shelf price of GH₵ 36.00 becomes GH₵ 41.40 at the till. Barcode labels therefore print the tax-included price by default (a toggle turns it off).
+17. Zero prices and a cost above the price are accepted without a warning (a free item or a loss-maker can be saved).
 
 Small items: Activity log files a void under "Catalog"; keypad in expense mode shows `Charge GH₵ 51.75` (tax added) while the expense cart has no tax; the split sale loses its table name; the customer page lists a converted quote as a second "Paid" row; the "Full" button on a split-payment row overwrites the other rows instead of filling the rest; the receipt shows tendered cash plus "Change given", so rows add up to more than the total on part payments; view-only product page says "Tap a branch to adjust it"; Agent order "Estimated total" excludes tax; warranty months is stored but never printed.
 
@@ -129,6 +134,7 @@ Lists and tools
 - Saved discounts: percent or amount, applies to items, whole sale or both.
 - Import: sources offered are Excel/Google Sheets CSV, photo of a notebook, Square, Shopify, QuickBooks, Zoho, Lightspeed/Vend or another system; kinds are products, customers, suppliers, past sales; template download; column matching; review (ready, already here, skipped); run; undo the import. Only the CSV products path was exercised in this audit.
 - Export: products, sales, customers, stock value, expenses (CSV) and a full backup.
+- Barcode labels: Products menu > Print barcode labels, a product's menu, Select several > Print labels, a batch or variant on the Stock item page, or the Batches page. Pick products, variants or batches (each batch is its own row), set copies per row or tap Use stock to print one label per unit on hand. Sizes: 40 × 25 mm, 50 × 30 mm and 60 × 40 mm rolls, or an A4 sheet of 3 × 7. Choose what shows: name (with variant), price (with tax added by default, so it matches the till), the code as text, expiry and lot on batch labels, shop name. A live preview shows the first label. Bars are Code 128 and encode the variant or product barcode, or the SKU when there is no barcode. Items with neither show "Make a barcode", which creates and saves a unique code. Printing opens a print-ready page sized to the label (set to the roll size or A4) for the label printer, or Save as PDF. Scanning a SKU at the till adds the item or variant, so SKU-only labels work. Settings (size, toggles) are remembered and each print is written to the Activity log.
 
 ### 3.4 Selling at the till
 
@@ -239,4 +245,7 @@ After the full scenario (3 branches, 29 sales and quotes, 17 add-ons):
 - All-branches sales report = sum of branch reports = sales export (net of refunds).
 - End of day payments (cash + mobile money + card) equal sales after the change fix; tax, discounts and gross match recomputation from the sale records.
 - Till: opening 50, cash sale 8.86 and 6.33, cash return 4.43, void 6.33 gave an expected drawer of 54.43 and a balanced close.
+- Barcode labels: 16 of 16 labels (4 sizes × a product, a batch, a variant and a SKU-only item) were rendered and decoded with an independent Code 128 reader and returned the exact code.
+- Fuzzing: negative, text, zero and oversized values were tried on product prices, cart quantity and price, discounts, cash received, part payments, gift cards, customer phone, expenses, stock adjustments and purchase orders. After the fixes above every case is rejected with a message, except the zero-price and loss-making cases listed as open.
+- Load: 1,500 products with history gave POS in 0.6 s, product list in 0.9 s, stock list in 0.5 s, 13,600 DOM nodes and 1.5 MB of storage. Lists are not virtualised and storage is limited to the browser's local storage, so the practical limit is a few thousand products.
 - Stock value 899.50 at cost and 1,232.50 at retail matched manual computation before further activity.
