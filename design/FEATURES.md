@@ -18,7 +18,7 @@ Cahier deeply integrates AI into the platform to help businesses drive more sale
 
 The till, stock, team and reports are the data foundation. Their figures must be correct (see Part 2), because the AI and the forecasts read them.
 
-Status in this prototype: the agent, channels, orders from chats and the Insights screen exist (see 3.10 and 3.11). Insights now lists next best actions and a 7-day sales forecast from the shop's own history. A smarter model, per-product demand and recommendations on chat are a design direction, not built.
+Status in this prototype: the agent, channels, orders from chats and the Insights screen exist (see 3.10 and 3.11). Insights now lists next best actions and a 7-day sales forecast from the shop's own history. Per-product demand forecasts and chat recommendations are built too (see 3.10 and 3.11). A learned model, seasonality beyond weekdays and promotions are a design direction, not built.
 
 ---
 
@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 42 fixes committed in this branch, two new features (barcode labels, Insights next actions and forecast), a What's new screen and no open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 42 fixes committed in this branch, four new features (barcode labels, Insights next actions and forecast, per-product demand forecast, chat suggestions), a What's new screen and no open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -228,7 +228,7 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 | Offline and backup | Work offline (sales queue and sync), banner, daily backup, download a copy. |
 | Currency | Seven currencies; changes every screen. |
 | Customer inbox | Chats from channels in one list with Needs you, Agent and Closed; take over, reply, quick replies, mark won or lost. |
-| Insights and forecast | What to do next (chats waiting, money owed, stock to reorder), expected sales for the next 7 days from the same weekdays over four weeks, agent results, chat-to-sale funnel (chat sales counted from real sales), items likely to run out with days left and reorder, busy hours. |
+| Insights and forecast | What to do next (chats waiting, money owed, stock to reorder), expected sales for the next 7 days from the same weekdays over four weeks, expected units per product next week (weekday shape and a capped recent trend, with a "few sales yet" note when data is thin), run-out days and reorder amounts from that forecast, agent results, chat-to-sale funnel (chat sales counted from real sales), items likely to run out with days left and reorder, busy hours. |
 | Customer display | See 3.4. |
 | Restaurant tools | Tables per branch, hold orders on a table, merge items onto one bill, hold and send to kitchen, hold and split, kitchen screen with per-item stages (new, cooking, ready, served) and print or reject, table QR codes with a guest ordering page (staff acceptance optional), delivery with address and status, tips, notifications for deliveries. |
 | Services and bookings | Services (fixed, starts-from or quote-first price, duration, place, question the agent asks), booking page link and QR with free times from working hours, booking requests (new, confirmed, past), confirm, message, decline or cancel, convert to sale, working hours per branch. |
@@ -236,7 +236,7 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 ### 3.11 Channels and the agent
 
 - Channels: WhatsApp Business, Instagram, Facebook Page, TikTok. Connect with a verification step; status, chats today, orders, reply time.
-- Agent rules: replies, quotes prices from the catalogue, states stock, takes booking requests, which branch it sells from, hand over when the customer asks for a discount, a refund or complaint, or something it cannot answer; first message; pause; disconnect; send a test order. The agent never takes payment or changes prices.
+- Agent rules: replies, quotes prices from the catalogue, states stock, takes booking requests, which branch it sells from, hand over when the customer asks for a discount, a refund or complaint, or something it cannot answer; first message; pause; disconnect; send a test order. The agent never takes payment or changes prices. "Suggest related items" (on by default, per channel): it offers an in-stock item that buyers of the same product often take (falling back to the same category), or an in-stock option from the same category when the asked item has run out.
 - Orders: agent and table orders arrive in Orders (New, Sold, Closed; from channels or tables), open the chat, message, convert to sale (cart pre-filled with customer), close.
 
 ### 3.12 Public pages
