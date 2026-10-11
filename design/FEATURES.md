@@ -7,6 +7,21 @@ Cahier is an AI sales agent for small shops. The agent answers customers on What
 
 ---
 
+## Product vision
+
+Cahier deeply integrates AI into the platform to help businesses drive more sales through social media. It also gives advanced business analytics, sales forecasting and actionable insights, so owners can decide and grow with evidence.
+
+1. **Sell more on social media.** The agent answers customers on WhatsApp, Instagram, Facebook and TikTok. It knows the catalogue, prices and stock. It recommends products, collects order details and tells the seller, who closes the sale.
+2. **Analytics.** Sales, profit, categories, channels, staff, branches and customers, in one place and in the shop's own terms.
+3. **Forecasting.** Items likely to run out, reorder quantities, busy hours and expected demand, from sales and chat history.
+4. **Actionable insights.** The app says what to do next: restock this, chase that unpaid sale, push this product on chat, follow up this lead.
+
+The till, stock, team and reports are the data foundation. Their figures must be correct (see Part 2), because the AI and the forecasts read them.
+
+Status in this prototype: the agent, channels, orders from chats, and the Insights and forecast screen exist as screens (see 3.10 and 3.11). Smarter forecasting and recommendations are a design direction, not built.
+
+---
+
 ## Part 1. How the audit was run
 
 One fictional business, grown in stages. Nothing was seeded: new account, empty storage.
@@ -20,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 14 fixes committed in this branch, one new feature (barcode labels) and 17 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 21 fixes committed in this branch, one new feature (barcode labels) and 10 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -158,7 +173,7 @@ Lists and tools
 - Return items: any quantity or unit, reason, back to stock or write-off, refund by cash, shown as a refund on the sale and in the till.
 - Void sale: stock returns, refund recorded in the till; gift card balance and points restored; needs approval when the setting is on.
 - Mark delivered for delivery orders.
-- Sales report: takings over time, how customers paid, sales by category, where sales came from (walk-in vs channels), tax, owed, profit, expenses and profit after expenses **(Expenses)**, returns and voids, top sellers; periods today/7/30/90 days; branch or all branches.
+- Sales report: takings over time, how customers paid, sales by category, where sales came from (walk-in vs channels), tax, owed, profit, expenses and profit after expenses **(Expenses)**, returns and voids, top sellers; category and top-item totals are each sale's net share, so they add up to sales after refunds; periods today/7/30/90 days; branch or all branches.
 
 ### 3.6 Customers and credit
 
@@ -170,7 +185,7 @@ Lists and tools
 ### 3.7 Till, cash and time
 
 - Till: open with opening cash, sales and cash taken in the shift, add cash, take cash out with a reason, no-sale (open drawer), close with a counted amount (expected, short or over shown, balanced), earlier shifts and shift detail.
-- Expected cash = opening + cash sales − cash refunds + cash added − cash taken out + gift card sales.
+- Expected cash = opening + cash sales − cash refunds + cash added − cash taken out − cash expenses made during the shift + gift card sales. Cash expenses are not entered again as "Take cash out".
 - Time clock: clock in/out, clock in with a PIN kiosk, manager clocks others in/out, per-branch entries, hours this week, edit an entry, settings (use clock, require before selling, ask for PIN, till opens and closes link to clock, ask to clock out before logging out).
 - Switching branch while clocked in asks to clock out first.
 
@@ -180,7 +195,7 @@ Lists and tools
 - Stock levels by item (variants and batches shown separately), search, filters, per-branch.
 - Adjust: add, remove or set count with a reason (found, returned, correction, damaged, expired, lost, returned to supplier, other, plus your own).
 - Take stock: blind count by category, review differences (missing and extra at cost), apply, save and finish later.
-- Stock history (who, when, why) for all or one item; stock value at cost and selling price; stock report (lost stock by reason, items not moved in 30 days).
+- Stock history (who, when, why) for all or one item; stock value at cost and selling price (archived products that still hold stock stay in, marked Archived); the POS card shows sellable stock only (expired and held batches excluded); stock report (lost stock by reason, items not moved in 30 days).
 - Transfers between branches: draft, send (stock leaves), receive with arrived quantities and shortage reasons; works with batches and selling units.
 - Suppliers: contact, phone, email, address, terms, lead time, account, notes.
 - Purchase orders: draft, send, already received; per-line supplier, quantity, cost; shared extra costs (freight, duty); mark paid; receive (add to stock or not), cost updates to a weighted average that includes freight.
@@ -205,7 +220,7 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 | Gift cards | See 3.6. |
 | Loyalty points | See 3.6. |
 | Expenses | Record on the POS (enter amount, add to cart, choose Expense), category, date, paid-with, note, receipt photo, repeating expenses (catch-up creates missed entries), expense details, edit, delete, filters (period, branch), export, profit after expenses. |
-| End of day report | Sales, takings by method, discounts, refunds, tax, owed, expenses, tills closed, best sellers; close the day; print and share. |
+| End of day report | Sales, takings by method, discounts, refunds, tax, owed, expenses, tills closed, best sellers; close the day (a closed day blocks new sales, returns, voids and expense changes dated in it); managers and owners can reopen it; print and share. |
 | Tax invoices | Shop details, TIN, address, footer, invoice number on every receipt, optional sending to the tax authority. |
 | Activity log | Who changed what (prices, roles, voids, returns, tills, settings), filter by area, cannot be edited. |
 | Printer and devices | Receipt printer, cash drawer, barcode scanner, weighing scale; print every receipt automatically; drawer opens on cash sales. |
@@ -232,7 +247,7 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 
 - Everything saves to local storage per shop. Export and full backup. Import with undo. Offline queue with sync.
 - Data tools: Start over, Load sample products, Clear all data.
-- Permission model: roles with C/R/U/D per area plus special permissions; discount limit; returns and voids approval; cost and profit hidden from roles without cost view.
+- Permission model: roles with C/R/U/D per area plus special permissions; discount limit; returns and voids approval by manager or owner PIN (permission "Approve discounts, returns and voids"; seed PINs owner 1111, manager 4321, cashier 1234); cashiers cannot change line prices or sale taxes unless given "Change item prices at the till" and "Add or remove taxes on a sale"; cost and profit hidden from roles without cost view.
 
 ---
 
