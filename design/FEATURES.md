@@ -281,3 +281,9 @@ After the full scenario (3 branches, 29 sales and quotes, 17 add-ons):
 - Fuzzing: negative, text, zero and oversized values were tried on product prices, cart quantity and price, discounts, cash received, part payments, gift cards, customer phone, expenses, stock adjustments and purchase orders. After the fixes above every case is rejected with a message, except the zero-price and loss-making cases listed as open.
 - Load: 1,500 products with history gave POS in 0.6 s, product list in 0.9 s, stock list in 0.5 s, 13,600 DOM nodes and 1.5 MB of storage. Lists are not virtualised and storage is limited to the browser's local storage, so the practical limit is a few thousand products.
 - Stock value 899.50 at cost and 1,232.50 at retail matched manual computation before further activity.
+
+---
+
+## Part 5. Publishing
+
+The prototype is served at `hogapay.com/cashier` from `cms/public/cashier/`. That copy is not built automatically. After changing `design/inventory-prototype.html` or `design/assets/`, run `design/sync-public.sh`, commit `cms/public/cashier`, and deploy. The old `/chasier.html` address redirects to `/cashier`.
