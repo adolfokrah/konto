@@ -242,6 +242,9 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 ### 3.14 Ask Cahier (owner assistant)
 
 - Where: More, Whole business, Ask Cahier, and a button at the top of Insights. Type a question or tap a suggestion.
+- Look: a chat screen with a header (avatar, status line, spoken-answers switch, new conversation), a greeting with six starter cards when empty, user and assistant bubbles with times, a typing indicator, big number cards for headline answers (sales, profit, forecast, spending, owed, stock), tidy lists, confirm cards with Yes and Cancel, follow-up chips under the last answer, and a pill-shaped composer at the bottom. Enter sends.
+- Voice in: tap the mic and talk. Words appear live under a waveform, and the question is sent when you stop. Uses the browser's speech recognition (Chrome, Edge, Safari), set to Ghana English. If the browser has none, or the microphone is blocked, it says so and typing still works.
+- Voice out: a question asked by voice is answered out loud. The speaker switch in the header makes every answer spoken, including the result of a confirmed action. Amounts are read as cedis.
 - It is a rules-based assistant in this prototype. It reads the shop's own data and understands plain wording. It does not call a language model.
 - Questions it answers: sales today, yesterday, this week or this month (with profit for roles that can see cost); best sellers; profit; who owes money; what to restock (from the forecast); stock and expected sales for one product; next week's sales forecast; busy hours; sales by channel and chats waiting; expenses; what to do next.
 - Things it does, each after a tap on a confirm card (Yes or Cancel):
