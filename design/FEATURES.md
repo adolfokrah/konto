@@ -44,24 +44,24 @@ Result: 14 fixes committed in this branch, one new feature (barcode labels) and 
 | 13 | Product, variant, unit and option forms | A product price of -5 was saved; so were a price of GH₵ 99,999,999,999 and a 300-character name. | Prices and costs must be 0 to GH₵ 100M, names 120 characters or fewer. |
 | 14 | Expenses, stock, purchase orders, cart | An expense of GH₵ 1,000,000,000,000, a stock add of 1,000,000,000,000 pieces and a draft purchase order with quantity -3 were accepted. A cart line of 1,000,000 passed the line check. | Size caps and a non-negative check on all four. |
 | 12 | Merge of `main` into this branch | Five conflicts in the filter sheets, expense list/form/actions and time clock. | Resolved keeping the shared filter pattern, branch filter inside the sheets, payment options from add-ons, POS-only expense entry and expense details from `main`; expense action gate moved to `posExpense`. |
+| 15 | Discounts, returns, voids | Owner approval had no credential: a cashier tapped "Owner approves" on their own device. | Approval needs a manager or owner PIN (new "Approve discounts, returns and voids" permission, set on the role). Managers and owners approve without a prompt. Seed PINs: owner 1111, manager 4321, cashier 1234. The approver is written to the sale and the Activity log. |
+| 16 | Till, sale taxes | Price override and tax removal had no permission and no log entry. | New permissions "Change item prices at the till" and "Add or remove taxes on a sale" (Manager on, Cashier off). Price changes and tax edits go to the Activity log. |
+| 17 | Till | Cash expenses did not reduce the cash that should be in the drawer. | Cash expenses made during the shift (same branch, not auto-recurring) are taken off the expected cash and shown on the till and close screens. The cash-out screen warns not to record them twice. |
+| 18 | End of day | Closing the day did not stop later changes to its figures. | A closed day (or branch) blocks new sales, returns, voids and expense changes dated in it. A manager or owner can reopen it from End of day. Part payments on old credit sales are still allowed. |
+| 19 | Stock value, stock levels | Archived products that still held stock vanished from the valuation. | They stay in Stock value (and its export) and Stock levels, marked Archived. The archive warning says so. |
+| 20 | Sales report | Category donut and top items used pre-discount line amounts, so they did not add up to net sales. | Each sale's net (after discount, tax and refunds) is shared across its lines. Totals match net sales exactly (checked on 442 sample sales). |
+| 21 | POS | Item cards counted expired and held batches as available (27 shown, 13 sellable). | Cards show sellable stock only. |
 
 ### 2.2 Open: needs a decision
 
 Security and money controls (highest priority for production)
 
-1. **Owner approval has no credential.** A cashier over the discount limit taps "Ask owner to approve" and then "Owner approves" themselves. The sale records `Kojo Mensah (owner approved)`. Returns and voids that "need the owner" use the same pattern.
-2. **Price override and tax removal have no permission.** Any cashier can set a line price (below cost is warned, but only for users who can see cost) and can remove or add taxes on a sale. There is no permission key for either and neither is written to the Activity log.
-3. **Cash expenses do not touch the till.** An expense paid in cash while a shift is open does not reduce "cash that should be in the drawer". The owner must also use "Take cash out", which double-records the spend.
-4. **Closing the day does not lock it.** After "Close the day" new sales still post to that day. The status shows Closed and the figures drift from the saved snapshot (373.23 vs 377.26 in the test).
 5. **Loyalty points are earned on unpaid sales.** A credit sale of GH₵ 41.40 awarded 41 points before any payment.
 
 Reporting and stock
 
-6. Archiving a product that still holds stock removes it from Stock value and Stock levels (GH₵ 708.76 of Rice at cost vanished from a GH₵ 1,720.76 total). The archive confirm does not mention the stock.
 7. The Sales tab header says "Today · 22 sales" while the list header says "26 sales" (the list counts voided and quote rows).
-8. Sales report category totals use pre-discount line amounts and do not reconcile to net sales.
 9. After a partial return the sale page still shows "Cost of goods" for the original quantity while profit reflects the restocked cost.
-10. POS item cards show total stock including expired batches (25 pieces shown, 20 sellable).
 11. Day-end "How it was paid" excludes gift cards sold (cash received for a gift card is in the drawer but not on the report).
 
 Product and copy
