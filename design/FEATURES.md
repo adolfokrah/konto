@@ -18,7 +18,7 @@ Cahier deeply integrates AI into the platform to help businesses drive more sale
 
 The till, stock, team and reports are the data foundation. Their figures must be correct (see Part 2), because the AI and the forecasts read them.
 
-Status in this prototype: the agent, channels, orders from chats, and the Insights and forecast screen exist as screens (see 3.10 and 3.11). Smarter forecasting and recommendations are a design direction, not built.
+Status in this prototype: the agent, channels, orders from chats and the Insights screen exist (see 3.10 and 3.11). Insights now lists next best actions and a 7-day sales forecast from the shop's own history. A smarter model, per-product demand and recommendations on chat are a design direction, not built.
 
 ---
 
@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 41 fixes committed in this branch, one new feature (barcode labels) and 1 open item (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 42 fixes committed in this branch, two new features (barcode labels, Insights next actions and forecast), a What's new screen and no open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -86,12 +86,12 @@ Result: 41 fixes committed in this branch, one new feature (barcode labels) and 
 | 39 | Receipts | Cash tendered plus "Change given" added up to more than the total. | Change is shown as a negative line, so the rows add up to the total, on the sale page and in the shared text. |
 | 40 | Agent orders | "Estimated total" ignored tax. | The estimate adds the taxes the till would add (none when prices include tax), so it matches the sale. |
 | 41 | Receipts, product page | Warranty months were stored but never printed; the view-only product page said "Tap a branch to adjust it". | Serial items print "12 months warranty, to <date>" under the S/N. Users without stock rights see the quantities with no adjust prompt or buttons. |
+| 42 | Channels | The channel page showed sample "recent chats" older than the connection time, and fixed "Chats today" numbers. | Sample chats are dated between the connection time and now. "Chats today" counts real chats plus the samples shown. |
 
 ### 2.2 Open: needs a decision
 
-Demo data that does not match the shop
+Nothing is open. Every finding from the audit is fixed in this branch.
 
-15. The WhatsApp channel page shows three sample "recent chats" dated before the connection time.
 
 ---
 
@@ -117,6 +117,7 @@ Notation: **(add-on)** means the feature appears only after that add-on is insta
 
 - Bottom bar with up to 3 tabs plus More. Tabs can be replaced from a catalogue of screens (POS, Sales, Services, Products, Stock, Discounts, Purchases, Suppliers, Expenses, Sales report, End of day, Notifications, Insights, Customers, Inbox, Team, Kitchen, Tables, Held sales, Till, Gift cards, Orders). Choice is per user; "Reset to usual".
 - More groups: Whole business, This branch, Just for me, Data tools. Items appear only when the add-on is installed and the role allows them.
+- What's new (More): a list of recent improvements, grouped by control and money, tax and pricing, reports and stock, sales and receipts, and AI and social sales.
 - Header branch switcher on branch-scoped tabs (POS, Stock, Services, Tables and others), with "All branches" where reports allow it.
 - "View as": the owner previews the app as any accepted team member.
 - Notifications with a bell badge and notification settings (new orders, bookings, kitchen, stock, money, deliveries) plus a "send a test order" button.
@@ -227,7 +228,7 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 | Offline and backup | Work offline (sales queue and sync), banner, daily backup, download a copy. |
 | Currency | Seven currencies; changes every screen. |
 | Customer inbox | Chats from channels in one list with Needs you, Agent and Closed; take over, reply, quick replies, mark won or lost. |
-| Insights and forecast | Agent results, chat-to-sale funnel, items likely to run out with days left and reorder, busy hours. |
+| Insights and forecast | What to do next (chats waiting, money owed, stock to reorder), expected sales for the next 7 days from the same weekdays over four weeks, agent results, chat-to-sale funnel (chat sales counted from real sales), items likely to run out with days left and reorder, busy hours. |
 | Customer display | See 3.4. |
 | Restaurant tools | Tables per branch, hold orders on a table, merge items onto one bill, hold and send to kitchen, hold and split, kitchen screen with per-item stages (new, cooking, ready, served) and print or reject, table QR codes with a guest ordering page (staff acceptance optional), delivery with address and status, tips, notifications for deliveries. |
 | Services and bookings | Services (fixed, starts-from or quote-first price, duration, place, question the agent asks), booking page link and QR with free times from working hours, booking requests (new, confirmed, past), confirm, message, decline or cancel, convert to sale, working hours per branch. |
