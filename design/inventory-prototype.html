@@ -3454,7 +3454,7 @@ function bkCheck(id, pid, day, time) {
   const t = parseT(time); if (t == null) return { kind: 'note', text: 'Add an exact time, like 10:00 or 2pm, so clashes can be checked.' };
   const end = t + dur, from = parseT(h.from), to = parseT(h.to);
   if (t < from || end > to) return { kind: 'warn', text: 'Outside your hours on ' + DAYS[dow] + 's (' + h.from + ' to ' + h.to + '). It runs ' + fmtT(t) + ' to ' + fmtT(Math.min(end, 24 * 60 - 1)) + '.' };
-  const hit = S.bookings.find(o => { if (o.id === id || o.status !== 'confirmed' || o.day !== day || bkBr(o) !== br0) return false; const t2 = parseT(o.time); if (t2 == null) return false; const q = pById(o.pid), d2 = parseFloat(q && q.duration) > 0 ? parseFloat(q.duration) : 60; return t < t2 + d2 && t2 < end; });
+  const hit = S.bookings.find(o => { if (o.id === id || (o.status !== 'confirmed' && o.status !== 'done') || o.day !== day || bkBr(o) !== br0) return false; const t2 = parseT(o.time); if (t2 == null) return false; const q = pById(o.pid), d2 = parseFloat(q && q.duration) > 0 ? parseFloat(q.duration) : 60; return t < t2 + d2 && t2 < end; });
   if (hit) { const q = pById(hit.pid), t2 = parseT(hit.time), d2 = parseFloat(q && q.duration) > 0 ? parseFloat(q.duration) : 60; return { kind: 'warn', text: 'Clashes with ' + hit.no + ' · ' + hit.cust + ', ' + fmtT(t2) + ' to ' + fmtT(t2 + d2) + '.' }; }
   return { kind: 'ok', text: 'Free. ' + fmtT(t) + ' to ' + fmtT(end) + (p && p.duration ? '' : ' (1 hr assumed)') + '.' };
 }
@@ -5251,7 +5251,7 @@ function bookData() {
   const br = sellBr(), abs = u => { try { return new URL(u, location.href).href; } catch (e) { return u; } };
   return { biz: (S.biz || {}).name || 'Osu Shop', logo: (S.biz || {}).logo || '', banner: (S.biz || {}).banner || '', sym: curSym(), days: 30, on: hasAddon('services'),
     hours: S.hours.map(h => ({ on: !!h.on, from: h.from, to: h.to })), hoursBy: Object.fromEntries(S.branches.map(b => [b.id, hoursOf(b.id).map(h => ({ on: !!h.on, from: h.from, to: h.to }))])), brs: S.branches.map(b => ({ id: b.id, n: b.name })),
-    busy: S.bookings.filter(b => b.status === 'confirmed' && b.day && parseT(b.time) != null).map(b => { const q = pById(b.pid), d = parseFloat(q && q.duration) > 0 ? parseFloat(q.duration) : 60, t = parseT(b.time); return { day: b.day, br: bkBr(b), s: t, e: t + d }; }),
+    busy: S.bookings.filter(b => (b.status === 'confirmed' || b.status === 'done') && b.day && parseT(b.time) != null).map(b => { const q = pById(b.pid), d = parseFloat(q && q.duration) > 0 ? parseFloat(q.duration) : 60, t = parseT(b.time); return { day: b.day, br: bkBr(b), s: t, e: t + d }; }),
     svcs: S.products.filter(p => p.status === 'active' && isSvc(p)).map(p => { const vs = activeVariants(p), vl = vs.length ? vs : [{ id: '', name: '' }];
       return { id: p.id, n: p.name, at: S.branches.filter(b => soldAt(p, b.id)).map(b => b.id), d: p.desc || '', dur: parseFloat(p.duration) > 0 ? parseFloat(p.duration) : 60, dt: durTxt(p.duration), st: thumbStyle(p).replace(/url\(([^)]+)\)/, (m, u) => 'url(' + abs(u.replace(/["']/g, '')) + ')'), ini: p.img ? '' : initials(p.name || ''), mode: p.priceMode || 'fixed',
         tx: taxesOf(p).map(n => ({ n, r: taxRate(n) })), vs: vl.map(v => ({ id: v.id, n: v.name, pr: sellPrice(p, v.id, '', '', br) })), places: (p.places || []).map(k => ({ k, n: PLACES[k] })), ask: p.ask || '',
