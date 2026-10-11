@@ -2696,10 +2696,12 @@ const A = {
   openSale(id) { push('sale', { id }); },
   voidSale(id) { const s = S.sales.find(x => x.id === id); needOwner('voiding ' + s.no, by => A.voidConfirm(id, by)); },
   voidConfirm(id, by) {
-    const s = S.sales.find(x => x.id === id), net = paidOf(s) - backOf(s);
-    confirmSheet({ title: 'Void ' + s.no + '?', text: 'The stock goes back where it came from.' + (net > 0 ? ' Give ' + money(net) + ' back to the customer. It is recorded as a refund in the till.' : ' Nothing was paid.') + ' This cannot be undone.', label: net > 0 ? 'Void and refund ' + money(net) : 'Void sale', danger: 1, onConfirm: () => {
-      if (net > 0) { const main = s.pays.slice().sort((a, b) => b.amt - a.amt)[0]; s.voidRefund = { t: Date.now(), amt: net, m: main ? main.m : 'cash', sh: ((S.openShifts || {})[s.br] || {}).id || '', by: by || '' }; } s.voidBy = by || '';
+    const s = S.sales.find(x => x.id === id), cred = (s.pays || []).filter(x => x.m === 'gift' || x.m === 'pts').reduce((a, x) => a + x.amt, 0), net = Math.max(0, paidOf(s) - backOf(s) - cred);
+    confirmSheet({ title: 'Void ' + s.no + '?', text: 'The stock goes back where it came from.' + (net > 0 ? ' Give ' + money(net) + ' back to the customer. It is recorded as a refund in the till.' : cred > 0 ? '' : ' Nothing was paid.') + (cred > 0 ? ' ' + money(cred) + ' paid with a gift card or points goes back to the card or the customer.' : '') + ' This cannot be undone.', label: net > 0 ? 'Void and refund ' + money(net) : 'Void sale', danger: 1, onConfirm: () => {
+      if (net > 0) { const main = s.pays.filter(x => x.m !== 'gift' && x.m !== 'pts').sort((a, b) => b.amt - a.amt)[0]; s.voidRefund = { t: Date.now(), amt: net, m: main ? main.m : 'cash', sh: ((S.openShifts || {})[s.br] || {}).id || '', by: by || '' }; } s.voidBy = by || '';
       s.lines.forEach(l => { (l.addAllocs || []).forEach(x => { const ap = pById(x.pid); if (ap) x.allocs.forEach(a => moveStock(ap, a.key, s.br, a.q, 'void', s.no)); }); const p = pById(l.pid); if (!p) return; l.allocs.forEach(a => { moveStock(p, a.key, s.br, a.q, 'void', s.no); if (p.serial && a.sn && a.sn.length) snAdd(p, a.key, s.br, a.sn); }); p.sold = Math.max(0, (p.sold || 0) - 1); log(p.id, 'Sale voided (' + s.no + ')'); });
+      (S.gifts || []).forEach(g => (g.hist || []).slice().forEach(h => { if (h.amt < 0 && h.text === 'Used on ' + s.no) { g.bal += -h.amt; g.hist.unshift({ t: Date.now(), text: 'Put back, ' + s.no + ' voided', amt: -h.amt }); } }));
+      { const cu = custById(s.cust); if (cu) { cu.points = Math.max(0, (cu.points || 0) + (s.ptsUsed || 0) - (s.pts || 0)); } }
       s.status = 'void'; save(); UI.sheet = null; render(); toast(s.no + ' voided.'); } });
   },
   openSel(key) { const d = SELREG[key]; if (!d) return; UI.sheet = { type: 'select', title: d.title, cur: d.cur, act: 'applySel', key, items: d.items }; render(true); },
