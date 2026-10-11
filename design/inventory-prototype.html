@@ -806,6 +806,7 @@ LIVE.services = () => { const l = filtered(true); $('#plist').innerHTML = plist(
 /* product editor */
 const barcodeClash = (code, skipUnit) => { if (!code) return null; const d = UI.draft, c = String(code).trim(); const hit = (p, own) => { if (!own && p.barcode === c) return p.name; const v = (p.variants || []).find(x => x.barcode === c && !(own && d && x.id === (cur().f || {}).id)); if (v) return p.name; const u = (p.units || []).find(x => x.barcode === c && x.id !== skipUnit); return u ? p.name + ' (' + u.name + ')' : null; };
   for (const o of S.products) { if (o.id === UI.editing) continue; const r = hit(o, false); if (r) return r; } return null; };
+const rangeErr = v => { const n = toPes(v); return n == null ? '' : n < 0 ? 'Cannot be below zero.' : n > 1e10 ? 'That is too large.' : ''; };
 function validate() {
   const p = UI.draft, e = {};
   if (!p.name.trim()) e['p.name'] = 'Enter a name.';
@@ -816,6 +817,7 @@ function validate() {
   (p.lists || []).forEach(id => { const v = (p.prices || {})[id]; if (v === undefined || v === '') e['p.prices.' + id] = 'Enter a price.'; else if (toPes(v) == null) e['p.prices.' + id] = 'Enter a number.'; });
   if (multi() && !scoped() && Array.isArray(p.branches) && !p.branches.length) e['p.branches'] = 'Pick the branch it sells at.';
   if (p.costS !== '' && toPes(p.costS) == null) e['p.costS'] = 'Enter a number.';
+  { const r = rangeErr(p.priceS); if (r && !e['p.priceS']) e['p.priceS'] = r; (p.lists || []).forEach(id => { const r2 = rangeErr((p.prices || {})[id]); if (r2 && !e['p.prices.' + id]) e['p.prices.' + id] = r2; }); const rc = rangeErr(p.costS); if (rc && !e['p.costS']) e['p.costS'] = rc; if (p.name.length > 120 && !e['p.name']) e['p.name'] = 'Use 120 characters or fewer.'; }
   if (p.barcode) {
     const dup = barcodeClash(p.barcode);
     if (dup) e['p.barcode'] = 'Already used by ' + dup + '.';
@@ -1808,7 +1810,7 @@ function cartCalc(c, br) {
     if (l.custom) { const q = parseFloat(l.qty) || 0, price = l.price || 0, dp = Math.min(100, Math.max(0, parseFloat(l.dpct) || 0)); return { l, p: null, v: null, q, base: q, price, al: { allocs: [], short: 0, tracked: false }, err: q > 0 ? '' : 'Enter a quantity.', cost: 0, gross: Math.round(price * q), dpct: dp, line: Math.round(price * q * (1 - dp / 100)), note: '', name: l.name || 'Custom amount', uname: '', rate: taxRate(S.customTax || 'Standard rated'), cname: S.customTax || 'Standard rated' }; }
     const p = pById(l.pid); if (!p) return { l, err: 'This product was removed.', line: 0, rate: 0, gross: 0 };
     const q = parseFloat(l.qty) || 0, base = rnd(q * unitFactor(p, l.ul)), listP = sellPrice(p, l.vid, l.ul, curList(c), br), ovP = l.priceOv != null && l.priceOv !== '' ? toPes(l.priceOv) : null, baseP = ovP != null && ovP >= 0 ? ovP : listP, adds = l.addons || [], addP = adds.reduce((a, o) => a + (o.price || 0), 0), price = baseP == null ? null : baseP + addP, v = l.vid ? (p.variants || []).find(x => x.id === l.vid) : null, al = allocFor(p, l.vid, base, br, used, l.batch);
-    let err = ''; if (!(q > 0)) err = 'Enter a quantity.'; else if (fracBad(p, base)) err = pl(p.unitName, 2) + ' cannot be split.'; else if (!(baseP > 0)) err = 'No price set. Add one on the product.'; else if (!soldAt(p, br)) err = 'Not sold at ' + branchName(br) + '.'; else if (al.short > 0) { const av = l.batch ? (sellOk(p, sellItems(p, l.vid).find(i => i.key === l.batch) || {}) ? Math.max(0, qtyAt(p, l.batch, br)) : 0) : sellAvail(p, l.vid, br); err = 'Only ' + availIn(p, av, l.ul, l.vid) + (l.batch ? ' in this batch.' : ' available.'); }
+    let err = ''; if (!(q > 0)) err = 'Enter a quantity.'; else if (q > 1e5) err = 'That is too many for one line.'; else if (fracBad(p, base)) err = pl(p.unitName, 2) + ' cannot be split.'; else if (!(baseP > 0)) err = 'No price set. Add one on the product.'; else if (!soldAt(p, br)) err = 'Not sold at ' + branchName(br) + '.'; else if (al.short > 0) { const av = l.batch ? (sellOk(p, sellItems(p, l.vid).find(i => i.key === l.batch) || {}) ? Math.max(0, qtyAt(p, l.batch, br)) : 0) : sellAvail(p, l.vid, br); err = 'Only ' + availIn(p, av, l.ul, l.vid) + (l.batch ? ' in this batch.' : ' available.'); }
     const addAllocs = []; let addCost = 0, addCostUnknown = false;
     adds.forEach(o => { const ap = o.stockItem ? pById(o.stockItem) : null, per = parseFloat(o.stockQty) || 0; if (ap && per > 0 && q > 0) { const al2 = allocFor(ap, '', rnd(q * per), br, used); if (al2.short > 0 && !err) err = 'Not enough ' + ap.name + ' for ' + o.name + '.'; addAllocs.push({ oid: o.oid, pid: ap.id, allocs: al2.allocs }); const cc = o.cost != null ? o.cost : itemCost(ap, { key: 'p' }); if (cc == null) addCostUnknown = true; else addCost += cc * q; } else if (o.cost != null) addCost += o.cost * q; });
     const cost = al.tracked ? (al.allocs.reduce((a, x) => { const it = itemsOf(p).find(i => i.key === x.key) || { key: x.key }, cc = itemCost(p, it); return a == null || cc == null ? null : a + cc * x.q; }, 0)) : (() => { const cc = itemCost(p, { key: l.vid || 'p', vid: l.vid }); return cc == null ? null : cc * base; })();
@@ -2750,6 +2752,7 @@ const A = {
     if (!isNaN(q) && fracBad(p, q)) UI.errs['f.qtyS'] = pl(p.unitName, 2) + ' cannot be split. Enter a whole number.';
     else if (isNaN(q) || q < 0 || (f.mode !== 'count' && q === 0)) UI.errs['f.qtyS'] = f.mode === 'count' ? 'Enter the counted amount.' : 'Enter an amount above 0.';
     else if (f.mode === 'remove' && q > on) UI.errs['f.qtyS'] = 'Only ' + on + ' ' + p.unitName + ' on hand.';
+    else if (q > 1e7) UI.errs['f.qtyS'] = 'That is too many.';
     if (!f.reason) UI.errs['f.reason'] = 'Choose a reason.';
     else if (f.reason === '__other' && !(f.custom || '').trim()) UI.errs['f.custom'] = 'Type the reason.';
     if (Object.keys(UI.errs).length) { render(true); return; }
@@ -3217,6 +3220,7 @@ const A = {
     if (d.variants.some(v => v.id !== f.id && !v.archived && !v.def && v.name.toLowerCase() === name.toLowerCase())) UI.errs['f.name'] = 'A variant with this name already exists.';
     if (hasRetail(d) && (f.priceS || '') !== '' && toPes(f.priceS) == null) UI.errs['f.priceS'] = 'Enter a number.';
     Object.keys(f.prices || {}).forEach(k => { if (f.prices[k] !== '' && toPes(f.prices[k]) == null) UI.errs['f.prices.' + k] = 'Enter a number.'; });
+    { const r = rangeErr(f.priceS); if (r && !UI.errs['f.priceS']) UI.errs['f.priceS'] = r; Object.keys(f.prices || {}).forEach(k => { const r2 = rangeErr(f.prices[k]); if (r2 && !UI.errs['f.prices.' + k]) UI.errs['f.prices.' + k] = r2; }); }
     if (f.barcode && (d.variants.some(v => v.id !== f.id && v.barcode === f.barcode) || S.products.some(p => p.id !== UI.editing && (p.barcode === f.barcode || p.variants.some(v => v.barcode === f.barcode))))) UI.errs['f.barcode'] = 'Already used by another item.';
     if (f.openS !== undefined && String(f.openS).trim() !== '' && (isNaN(parseFloat(f.openS)) || parseFloat(f.openS) < 0)) UI.errs['f.openS'] = 'Enter 0 or more.'; else if (f.openS && fracBad(d, parseFloat(f.openS))) UI.errs['f.openS'] = pl(d.unitName, 2) + ' cannot be split. Enter a whole number.';
     if (Object.keys(UI.errs).length) { render(true); return; }
@@ -3248,6 +3252,7 @@ const A = {
     if (!f.lot.trim()) UI.errs['f.lot'] = 'Enter the batch number.'; else if (v.batches.some(b => b.id !== f.id && b.lot.toLowerCase() === f.lot.trim().toLowerCase())) UI.errs['f.lot'] = 'This lot already exists.';
     if (!f.exp) UI.errs['f.exp'] = 'Pick the expiry date.'; else if (f.made && f.made > f.exp) UI.errs['f.made'] = 'Made after it expires.';
     if (f.costS !== '' && toPes(f.costS) == null) UI.errs['f.costS'] = 'Enter a number.';
+    { const r = rangeErr(f.costS); if (r && !UI.errs['f.costS']) UI.errs['f.costS'] = r; }
     if (f.openS !== undefined && String(f.openS).trim() !== '' && (isNaN(parseFloat(f.openS)) || parseFloat(f.openS) < 0)) UI.errs['f.openS'] = 'Enter 0 or more.'; else if (f.openS && fracBad(UI.draft, parseFloat(f.openS))) UI.errs['f.openS'] = pl(UI.draft.unitName, 2) + ' cannot be split. Enter a whole number.';
     if (Object.keys(UI.errs).length) { render(true); return; }
     const rec = { id: f.id || uid('b'), lot: f.lot.trim(), exp: f.exp, made: f.made, cost: toPes(f.costS), supplier: f.supplier, hold: !!f.hold, stk: !!f.stk, openS: f.openS || '', openBy: f.openBy, low: f.low || '', lowBy: f.lowBy || {} };
@@ -3270,6 +3275,7 @@ const A = {
     if (f.barcode) { const hit = barcodeClash(f.barcode, f.id) || (d.barcode === f.barcode ? d.name : null) || ((d.variants.some(v => v.barcode === f.barcode)) ? d.name + ' (variant)' : null) || (d.units.some(u => u.id !== f.id && u.barcode === f.barcode) ? 'another unit of this product' : null); if (hit) UI.errs['f.barcode'] = 'Already used by ' + hit + '.'; }
     if (wholeOnly(d)) { if (toPes((f.prices || {})[firstList()]) == null) UI.errs['f.prices.' + firstList()] = 'Enter the first price.'; } else if (toPes(f.priceS) == null) UI.errs['f.priceS'] = 'Enter a price.';
     Object.keys(f.prices || {}).forEach(k => { if (f.prices[k] !== '' && toPes(f.prices[k]) == null) UI.errs['f.prices.' + k] = 'Enter a number.'; });
+    { const r = rangeErr(f.priceS); if (r && !UI.errs['f.priceS']) UI.errs['f.priceS'] = r; Object.keys(f.prices || {}).forEach(k => { const r2 = rangeErr(f.prices[k]); if (r2 && !UI.errs['f.prices.' + k]) UI.errs['f.prices.' + k] = r2; }); }
     if (Object.keys(UI.errs).length) { render(true); return; }
     const price = unitMain(f, d), cost = toPes(d.costS);
     const doSave = () => {
@@ -3310,6 +3316,7 @@ const A = {
     const f = cur().f, g = UI.draft.addonGroups.find(x => x.id === f.gid); UI.errs = {};
     if (!f.name.trim()) UI.errs['f.name'] = 'Name the option.'; else if (g.options.some(o => o.id !== f.oid && o.name.toLowerCase() === f.name.trim().toLowerCase())) UI.errs['f.name'] = 'This option already exists.';
     if (f.priceS !== '' && toPes(f.priceS) == null) UI.errs['f.priceS'] = 'Enter a number.';
+    { const r = rangeErr(f.priceS); if (r && !UI.errs['f.priceS']) UI.errs['f.priceS'] = r; }
     if (f.takes && !f.stockItem) UI.errs.stock = 'Choose the stock item.';
     if (f.takes && !(parseFloat(f.stockQty) > 0)) UI.errs['f.stockQty'] = 'Enter an amount.';
     if (Object.keys(UI.errs).length) { render(true); return; }
@@ -3652,7 +3659,7 @@ Object.assign(A, {
     S.expenses.filter(x => expIn(x, p) && (!br || x.br === br)).sort((a, b) => b.day.localeCompare(a.day)).forEach(x => rows.push([x.day, x.cat, fromPes(x.amt), EXP_M[x.method] || '', branchName(x.br), (x.items || []).map(i => rnd(i.qty) + ' x ' + i.name + ' (' + fromPes(i.amt) + ')').join('; '), x.note || '', x.who || '', x.rid ? 'Yes' : '', x.photo ? 'Yes' : '']));
     try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(q).join(',')).join('\n')], { type: 'text/csv' })); a.download = 'expenses.csv'; document.body.appendChild(a); a.click(); a.remove(); toast('Exported expenses.csv'); } catch (e) { toast('Export is blocked here.', 1); } },
   expMethod(m) { cur().f.method = m; render(true); },
-  saveExpense() { if (deny(cur().f.id ? 'expenses.update' : 'expenses.create', 'save this expense')) return; const f = cur().f, amt = toPes(f.amt), cat = (f.newCat || '').trim() || f.cat; UI.errs = {}; if (amt == null || !(amt > 0)) UI.errs['f.amt'] = 'Enter the amount.'; if (!cat) UI.errs['f.cat'] = 'Pick a category.'; if (!/^\d{4}-\d{2}-\d{2}$/.test(f.day || '')) UI.errs['f.day'] = 'Pick the date.'; if (Object.keys(UI.errs).length) { render(true); return; }
+  saveExpense() { if (deny(cur().f.id ? 'expenses.update' : 'expenses.create', 'save this expense')) return; const f = cur().f, amt = toPes(f.amt), cat = (f.newCat || '').trim() || f.cat; UI.errs = {}; if (amt == null || !(amt > 0)) UI.errs['f.amt'] = 'Enter the amount.'; else if (amt > 1e10) UI.errs['f.amt'] = 'That is too large.'; if (!cat) UI.errs['f.cat'] = 'Pick a category.'; if (!/^\d{4}-\d{2}-\d{2}$/.test(f.day || '')) UI.errs['f.day'] = 'Pick the date.'; if (Object.keys(UI.errs).length) { render(true); return; }
     if (!S.expCats.some(c => c.toLowerCase() === cat.toLowerCase())) S.expCats.push(cat); const name = S.expCats.find(c => c.toLowerCase() === cat.toLowerCase());
     const rec = { id: f.id || uid('x'), day: f.day, amt, cat: name, note: (f.note || '').trim(), items: f.items || [], method: f.method, br: f.br, who: f.id ? S.expenses.find(x => x.id === f.id).who : UI.who, t: f.id ? S.expenses.find(x => x.id === f.id).t : Date.now(), photo: f.photo || '', rid: f.rid || '' }; if (f.id) { rec.edited = Date.now(); rec.editedBy = UI.who; }
     if (!f.id && f.rep) { const t = { id: uid('r'), amt, cat: name, note: rec.note, method: f.method, br: f.br, every: f.rep, next: addPeriod(f.day, f.rep) }; S.recurring.push(t); rec.rid = t.id; }
@@ -3791,6 +3798,7 @@ Object.assign(A, {
     const f = cur().f; f.lines.forEach(recalcPo);
     f.lines.forEach(l => { l.sup = poSupOf(f, l); }); UI.errs = {}; if (mode === 'send') { f.lines.forEach(l => { if (!l.sup) UI.errs['l.' + l.id] = 'Choose the supplier for this item.'; }); if (Object.keys(UI.errs).length) { render(true); toast('Choose a supplier for every item.', 1); return; } }
     { const ss = poSups(f); f.supplier = ss.length === 1 ? ss[0] : ''; }
+    if (f.lines.some(l => parseFloat(l.qty) < 0 || parseFloat(l.qty) > 1e7 || Object.values(l.parts || {}).some(x => parseFloat(x.q) < 0 || toPes(x.c) < 0 || toPes(x.c) > 1e10))) { toast('Quantity and cost must be zero or more, and not too large.', 1); return; }
     if ((mode === 'send' || mode === 'receive') && !f.lines.length) { toast('Add at least one item first.', 1); return; }
     if ((mode === 'send' || mode === 'receive') && f.lines.some(l => !(parseFloat(l.qty) > 0))) { toast('Every item needs a quantity.', 1); return; }
     if (mode !== 'keep') f.status = mode === 'send' ? 'sent' : 'draft';
