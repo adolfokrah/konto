@@ -2471,7 +2471,7 @@ const A = {
   },
   openPay() { const c = cartOf(), k = cartCalc(c, sellBr()); if (k.bad) { UI.errs.cart = 'Fix the items marked in red first.'; render(true); return; } if (k.disc > 0 && !c.disc.reason) { UI.errs.cart = 'Pick a reason for the discount.'; render(true); return; } { const lim = discLim(); if (lim !== Infinity && k.eff > lim + 1e-9 && !c.appr) { UI.errs.cart = 'Discounts above ' + lim + '% need the owner. This sale is ' + (Math.round(k.eff * 10) / 10) + '% off.'; c.needAppr = true; render(true); return; } } UI.errs = {}; c.pays = { cash: '', momo: '', card: '' }; c.payMode = c.payMode || 'full'; push('payHow', {}); },
   approveDisc() { askApproval('this discount is allowed', by => { cartOf().appr = by; UI.sheet = null; render(true); toast('Discount approved.'); }); },
-  approveSubmit() { const a = UI.ap, pin = String(a.pin || '').trim(), m = pin && (S.team || []).find(x => approverOk(x) && x.pin && x.pin === pin); if (!m) { UI.errs.ap = pin ? 'That PIN does not belong to a manager or the owner.' : 'Enter the approver’s PIN.'; render(true); return; } audit('Sales', m.name + ' approved ' + a.what + ' for ' + UI.who); UI.sheet = null; UI.ap = null; a.fn(m.name + ' (approved)'); },
+  approveSubmit() { const a = UI.ap, pin = String(a.pin || '').trim(), m = pin && (S.team || []).find(x => approverOk(x) && x.pin && x.pin === pin); if (!m) { UI.errs.ap = pin ? 'That PIN does not belong to a manager or the owner.' : 'Enter the approver’s PIN.'; render(true); return; } audit('Sales', m.name + ' approved ' + a.what + ' for ' + UI.who, true); UI.sheet = null; UI.ap = null; a.fn(m.name + ' (approved)'); },
   payFull(m) { const c = cartOf(); c.pays = { cash: '', momo: '', card: '' }; c.pays[m] = fromPes(payTarget(c, cartCalc(c, sellBr()))); render(true); },
   setPayMode(m) { const c = cartOf(); c.payMode = m; UI.errs = {}; render(true); },
   payHowNext() {
@@ -2684,7 +2684,7 @@ const A = {
   takeNext() { const f = cur().f, s = S.sales.find(x => x.id === f.id), due = dueOf(s), amt = (f.mode || 'full') === 'part' ? toPes(f.partS) : due; UI.errs = {};
     if (amt == null || !(amt > 0)) UI.errs.tp = 'Enter the amount paid now.'; else if (amt > due) UI.errs.tp = 'The customer only owes ' + money(due) + '.';
     if (UI.errs.tp) { render(true); return; } push('takeMethod', { id: f.id, amt }); },
-  takeWith(m) { const f = cur().f, s = S.sales.find(x => x.id === f.id); UI.errs = {}; if (m === 'cash') { push('takeCash', { id: f.id, amt: f.amt, cashS: '' }); return; }
+  takeWith(m) { const f = cur().f, s = S.sales.find(x => x.id === f.id); UI.errs = {}; if (dayLocked(s.br, s.t)) { toast(LOCK_MSG, 1); return; } if (m === 'cash') { push('takeCash', { id: f.id, amt: f.amt, cashS: '' }); return; }
     push('payPrompt', { m, st: 'ready', net: 'MTN', phone: (custById(s.cust) || {}).phone || s.cphone || '', pre: 0, after: 'take', amt: f.amt, id: f.id }); },
   takeCashQuick(v) { cur().f.cashS = fromPes(parseInt(v, 10)); render(true); },
   takeCashDone() { const f = cur().f, got = toPes(f.cashS); if (got == null || got < f.amt) return; A.takeRecord(f.id, 'cash', got, '', got - f.amt); },
@@ -2698,6 +2698,7 @@ const A = {
   setTpMethod(v) { cur().f.m = v; render(true); },
   confirmTakePay() {
     const f = cur().f, s = S.sales.find(x => x.id === f.id), amt = toPes(f.amtS), due = dueOf(s); UI.errs = {};
+    if (dayLocked(s.br, s.t)) { toast(LOCK_MSG, 1); return; }
     if (amt == null || !(amt > 0)) UI.errs.tp = 'Enter the amount received.'; else if (amt > due && f.m !== 'cash') UI.errs.tp = 'Only cash can have change. Enter ' + money(due) + ' or less.';
     if (UI.errs.tp) { render(true); return; }
     const chg = Math.max(0, amt - due); s.pays.push({ m: f.m, amt, chg, ref: f.m === 'cash' ? '' : (f.ref || '').trim(), t: Date.now(), sh: ((S.openShifts || {})[s.br] || {}).id || '' }); save(); A.backToSale(s.id); toast(money(amt) + ' received.' + (chg > 0 ? ' Give ' + money(chg) + ' change. Paid in full.' : due - amt > 0 ? ' ' + money(due - amt) + ' still owed.' : ' Paid in full.'));
@@ -4023,7 +4024,7 @@ Object.assign(IC, {
 const CUR = { GHS: ['GH₵', 'Ghana cedi'], NGN: ['₦', 'Nigerian naira'], KES: ['KSh', 'Kenyan shilling'], ZAR: ['R', 'South African rand'], USD: ['$', 'US dollar'], EUR: ['€', 'Euro'], GBP: ['£', 'Pound sterling'] };
 function curSym() { try { if (!hasAddon('currency')) return 'GH₵'; return (CUR[S.region.cur] || CUR.GHS)[0]; } catch (e) { return 'GH₵'; } }
 const PAYL = { cash: 'Cash', momo: 'Mobile money', card: 'Card', gift: 'Gift card', pts: 'Loyalty points' };
-function audit(cat, text) { if (!hasAddon('audit')) return; S.audit = S.audit || []; S.audit.unshift({ t: Date.now(), who: UI.who, cat, text }); S.audit = S.audit.slice(0, 400); }
+function audit(cat, text, always) { if (!always && !hasAddon('audit')) return; S.audit = S.audit || []; S.audit.unshift({ t: Date.now(), who: UI.who, cat, text }); S.audit = S.audit.slice(0, 400); }
 const DEV = [['printer', 'Receipt printer', 'print', 'Prints receipts and the end-of-day report', ['Epson TM-T20 (Bluetooth)', 'Star TSP143 (USB)']], ['drawer', 'Cash drawer', 'register', 'Opens when a cash sale is taken', ['Cash drawer (through printer)']], ['scanner', 'Barcode scanner', 'scan', 'Scan items instead of searching', ['Handheld scanner (USB)', 'Phone camera']], ['scale', 'Weighing scale', 'box', 'Fills in the weight for loose items', ['Digital scale (USB)']]];
 const pendingSync = () => (S.sales || []).filter(x => x.sync === 'pending');
 const bizLogo = (b, k) => { b = b || {}; return b.logo ? `<div style="width:${k}px;height:${k}px;border-radius:${Math.round(k / 4)}px;background:#fff url(${b.logo}) center/contain no-repeat;border:1.5px solid var(--hl);flex:none"></div>` : `<div style="width:${k}px;height:${k}px;border-radius:${Math.round(k / 4)}px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:${Math.round(k / 2.4)}px;flex:none">${esc(((b.name || 'Osu Shop').trim().charAt(0) || 'K').toUpperCase())}</div>`; };
@@ -4848,7 +4849,7 @@ SCREENS.cashMove = () => { const f = cur().f, out = f.type === 'out'; return `${
   return h.slice(0, i) + `${sect('Cash in the drawer')}<div class="two">${btn('Add cash', 'cashIn', null, { k: 's', sm: 1 })}${btn('Take cash out', 'cashOut', null, { k: 's', sm: 1 })}</div>${btn('No sale (open drawer)', 'noSale', null, { k: 'g', sm: 1 })}${mv.length ? `<div class="col g8">${mv.map(x => `<div class="vrow"><div class="lm"><b>${x.type === 'in' ? 'Cash added' : 'Cash taken out'}${x.note ? ' · ' + esc(x.note) : ''}</b><span>${esc(x.who)} · ${when(x.t)}</span></div><b class="${x.type === 'out' ? 'bad' : 'ok'}">${x.type === 'out' ? '−' : '+'}${money(x.amt)}</b></div>`).join('')}</div>` : ''}` + h.slice(i); }; })();
 Object.assign(A, {
   cashIn() { UI.errs = {}; push('cashMove', { type: 'in', amt: '', note: '' }); }, cashOut() { UI.errs = {}; push('cashMove', { type: 'out', amt: '', note: '' }); },
-  saveMove() { const f = cur().f, a = toPes(f.amt), sh = shiftHere(); UI.errs = {}; if (!(a > 0)) { UI.errs.mv = 'Enter an amount above zero.'; render(true); return; } if (!f.note.trim()) { UI.errs.mv = 'Add a reason so it can be checked later.'; render(true); return; } if (f.type === 'out' && a > shiftCalc(sh).expected) { UI.errs.mv = 'There is not that much cash in the drawer.'; render(true); return; }
+  saveMove() { const f = cur().f, a = toPes(f.amt), sh = shiftHere(); UI.errs = {}; if (dayLocked(sellBr(), Date.now())) { toast('Today is closed. Ask a manager or the owner to reopen it on the End of day screen.', 1); return; } if (!(a > 0)) { UI.errs.mv = 'Enter an amount above zero.'; render(true); return; } if (!f.note.trim()) { UI.errs.mv = 'Add a reason so it can be checked later.'; render(true); return; } if (f.type === 'out' && a > shiftCalc(sh).expected) { UI.errs.mv = 'There is not that much cash in the drawer.'; render(true); return; }
     sh.moves = sh.moves || []; sh.moves.push({ t: Date.now(), type: f.type, amt: a, note: f.note.trim(), who: UI.who }); audit('Sales', (f.type === 'in' ? 'Cash added ' : 'Cash taken out ') + money(a) + ' · ' + f.note.trim()); save(); pop(); toast(f.type === 'in' ? 'Cash added.' : 'Cash taken out.'); },
   noSale() { audit('Sales', 'Drawer opened with no sale'); toast(hasAddon('devices') && S.devices.drawer.on ? 'The drawer opened.' : 'Drawer opened. Connect a cash drawer in Printer and devices to open it for real.'); }
 });
