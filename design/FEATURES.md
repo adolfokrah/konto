@@ -18,7 +18,7 @@ Cahier deeply integrates AI into the platform to help businesses drive more sale
 
 The till, stock, team and reports are the data foundation. Their figures must be correct (see Part 2), because the AI and the forecasts read them.
 
-Status in this prototype: the agent, channels, orders from chats, and the Insights and forecast screen exist as screens (see 3.10 and 3.11). Smarter forecasting and recommendations are a design direction, not built.
+Status in this prototype: the agent, channels, orders from chats and the Insights screen exist (see 3.10 and 3.11). Insights now lists next best actions and a 7-day sales forecast from the shop's own history. Per-product demand forecasts, chat recommendations and the Ask Cahier assistant are built too (see 3.10, 3.11 and 3.14). A learned model, seasonality beyond weekdays and promotions are a design direction, not built.
 
 ---
 
@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 21 fixes committed in this branch, one new feature (barcode labels) and 10 open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 42 fixes committed in this branch, five new features (barcode labels, Insights next actions and forecast, per-product demand forecast, chat suggestions, the Ask Cahier assistant), a What's new screen and no open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -59,40 +59,39 @@ Result: 21 fixes committed in this branch, one new feature (barcode labels) and 
 | 13 | Product, variant, unit and option forms | A product price of -5 was saved; so were a price of GH₵ 99,999,999,999 and a 300-character name. | Prices and costs must be 0 to GH₵ 100M, names 120 characters or fewer. |
 | 14 | Expenses, stock, purchase orders, cart | An expense of GH₵ 1,000,000,000,000, a stock add of 1,000,000,000,000 pieces and a draft purchase order with quantity -3 were accepted. A cart line of 1,000,000 passed the line check. | Size caps and a non-negative check on all four. |
 | 12 | Merge of `main` into this branch | Five conflicts in the filter sheets, expense list/form/actions and time clock. | Resolved keeping the shared filter pattern, branch filter inside the sheets, payment options from add-ons, POS-only expense entry and expense details from `main`; expense action gate moved to `posExpense`. |
-| 15 | Discounts, returns, voids | Owner approval had no credential: a cashier tapped "Owner approves" on their own device. | Approval needs a manager or owner PIN (new "Approve discounts, returns and voids" permission, set on the role). Managers and owners approve without a prompt. Seed PINs: owner 1111, manager 4321, cashier 1234. The approver is written to the sale and the Activity log. |
+| 15 | Discounts, returns, voids | Owner approval had no credential: a cashier tapped "Owner approves" on their own device. | Approval needs a manager or owner PIN, entered in a sheet (new "Approve discounts, returns and voids" permission, set on the role). Managers and owners approve without a prompt. Seed PINs: owner 1111, manager 4321, cashier 1234. The approver is written to the sale and to the Activity log. The log entry is kept even when the Activity log add-on is not installed, and shows once it is. |
 | 16 | Till, sale taxes | Price override and tax removal had no permission and no log entry. | New permissions "Change item prices at the till" and "Add or remove taxes on a sale" (Manager on, Cashier off). Price changes and tax edits go to the Activity log. |
 | 17 | Till | Cash expenses did not reduce the cash that should be in the drawer. | When the till is open and a new cash expense is saved for today, the app asks "Paid from the till?". Yes takes it off the expected cash and shows it on the till and close screens. No leaves the drawer alone. Mobile money, card, recurring and closed-till expenses never ask. The cash-out screen warns not to record them twice. |
-| 18 | End of day | Closing the day did not stop later changes to its figures. | A closed day (or branch) blocks new sales, returns, voids and expense changes dated in it. A manager or owner can reopen it from End of day. Part payments on old credit sales are still allowed. |
+| 18 | End of day | Closing the day did not stop later changes to its figures. | A closed day (or branch) blocks new sales, returns, voids, expense changes and till cash moves dated in it. A manager or owner can reopen it from End of day. Stock adjustments are not blocked: they do not change the day's figures. Payments on an old credit sale are allowed (see row 33). |
 | 19 | Stock value, stock levels | Archived products that still held stock vanished from the valuation. | They stay in Stock value (and its export) and Stock levels, marked Archived. The archive warning says so. |
 | 20 | Sales report | Category donut and top items used pre-discount line amounts, so they did not add up to net sales. | Each sale's net (after discount, tax and refunds) is shared across its lines. Totals match net sales exactly (checked on 442 sample sales). |
 | 21 | POS | Item cards counted expired and held batches as available (27 shown, 13 sellable). | Cards show sellable stock only. |
+| 22 | Loyalty | Points were earned on unpaid credit sales (41 points on a GH₵ 41.40 credit sale). | Points are earned on money actually received. A credit sale earns nothing; each part payment (including one taken from the sale page) earns its share. Voiding still reverses them. |
+| 23 | Onboarding, tax | A new shop added 15% "Standard rated" tax to every sale, with no tax question. | New shops start with no default tax. It is on by default only when the "Receipt and tax details" add-on is chosen. Existing shops are unchanged. |
+| 24 | Tax | No tax-inclusive pricing (a shelf price of GH₵ 36.00 became GH₵ 41.40). | New setting in Stock settings, "Prices include tax". On: the price is what the customer pays and tax is worked out from it (shown as "Includes"). Off: tax is added on top, as before. Barcode labels do not add tax a second time when it is on. |
+| 25 | Sales tab, sale page | Header said "Today · 22 sales" while the list said "26 sales"; "Cost of goods" ignored partial returns. | The list counts paid sales only and shows voids separately ("2 sales · 1 voided"). Cost of goods subtracts the cost of returned items (stored on each return). |
+| 26 | End of day | Cash received for gift cards was missing from the report. | New "Gift cards sold" card (by method, total), marked as not counted as sales until the card is spent. |
+| 27 | Products | A base price was required even when every variant had its own price. | The base price is optional when every active variant has a price. |
+| 28 | Insights | "Sales from chats" showed GH₵ 0.00 after a chat order became a sale. | Chat sales are counted from the real sale an order was turned into (net of refunds), and those chats count as "Became sales". |
+| 29 | Customer inbox | "Send a test order" crashed (`Assignment to constant variable`) when no channel was connected. | Fixed. |
+| 30 | Purchase orders | The receive screen said "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the saved cost was the landed weighted average (GH₵ 54.52). | The hint and the saved cost come from one calculation. It reads, for example, "Cost price becomes GH₵ 54.89 each (was GH₵ 55.00). Averaged with the 40 already in stock, includes GH₵ 2.00 each of delivery costs." |
+| 31 | Products | A zero price, or a cost above the price, was saved with no warning. | Still allowed (free samples, loss-leaders), but saving asks first: "The cost is above the price, so each sale loses GH₵ X" or "The price is 0", with Save anyway and Go back. Checks the product and each variant that has its own price or cost. |
+| 32 | Customer inbox | Demo chats always talked about Indomie and a Samsung phone, whatever the shop sold. | Demo and seeded chats pick products from the shop's own catalogue (name and price). With no priced product, the demo chat asks you to add one. |
+| 33 | End of day, credit sales | A closed day blocked later payments on its credit sales, which a wholesaler needs. | Payments on an old credit sale are allowed. The money is counted on the day it is received (day end, sales report, till), the sale keeps its original date, and the closed day's figures do not move: its "still owed" is worked out as at the end of that day. Taking a payment on a day that is itself closed is blocked until it is reopened. |
+| 34 | Activity log | Voids were filed under "Catalog", one entry per product line. | One "Voided S-0001 · GH₵ 5.00" entry under Sales. Sold and Returned lines are filed under Sales too. |
+| 35 | POS keypad | In expense mode the keypad said "Charge" and added tax, though an expense has no tax. | Expense carts never add tax. The button reads "Review expense". |
+| 36 | Split sale | The new sale lost the table name. | The new sale keeps the table (and its name on the receipt). |
+| 37 | Customer page | A converted quote showed as a second "Paid" row. | Converted quotes are hidden from the history. The sale shows once. |
+| 38 | Split payment | "Full" overwrote the other rows. | "Full" fills what is still to pay and keeps the other rows. |
+| 39 | Receipts | Cash tendered plus "Change given" added up to more than the total. | Change is shown as a negative line, so the rows add up to the total, on the sale page and in the shared text. |
+| 40 | Agent orders | "Estimated total" ignored tax. | The estimate adds the taxes the till would add (none when prices include tax), so it matches the sale. |
+| 41 | Receipts, product page | Warranty months were stored but never printed; the view-only product page said "Tap a branch to adjust it". | Serial items print "12 months warranty, to <date>" under the S/N. Users without stock rights see the quantities with no adjust prompt or buttons. |
+| 42 | Channels | The channel page showed sample "recent chats" older than the connection time, and fixed "Chats today" numbers. | Sample chats are dated between the connection time and now. "Chats today" counts real chats plus the samples shown. |
 
 ### 2.2 Open: needs a decision
 
-Security and money controls (highest priority for production)
+Nothing is open. Every finding from the audit is fixed in this branch.
 
-5. **Loyalty points are earned on unpaid sales.** A credit sale of GH₵ 41.40 awarded 41 points before any payment.
-
-Reporting and stock
-
-7. The Sales tab header says "Today · 22 sales" while the list header says "26 sales" (the list counts voided and quote rows).
-9. After a partial return the sale page still shows "Cost of goods" for the original quantity while profit reflects the restocked cost.
-11. Day-end "How it was paid" excludes gift cards sold (cash received for a gift card is in the drawer but not on the report).
-
-Product and copy
-
-12. The product form forces a base retail price even when every variant has its own price.
-13. Receive-order confirm says "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the result is the landed weighted average (GH₵ 54.52).
-14. A brand-new shop adds 15% "Standard rated" tax to every sale by default, even with the Tax invoices add-on off and no tax question in onboarding.
-
-16. There is no tax-inclusive pricing. The inclusive path in the totals code is hard-coded off, so a shelf price of GH₵ 36.00 becomes GH₵ 41.40 at the till. Barcode labels therefore print the tax-included price by default (a toggle turns it off).
-17. Zero prices and a cost above the price are accepted without a warning (a free item or a loss-maker can be saved).
-
-Small items: Activity log files a void under "Catalog"; keypad in expense mode shows `Charge GH₵ 51.75` (tax added) while the expense cart has no tax; the split sale loses its table name; the customer page lists a converted quote as a second "Paid" row; the "Full" button on a split-payment row overwrites the other rows instead of filling the rest; the receipt shows tendered cash plus "Change given", so rows add up to more than the total on part payments; view-only product page says "Tap a branch to adjust it"; Agent order "Estimated total" excludes tax; warranty months is stored but never printed.
-
-Demo data that does not match the shop
-
-15. "Demo: a customer writes in" always uses two canned chats (Samsung A15 at GH₵ 2,200; a carton of Indomie at GH₵ 32). The WhatsApp channel page shows three fake "recent chats" older than the connection time. Insights shows "Sales from chats GH₵ 0.00" even though a WhatsApp order became a GH₵ 92.58 sale.
 
 ---
 
@@ -118,6 +117,7 @@ Notation: **(add-on)** means the feature appears only after that add-on is insta
 
 - Bottom bar with up to 3 tabs plus More. Tabs can be replaced from a catalogue of screens (POS, Sales, Services, Products, Stock, Discounts, Purchases, Suppliers, Expenses, Sales report, End of day, Notifications, Insights, Customers, Inbox, Team, Kitchen, Tables, Held sales, Till, Gift cards, Orders). Choice is per user; "Reset to usual".
 - More groups: Whole business, This branch, Just for me, Data tools. Items appear only when the add-on is installed and the role allows them.
+- What's new (More): a list of recent improvements, grouped by control and money, tax and pricing, reports and stock, sales and receipts, and AI and social sales.
 - Header branch switcher on branch-scoped tabs (POS, Stock, Services, Tables and others), with "All branches" where reports allow it.
 - "View as": the owner previews the app as any accepted team member.
 - Notifications with a bell badge and notification settings (new orders, bookings, kitchen, stock, money, deliveries) plus a "send a test order" button.
@@ -149,6 +149,7 @@ Lists and tools
 - Saved discounts: percent or amount, applies to items, whole sale or both.
 - Import: sources offered are Excel/Google Sheets CSV, photo of a notebook, Square, Shopify, QuickBooks, Zoho, Lightspeed/Vend or another system; kinds are products, customers, suppliers, past sales; template download; column matching; review (ready, already here, skipped); run; undo the import. Only the CSV products path was exercised in this audit.
 - Export: products, sales, customers, stock value, expenses (CSV) and a full backup.
+- Price check on save: a zero price, or a cost above the price (for the product or any variant with its own price), is allowed after a warning.
 - Barcode labels: Products menu > Print barcode labels, a product's menu, Select several > Print labels, a batch or variant on the Stock item page, or the Batches page. Pick products, variants or batches (each batch is its own row), set copies per row or tap Use stock to print one label per unit on hand. Sizes: 40 × 25 mm, 50 × 30 mm and 60 × 40 mm rolls, or an A4 sheet of 3 × 7. Choose what shows: name (with variant), price (with tax added by default, so it matches the till), the code as text, expiry and lot on batch labels, shop name. A live preview shows the first label. Bars are Code 128 and encode the variant or product barcode, or the SKU when there is no barcode. Items with neither show "Make a barcode", which creates and saves a unique code. Printing opens a print-ready page sized to the label (set to the roll size or A4) for the label printer, or Save as PDF. Scanning a SKU at the till adds the item or variant, so SKU-only labels work. Settings (size, toggles) are remembered and each print is written to the Activity log.
 
 ### 3.4 Selling at the till
@@ -179,7 +180,7 @@ Lists and tools
 
 - Customers list, add inline from the cart, detail page (contact, bought, orders, owed, history, credit limit, points **(Loyalty)**), new sale for a customer, payment reminder.
 - Credit limit per customer enforced on pay later and part payment.
-- Loyalty **(Loyalty)**: earn rate, redeem rate, minimum to redeem; points shown on the customer; paid with at the till, remainder by another method.
+- Loyalty **(Loyalty)**: earn rate, redeem rate, minimum to redeem; points are earned on money received (none on unpaid credit); points shown on the customer; paid with at the till, remainder by another method.
 - Gift cards **(Gift cards)**: sell at preset or any amount, buyer, paid by cash/mobile money/card, top up, history, pay at the till (full or partial).
 
 ### 3.7 Till, cash and time
@@ -199,7 +200,7 @@ Lists and tools
 - Transfers between branches: draft, send (stock leaves), receive with arrived quantities and shortage reasons; works with batches and selling units.
 - Suppliers: contact, phone, email, address, terms, lead time, account, notes.
 - Purchase orders: draft, send, already received; per-line supplier, quantity, cost; shared extra costs (freight, duty); mark paid; receive (add to stock or not), cost updates to a weighted average that includes freight.
-- Stock settings: default low-stock alert, quote validity, discount limit without the owner, held sales keep stock, returns and voids need the owner, cost method (average or latest), allow selling at zero stock, block expired batches, ask to open the till, tips, new services start tax-free.
+- Stock settings: default low-stock alert, quote validity, discount limit without the owner, held sales keep stock, returns and voids need the owner, cost method (average or latest), allow selling at zero stock, block expired batches, prices include tax (off: tax added on top), ask to open the till, tips, new services start tax-free.
 
 ### 3.9 Team, roles and branches
 
@@ -220,14 +221,14 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 | Gift cards | See 3.6. |
 | Loyalty points | See 3.6. |
 | Expenses | Record on the POS (enter amount, add to cart, choose Expense), category, date, paid-with, note, receipt photo, repeating expenses (catch-up creates missed entries), expense details, edit, delete, filters (period, branch), export, profit after expenses. |
-| End of day report | Sales, takings by method, discounts, refunds, tax, owed, expenses, tills closed, best sellers; close the day (a closed day blocks new sales, returns, voids and expense changes dated in it); managers and owners can reopen it; print and share. |
+| End of day report | Sales, takings by method, discounts, refunds, tax, owed, expenses, tills closed, best sellers; close the day (a closed day blocks new sales, returns, voids, expense changes and till cash moves; payments received later on its credit sales count on the day they are received); managers and owners can reopen it; print and share. |
 | Tax invoices | Shop details, TIN, address, footer, invoice number on every receipt, optional sending to the tax authority. |
 | Activity log | Who changed what (prices, roles, voids, returns, tills, settings), filter by area, cannot be edited. |
 | Printer and devices | Receipt printer, cash drawer, barcode scanner, weighing scale; print every receipt automatically; drawer opens on cash sales. |
 | Offline and backup | Work offline (sales queue and sync), banner, daily backup, download a copy. |
 | Currency | Seven currencies; changes every screen. |
 | Customer inbox | Chats from channels in one list with Needs you, Agent and Closed; take over, reply, quick replies, mark won or lost. |
-| Insights and forecast | Agent results, chat-to-sale funnel, items likely to run out with days left and reorder, busy hours. |
+| Insights and forecast | What to do next (chats waiting, money owed, stock to reorder), expected sales for the next 7 days from the same weekdays over four weeks, expected units per product next week (weekday shape and a capped recent trend, with a "few sales yet" note when data is thin), run-out days and reorder amounts from that forecast, agent results, chat-to-sale funnel (chat sales counted from real sales), items likely to run out with days left and reorder, busy hours. |
 | Customer display | See 3.4. |
 | Restaurant tools | Tables per branch, hold orders on a table, merge items onto one bill, hold and send to kitchen, hold and split, kitchen screen with per-item stages (new, cooking, ready, served) and print or reject, table QR codes with a guest ordering page (staff acceptance optional), delivery with address and status, tips, notifications for deliveries. |
 | Services and bookings | Services (fixed, starts-from or quote-first price, duration, place, question the agent asks), booking page link and QR with free times from working hours, booking requests (new, confirmed, past), confirm, message, decline or cancel, convert to sale, working hours per branch. |
@@ -235,8 +236,24 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 ### 3.11 Channels and the agent
 
 - Channels: WhatsApp Business, Instagram, Facebook Page, TikTok. Connect with a verification step; status, chats today, orders, reply time.
-- Agent rules: replies, quotes prices from the catalogue, states stock, takes booking requests, which branch it sells from, hand over when the customer asks for a discount, a refund or complaint, or something it cannot answer; first message; pause; disconnect; send a test order. The agent never takes payment or changes prices.
+- Agent rules: replies, quotes prices from the catalogue, states stock, takes booking requests, which branch it sells from, hand over when the customer asks for a discount, a refund or complaint, or something it cannot answer; first message; pause; disconnect; send a test order. The agent never takes payment or changes prices. "Suggest related items" (on by default, per channel): it offers an in-stock item that buyers of the same product often take (falling back to the same category), or an in-stock option from the same category when the asked item has run out.
 - Orders: agent and table orders arrive in Orders (New, Sold, Closed; from channels or tables), open the chat, message, convert to sale (cart pre-filled with customer), close.
+
+### 3.14 Ask Cahier (owner assistant)
+
+- Where: More, Whole business, Ask Cahier, and a button at the top of Insights. Type a question or tap a suggestion.
+- Look: a chat screen with a header (avatar, status line, spoken-answers switch, new conversation), a greeting with six starter cards when empty, user and assistant bubbles with times, a typing indicator, big number cards for headline answers (sales, profit, forecast, spending, owed, stock), tidy lists, confirm cards with Yes and Cancel, follow-up chips under the last answer, and a pill-shaped composer at the bottom. Enter sends.
+- Voice in: tap the mic and talk. Words appear live under a waveform, and the question is sent when you stop. Uses the browser's speech recognition (Chrome, Edge, Safari), set to Ghana English. If the browser has none, or the microphone is blocked, it says so and typing still works.
+- Voice out: a question asked by voice is answered out loud. The speaker switch in the header makes every answer spoken, including the result of a confirmed action. Amounts are read as cedis.
+- It is a rules-based assistant in this prototype. It reads the shop's own data and understands plain wording. It does not call a language model.
+- Questions it answers: sales today, yesterday, this week or this month (with profit for roles that can see cost); best sellers; profit; who owes money; what to restock (from the forecast); stock and expected sales for one product; next week's sales forecast; busy hours; sales by channel and chats waiting; expenses; what to do next.
+- Things it does, each after a tap on a confirm card (Yes or Cancel):
+  - Count or adjust stock: "add 20 Milo", "remove 5 Milo", "count Milo 15". Shows now and after. Refuses to remove more than is on hand, and sends serial, variant and batch items to the Stock screen.
+  - Hold a sale: "hold 2 Milo and 1 rice for Auntie". The sale appears under Held sales for you to take payment.
+  - Send to the kitchen: "send 2 Milo to the kitchen for table 2" (Restaurant tools). A kitchen ticket is made and the sale is held on the table.
+  - Draft a purchase order: "reorder Milo" opens a draft order from the forecast. You review and send it.
+- It never takes payment. Asking it to charge, complete, finish or mark a sale paid gets a refusal that offers to hold the sale instead.
+- It follows the person's role: no reports means no sales figures, no stock right means no stock changes, no sales right means no holds or kitchen orders. Each change is written to the Activity log (kept even without the add-on) as "Assistant", with the person it acted for.
 
 ### 3.12 Public pages
 
@@ -258,7 +275,7 @@ After the full scenario (3 branches, 29 sales and quotes, 17 add-ons):
 - Stock ledger: for every product, variant, batch and branch the sum of stock moves equals the on-hand quantity and the last "after" value.
 - Every completed sale: sum of lines = subtotal; total = subtotal − discount + tax (+ tip); paid + due = total; sum of line paid = total.
 - All-branches sales report = sum of branch reports = sales export (net of refunds).
-- End of day payments (cash + mobile money + card) equal sales after the change fix; tax, discounts and gross match recomputation from the sale records.
+- End of day payments are the money received that day (including payments on older credit sales). For a day with no credit payments they (cash + mobile money + card) equal sales after the change fix; tax, discounts and gross match recomputation from the sale records.
 - Till: opening 50, cash sale 8.86 and 6.33, cash return 4.43, void 6.33 gave an expected drawer of 54.43 and a balanced close.
 - Barcode labels: 16 of 16 labels (4 sizes × a product, a batch, a variant and a SKU-only item) were rendered and decoded with an independent Code 128 reader and returned the exact code.
 - Fuzzing: negative, text, zero and oversized values were tried on product prices, cart quantity and price, discounts, cash received, part payments, gift cards, customer phone, expenses, stock adjustments and purchase orders. After the fixes above every case is rejected with a message, except the zero-price and loss-making cases listed as open.
