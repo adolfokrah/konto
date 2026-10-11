@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 32 fixes committed in this branch, one new feature (barcode labels) and 1 open item (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 41 fixes committed in this branch, one new feature (barcode labels) and 1 open item (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -62,7 +62,7 @@ Result: 32 fixes committed in this branch, one new feature (barcode labels) and 
 | 15 | Discounts, returns, voids | Owner approval had no credential: a cashier tapped "Owner approves" on their own device. | Approval needs a manager or owner PIN, entered in a sheet (new "Approve discounts, returns and voids" permission, set on the role). Managers and owners approve without a prompt. Seed PINs: owner 1111, manager 4321, cashier 1234. The approver is written to the sale and to the Activity log. The log entry is kept even when the Activity log add-on is not installed, and shows once it is. |
 | 16 | Till, sale taxes | Price override and tax removal had no permission and no log entry. | New permissions "Change item prices at the till" and "Add or remove taxes on a sale" (Manager on, Cashier off). Price changes and tax edits go to the Activity log. |
 | 17 | Till | Cash expenses did not reduce the cash that should be in the drawer. | When the till is open and a new cash expense is saved for today, the app asks "Paid from the till?". Yes takes it off the expected cash and shows it on the till and close screens. No leaves the drawer alone. Mobile money, card, recurring and closed-till expenses never ask. The cash-out screen warns not to record them twice. |
-| 18 | End of day | Closing the day did not stop later changes to its figures. | A closed day (or branch) blocks new sales, returns, voids, expense changes, part payments on credit sales from that day, and cash added or taken out of the till. A manager or owner can reopen it from End of day. Stock adjustments are not blocked: they do not change the day's figures. |
+| 18 | End of day | Closing the day did not stop later changes to its figures. | A closed day (or branch) blocks new sales, returns, voids, expense changes and till cash moves dated in it. A manager or owner can reopen it from End of day. Stock adjustments are not blocked: they do not change the day's figures. Payments on an old credit sale are allowed (see row 33). |
 | 19 | Stock value, stock levels | Archived products that still held stock vanished from the valuation. | They stay in Stock value (and its export) and Stock levels, marked Archived. The archive warning says so. |
 | 20 | Sales report | Category donut and top items used pre-discount line amounts, so they did not add up to net sales. | Each sale's net (after discount, tax and refunds) is shared across its lines. Totals match net sales exactly (checked on 442 sample sales). |
 | 21 | POS | Item cards counted expired and held batches as available (27 shown, 13 sellable). | Cards show sellable stock only. |
@@ -77,10 +77,17 @@ Result: 32 fixes committed in this branch, one new feature (barcode labels) and 
 | 30 | Purchase orders | The receive screen said "Cost price updates from GH₵ 55.00 to GH₵ 52.00 each" but the saved cost was the landed weighted average (GH₵ 54.52). | The hint and the saved cost come from one calculation. It reads, for example, "Cost price becomes GH₵ 54.89 each (was GH₵ 55.00). Averaged with the 40 already in stock, includes GH₵ 2.00 each of delivery costs." |
 | 31 | Products | A zero price, or a cost above the price, was saved with no warning. | Still allowed (free samples, loss-leaders), but saving asks first: "The cost is above the price, so each sale loses GH₵ X" or "The price is 0", with Save anyway and Go back. Checks the product and each variant that has its own price or cost. |
 | 32 | Customer inbox | Demo chats always talked about Indomie and a Samsung phone, whatever the shop sold. | Demo and seeded chats pick products from the shop's own catalogue (name and price). With no priced product, the demo chat asks you to add one. |
+| 33 | End of day, credit sales | A closed day blocked later payments on its credit sales, which a wholesaler needs. | Payments on an old credit sale are allowed. The money is counted on the day it is received (day end, sales report, till), the sale keeps its original date, and the closed day's figures do not move: its "still owed" is worked out as at the end of that day. Taking a payment on a day that is itself closed is blocked until it is reopened. |
+| 34 | Activity log | Voids were filed under "Catalog", one entry per product line. | One "Voided S-0001 · GH₵ 5.00" entry under Sales. Sold and Returned lines are filed under Sales too. |
+| 35 | POS keypad | In expense mode the keypad said "Charge" and added tax, though an expense has no tax. | Expense carts never add tax. The button reads "Review expense". |
+| 36 | Split sale | The new sale lost the table name. | The new sale keeps the table (and its name on the receipt). |
+| 37 | Customer page | A converted quote showed as a second "Paid" row. | Converted quotes are hidden from the history. The sale shows once. |
+| 38 | Split payment | "Full" overwrote the other rows. | "Full" fills what is still to pay and keeps the other rows. |
+| 39 | Receipts | Cash tendered plus "Change given" added up to more than the total. | Change is shown as a negative line, so the rows add up to the total, on the sale page and in the shared text. |
+| 40 | Agent orders | "Estimated total" ignored tax. | The estimate adds the taxes the till would add (none when prices include tax), so it matches the sale. |
+| 41 | Receipts, product page | Warranty months were stored but never printed; the view-only product page said "Tap a branch to adjust it". | Serial items print "12 months warranty, to <date>" under the S/N. Users without stock rights see the quantities with no adjust prompt or buttons. |
 
 ### 2.2 Open: needs a decision
-
-Small items: Activity log files a void under "Catalog"; keypad in expense mode shows `Charge GH₵ 51.75` (tax added) while the expense cart has no tax; the split sale loses its table name; the customer page lists a converted quote as a second "Paid" row; the "Full" button on a split-payment row overwrites the other rows instead of filling the rest; the receipt shows tendered cash plus "Change given", so rows add up to more than the total on part payments; view-only product page says "Tap a branch to adjust it"; Agent order "Estimated total" excludes tax; warranty months is stored but never printed.
 
 Demo data that does not match the shop
 
@@ -213,7 +220,7 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 | Gift cards | See 3.6. |
 | Loyalty points | See 3.6. |
 | Expenses | Record on the POS (enter amount, add to cart, choose Expense), category, date, paid-with, note, receipt photo, repeating expenses (catch-up creates missed entries), expense details, edit, delete, filters (period, branch), export, profit after expenses. |
-| End of day report | Sales, takings by method, discounts, refunds, tax, owed, expenses, tills closed, best sellers; close the day (a closed day blocks new sales, returns, voids, expense changes, part payments on its credit sales and till cash moves); managers and owners can reopen it; print and share. |
+| End of day report | Sales, takings by method, discounts, refunds, tax, owed, expenses, tills closed, best sellers; close the day (a closed day blocks new sales, returns, voids, expense changes and till cash moves; payments received later on its credit sales count on the day they are received); managers and owners can reopen it; print and share. |
 | Tax invoices | Shop details, TIN, address, footer, invoice number on every receipt, optional sending to the tax authority. |
 | Activity log | Who changed what (prices, roles, voids, returns, tills, settings), filter by area, cannot be edited. |
 | Printer and devices | Receipt printer, cash drawer, barcode scanner, weighing scale; print every receipt automatically; drawer opens on cash sales. |
@@ -251,7 +258,7 @@ After the full scenario (3 branches, 29 sales and quotes, 17 add-ons):
 - Stock ledger: for every product, variant, batch and branch the sum of stock moves equals the on-hand quantity and the last "after" value.
 - Every completed sale: sum of lines = subtotal; total = subtotal − discount + tax (+ tip); paid + due = total; sum of line paid = total.
 - All-branches sales report = sum of branch reports = sales export (net of refunds).
-- End of day payments (cash + mobile money + card) equal sales after the change fix; tax, discounts and gross match recomputation from the sale records.
+- End of day payments are the money received that day (including payments on older credit sales). For a day with no credit payments they (cash + mobile money + card) equal sales after the change fix; tax, discounts and gross match recomputation from the sale records.
 - Till: opening 50, cash sale 8.86 and 6.33, cash return 4.43, void 6.33 gave an expected drawer of 54.43 and a balanced close.
 - Barcode labels: 16 of 16 labels (4 sizes × a product, a batch, a variant and a SKU-only item) were rendered and decoded with an independent Code 128 reader and returned the exact code.
 - Fuzzing: negative, text, zero and oversized values were tried on product prices, cart quantity and price, discounts, cash received, part payments, gift cards, customer phone, expenses, stock adjustments and purchase orders. After the fixes above every case is rejected with a message, except the zero-price and loss-making cases listed as open.
