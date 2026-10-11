@@ -18,7 +18,7 @@ Cahier deeply integrates AI into the platform to help businesses drive more sale
 
 The till, stock, team and reports are the data foundation. Their figures must be correct (see Part 2), because the AI and the forecasts read them.
 
-Status in this prototype: the agent, channels, orders from chats and the Insights screen exist (see 3.10 and 3.11). Insights now lists next best actions and a 7-day sales forecast from the shop's own history. Per-product demand forecasts and chat recommendations are built too (see 3.10 and 3.11). A learned model, seasonality beyond weekdays and promotions are a design direction, not built.
+Status in this prototype: the agent, channels, orders from chats and the Insights screen exist (see 3.10 and 3.11). Insights now lists next best actions and a 7-day sales forecast from the shop's own history. Per-product demand forecasts, chat recommendations and the Ask Cahier assistant are built too (see 3.10, 3.11 and 3.14). A learned model, seasonality beyond weekdays and promotions are a design direction, not built.
 
 ---
 
@@ -35,7 +35,7 @@ One fictional business, grown in stages. Nothing was seeded: new account, empty 
 | 4. Cross-checks | Stock ledger vs on-hand for every product/variant/batch/branch, sale invariants, till drawer maths, day-end vs sales report vs exports, all-branches totals. |
 | 5. Extras | Multi-shop, logout/login, import/undo, exports, remove/re-add an add-on, clear data, view-as for each role, smoke test of every More screen. |
 
-Result: 42 fixes committed in this branch, four new features (barcode labels, Insights next actions and forecast, per-product demand forecast, chat suggestions), a What's new screen and no open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
+Result: 42 fixes committed in this branch, five new features (barcode labels, Insights next actions and forecast, per-product demand forecast, chat suggestions, the Ask Cahier assistant), a What's new screen and no open items (plus a list of small ones) left for a decision (Part 2). A second full pass on a fresh account re-checked every fix, added input fuzzing and a 1,500-product load test. No JavaScript errors were raised by any of the roughly 40 top-level screens that were smoke tested.
 
 ---
 
@@ -238,6 +238,19 @@ All 17 can be added from More > Add-ons (Get, Open, Remove). Removing hides the 
 - Channels: WhatsApp Business, Instagram, Facebook Page, TikTok. Connect with a verification step; status, chats today, orders, reply time.
 - Agent rules: replies, quotes prices from the catalogue, states stock, takes booking requests, which branch it sells from, hand over when the customer asks for a discount, a refund or complaint, or something it cannot answer; first message; pause; disconnect; send a test order. The agent never takes payment or changes prices. "Suggest related items" (on by default, per channel): it offers an in-stock item that buyers of the same product often take (falling back to the same category), or an in-stock option from the same category when the asked item has run out.
 - Orders: agent and table orders arrive in Orders (New, Sold, Closed; from channels or tables), open the chat, message, convert to sale (cart pre-filled with customer), close.
+
+### 3.14 Ask Cahier (owner assistant)
+
+- Where: More, Whole business, Ask Cahier, and a button at the top of Insights. Type a question or tap a suggestion.
+- It is a rules-based assistant in this prototype. It reads the shop's own data and understands plain wording. It does not call a language model.
+- Questions it answers: sales today, yesterday, this week or this month (with profit for roles that can see cost); best sellers; profit; who owes money; what to restock (from the forecast); stock and expected sales for one product; next week's sales forecast; busy hours; sales by channel and chats waiting; expenses; what to do next.
+- Things it does, each after a tap on a confirm card (Yes or Cancel):
+  - Count or adjust stock: "add 20 Milo", "remove 5 Milo", "count Milo 15". Shows now and after. Refuses to remove more than is on hand, and sends serial, variant and batch items to the Stock screen.
+  - Hold a sale: "hold 2 Milo and 1 rice for Auntie". The sale appears under Held sales for you to take payment.
+  - Send to the kitchen: "send 2 Milo to the kitchen for table 2" (Restaurant tools). A kitchen ticket is made and the sale is held on the table.
+  - Draft a purchase order: "reorder Milo" opens a draft order from the forecast. You review and send it.
+- It never takes payment. Asking it to charge, complete, finish or mark a sale paid gets a refusal that offers to hold the sale instead.
+- It follows the person's role: no reports means no sales figures, no stock right means no stock changes, no sales right means no holds or kitchen orders. Each change is written to the Activity log (kept even without the add-on) as "Assistant", with the person it acted for.
 
 ### 3.12 Public pages
 
