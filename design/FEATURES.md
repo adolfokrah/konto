@@ -61,7 +61,7 @@ Result: 21 fixes committed in this branch, one new feature (barcode labels) and 
 | 12 | Merge of `main` into this branch | Five conflicts in the filter sheets, expense list/form/actions and time clock. | Resolved keeping the shared filter pattern, branch filter inside the sheets, payment options from add-ons, POS-only expense entry and expense details from `main`; expense action gate moved to `posExpense`. |
 | 15 | Discounts, returns, voids | Owner approval had no credential: a cashier tapped "Owner approves" on their own device. | Approval needs a manager or owner PIN (new "Approve discounts, returns and voids" permission, set on the role). Managers and owners approve without a prompt. Seed PINs: owner 1111, manager 4321, cashier 1234. The approver is written to the sale and the Activity log. |
 | 16 | Till, sale taxes | Price override and tax removal had no permission and no log entry. | New permissions "Change item prices at the till" and "Add or remove taxes on a sale" (Manager on, Cashier off). Price changes and tax edits go to the Activity log. |
-| 17 | Till | Cash expenses did not reduce the cash that should be in the drawer. | Cash expenses made during the shift (same branch, not auto-recurring) are taken off the expected cash and shown on the till and close screens. The cash-out screen warns not to record them twice. |
+| 17 | Till | Cash expenses did not reduce the cash that should be in the drawer. | When the till is open and a new cash expense is saved for today, the app asks "Paid from the till?". Yes takes it off the expected cash and shows it on the till and close screens. No leaves the drawer alone. Mobile money, card, recurring and closed-till expenses never ask. The cash-out screen warns not to record them twice. |
 | 18 | End of day | Closing the day did not stop later changes to its figures. | A closed day (or branch) blocks new sales, returns, voids and expense changes dated in it. A manager or owner can reopen it from End of day. Part payments on old credit sales are still allowed. |
 | 19 | Stock value, stock levels | Archived products that still held stock vanished from the valuation. | They stay in Stock value (and its export) and Stock levels, marked Archived. The archive warning says so. |
 | 20 | Sales report | Category donut and top items used pre-discount line amounts, so they did not add up to net sales. | Each sale's net (after discount, tax and refunds) is shared across its lines. Totals match net sales exactly (checked on 442 sample sales). |
@@ -185,7 +185,7 @@ Lists and tools
 ### 3.7 Till, cash and time
 
 - Till: open with opening cash, sales and cash taken in the shift, add cash, take cash out with a reason, no-sale (open drawer), close with a counted amount (expected, short or over shown, balanced), earlier shifts and shift detail.
-- Expected cash = opening + cash sales − cash refunds + cash added − cash taken out − cash expenses made during the shift + gift card sales. Cash expenses are not entered again as "Take cash out".
+- Expected cash = opening + cash sales − cash refunds + cash added − cash taken out − cash expenses marked "paid from the till" + gift card sales. Those are not entered again as "Take cash out".
 - Time clock: clock in/out, clock in with a PIN kiosk, manager clocks others in/out, per-branch entries, hours this week, edit an entry, settings (use clock, require before selling, ask for PIN, till opens and closes link to clock, ask to clock out before logging out).
 - Switching branch while clocked in asks to clock out first.
 
