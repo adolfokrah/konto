@@ -18,6 +18,7 @@ import { capRequiredApprovals } from './hooks/capRequiredApprovals'
 import { assignShortCode } from './hooks/assignShortCode'
 import { resolveShortLink } from './endpoints/resolve-short-link'
 import { validateWithdrawalAccount } from './hooks/validateWithdrawalAccount'
+import { createChangoCampaign } from './hooks/createChangoCampaign'
 
 export const Jars: CollectionConfig = {
   slug: 'jars',
@@ -155,6 +156,15 @@ export const Jars: CollectionConfig = {
       hasMany: false,
       admin: {
         description: "The withdrawal account this jar's payouts are sent to",
+      },
+    },
+    {
+      name: 'changoCampaignId',
+      type: 'text',
+      index: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Chango campaign this jar collects into. Jars without one stay on Eganow.',
       },
     },
     {
@@ -382,6 +392,7 @@ export const Jars: CollectionConfig = {
       deleteInviteNotification,
       deleteInviteNotifications,
       sendFreezeNotificationToCreator,
+      createChangoCampaign,
     ],
     beforeRead: [],
     beforeDelete: [validateJarBalanceBeforeDelete],

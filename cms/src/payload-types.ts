@@ -1555,7 +1555,7 @@ export interface Transaction {
     /**
      * Where the fees came from
      */
-    feeSource?: ('settings' | 'eganow') | null;
+    feeSource?: ('settings' | 'eganow' | 'chango') | null;
   };
   paymentStatus?: ('pending' | 'awaiting-approval' | 'completed' | 'failed') | null;
   type: 'payout' | 'contribution';
@@ -1583,6 +1583,14 @@ export interface Transaction {
    * Eganow's PayPartnerTransactionId received in webhook callback
    */
   eganowPayPartnerTransactionId?: string | null;
+  /**
+   * Chango invoice created for this contribution
+   */
+  changoInvoiceId?: string | null;
+  /**
+   * Chango checkout's reference for the payment session
+   */
+  changoCheckoutReference?: string | null;
   /**
    * Destination withdrawal account for a payout
    */
@@ -1693,6 +1701,10 @@ export interface Jar {
    * The withdrawal account this jar's payouts are sent to
    */
   withdrawalAccount?: (string | null) | WithdrawalAccount;
+  /**
+   * Chango campaign this jar collects into. Jars without one stay on Eganow.
+   */
+  changoCampaignId?: string | null;
   invitedCollectors?:
     | {
         /**
@@ -3202,6 +3214,8 @@ export interface TransactionsSelect<T extends boolean = true> {
   payoutNetAmount?: T;
   transactionReference?: T;
   eganowPayPartnerTransactionId?: T;
+  changoInvoiceId?: T;
+  changoCheckoutReference?: T;
   withdrawalAccount?: T;
   collector?: T;
   collectorSnapshot?:
@@ -3240,6 +3254,7 @@ export interface JarsSelect<T extends boolean = true> {
   currency?: T;
   creator?: T;
   withdrawalAccount?: T;
+  changoCampaignId?: T;
   invitedCollectors?:
     | T
     | {

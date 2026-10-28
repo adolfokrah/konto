@@ -1,5 +1,13 @@
 import type { PayloadRequest } from 'payload'
 import { isCreatorVerified } from '@/utilities/kyb'
+import { getCampaignSummary } from '@/utilities/changoContributions'
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(' ').filter(Boolean)
+  return parts.length >= 2
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : (parts[0]?.[0] ?? '?').toUpperCase()
+}
 
 /**
  * Public endpoint to get jar data for the contribution page.
@@ -67,7 +75,7 @@ export const getContributionPageJar = async (req: PayloadRequest) => {
       }),
     ])
 
-    const totalContributedAmount = contributions.docs.reduce(
+    let totalContributedAmount = contributions.docs.reduce(
       (sum: number, tx: any) => sum + (tx.amountContributed || 0),
       0,
     )
@@ -80,11 +88,7 @@ export const getContributionPageJar = async (req: PayloadRequest) => {
       if (!name || seenNames.has(name)) continue
       seenNames.add(name)
 
-      const parts = name.trim().split(' ').filter(Boolean)
-      const initials =
-        parts.length >= 2
-          ? (parts[0][0] + parts[1][0]).toUpperCase()
-          : (parts[0]?.[0] ?? '?').toUpperCase()
+      const initials = initialsOf(name)
 
       const photo = typeof tx.collector === 'object' ? tx.collector?.photo : null
       const photoUrl =
@@ -94,6 +98,26 @@ export const getContributionPageJar = async (req: PayloadRequest) => {
 
       contributorAvatars.push({ initials, photoUrl })
       if (contributorAvatars.length >= 3) break
+    }
+
+    // Chango holds the money for linked jars, so its records are the ones to show.
+    let donorCount = contributions.totalDocs
+    if (jarDoc.changoCampaignId) {
+      try {
+        const summary = await getCampaignSummary(jarDoc.changoCampaignId)
+        totalContributedAmount = summary.totalContributedAmount
+        donorCount = summary.donorCount
+        contributorAvatars.length = 0
+        const seen = new Set<string>()
+        for (const c of summary.recent) {
+          if (seen.has(c.contributor)) continue
+          seen.add(c.contributor)
+          contributorAvatars.push({ initials: initialsOf(c.contributor), photoUrl: null })
+          if (contributorAvatars.length >= 3) break
+        }
+      } catch (err: any) {
+        console.error(`[chango] contributions for jar ${jarId} unavailable:`, err?.message)
+      }
     }
 
     // KYB gate: jar can only accept contributions once its creator is business-verified
@@ -108,7 +132,7 @@ export const getContributionPageJar = async (req: PayloadRequest) => {
           totalContributedAmount: Number(totalContributedAmount.toFixed(2)),
         },
       },
-      donorCount: contributions.totalDocs,
+      donorCount,
       contributorAvatars,
       systemSettings: {
         collectionFee: systemSettings.collectionFee,

@@ -1,5 +1,6 @@
 import { addDataAndFileToRequest, PayloadRequest } from 'payload'
 import { getEganow } from '@/utilities/initalise'
+import { reconcileChangoJar } from '@/utilities/changoReconcile'
 
 // Eganow transaction status → internal payment status
 const CARD_STATUS_MAP: Record<string, 'completed' | 'failed' | 'pending'> = {
@@ -62,9 +63,31 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
       )
     }
 
+    // Chango contributions are confirmed against the campaign's contribution list on Chango;
+    // Eganow has never seen them.
+    const isChango = Boolean(contribution.changoInvoiceId)
+    if (isChango && contribution.paymentStatus === 'pending') {
+      const jar = contribution.jar
+      if (jar && typeof jar === 'object') {
+        try {
+          const paid = await reconcileChangoJar(req.payload, jar)
+          if (paid.includes(contribution.id)) contribution.paymentStatus = 'completed'
+        } catch (err: any) {
+          // Stay pending; the return page polls again and the cron retries.
+          console.warn(
+            `[verify-payment] Chango check failed for ${contribution.id}: ${err?.message}`,
+          )
+        }
+      }
+    }
+
     // Log-only: what Eganow's status API says about a pending non-card contribution.
     // Hosted checkout is settled by the webhook, so this never changes the status.
-    if (contribution.paymentMethod !== 'card' && contribution.paymentStatus === 'pending') {
+    if (
+      !isChango &&
+      contribution.paymentMethod !== 'card' &&
+      contribution.paymentStatus === 'pending'
+    ) {
       const ids = [contribution.id, (contribution as any).eganowPayPartnerTransactionId].filter(
         Boolean,
       ) as string[]
@@ -89,7 +112,11 @@ export const verifyPaymentEgaNow = async (req: PayloadRequest) => {
     // Card payments have no reliable webhook when the transaction is frictionless
     // (no 3DS challenge page renders, so nothing calls our callback). Resolve the status
     // by polling Eganow's status API directly while the card payment is still pending.
-    if (contribution.paymentMethod === 'card' && contribution.paymentStatus === 'pending') {
+    if (
+      !isChango &&
+      contribution.paymentMethod === 'card' &&
+      contribution.paymentStatus === 'pending'
+    ) {
       try {
         // Card status must be queried by the Eganow reference number (stored in
         // transactionReference), NOT our contribution id — Eganow does not recognise

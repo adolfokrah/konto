@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook } from 'payload'
+import type { CollectionBeforeChangeHook, PayloadRequest } from 'payload'
 import { calculateCharges } from '../../../utilities/calculateCharges'
 
 export const getCharges: CollectionBeforeChangeHook = async ({
@@ -25,6 +25,25 @@ export const getCharges: CollectionBeforeChangeHook = async ({
       data.payoutFeePercentage = 0
       data.payoutFeeAmount = 0
       data.payoutNetAmount = data.amountContributed || 0
+    }
+    return data
+  }
+
+  // Chango collects and settles these itself, so Hogapay charges nothing on them.
+  if (
+    data.type === 'contribution' &&
+    (await isChangoContribution(data, originalDoc, operation, req))
+  ) {
+    data.chargesBreakdown = {
+      platformCharge: 0,
+      amountPaidByContributor: data.amountContributed || 0,
+      hogapayRevenue: 0,
+      eganowFees: 0,
+      discountPercent: 0,
+      discountAmount: 0,
+      amountToSendToEganow: data.amountContributed || 0,
+      collectionFeePercent: 0,
+      feeSource: 'chango',
     }
     return data
   }
@@ -194,4 +213,34 @@ export const getCharges: CollectionBeforeChangeHook = async ({
   }
 
   return data
+}
+
+/** Already sent to Chango, or a new contribution to a jar linked to a Chango campaign. */
+async function isChangoContribution(
+  data: Record<string, any>,
+  originalDoc: Record<string, any> | undefined,
+  operation: string,
+  req: PayloadRequest,
+): Promise<boolean> {
+  if (data.changoInvoiceId || originalDoc?.changoInvoiceId) return true
+  if (originalDoc?.chargesBreakdown?.feeSource === 'chango') return true
+  // Only new contributions follow the jar, so linking a jar later leaves Eganow fees alone.
+  if (operation !== 'create') return false
+
+  const jarRef = data.jar ?? originalDoc?.jar
+  const jarId = typeof jarRef === 'object' ? jarRef?.id : jarRef
+  if (!jarId) return false
+
+  try {
+    const jar = await req.payload.findByID({
+      collection: 'jars',
+      id: jarId,
+      depth: 0,
+      overrideAccess: true,
+      select: { changoCampaignId: true },
+    })
+    return Boolean(jar?.changoCampaignId)
+  } catch {
+    return false
+  }
 }

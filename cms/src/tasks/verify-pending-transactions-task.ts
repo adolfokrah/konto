@@ -1,4 +1,62 @@
 import { getEganow } from '@/utilities/initalise'
+import { reconcileChangoJar } from '@/utilities/changoReconcile'
+
+/** Chango's checkout session lasts a day; a payment still missing after that isn't coming. */
+const CHANGO_PENDING_LIMIT_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Confirms pending Chango contributions against each jar's campaign on Chango, then fails the
+ * ones that never arrived.
+ */
+async function reconcilePendingChango(payload: any) {
+  const { docs: pending } = await payload.find({
+    collection: 'transactions',
+    where: {
+      paymentStatus: { equals: 'pending' },
+      type: { equals: 'contribution' },
+      changoInvoiceId: { exists: true },
+    },
+    pagination: false,
+    depth: 1,
+    overrideAccess: true,
+  })
+
+  const jars = new Map<string, any>()
+  for (const t of pending) if (t.jar && typeof t.jar === 'object') jars.set(t.jar.id, t.jar)
+
+  const confirmed = new Set<string>()
+  for (const jar of jars.values()) {
+    try {
+      for (const id of await reconcileChangoJar(payload, jar)) confirmed.add(id)
+    } catch (err: any) {
+      console.error(
+        `[verify-pending-transactions] Chango check failed for jar ${jar.id}:`,
+        err?.message,
+      )
+    }
+  }
+
+  let expired = 0
+  const limit = Date.now() - CHANGO_PENDING_LIMIT_MS
+  for (const t of pending) {
+    if (confirmed.has(t.id) || Date.parse(t.createdAt) > limit) continue
+    await payload.update({
+      collection: 'transactions',
+      id: t.id,
+      data: { paymentStatus: 'failed' },
+      overrideAccess: true,
+      context: { skipCharges: true },
+    })
+    expired++
+  }
+
+  if (pending.length) {
+    console.log(
+      `[verify-pending-transactions] Chango: ${pending.length} pending, ${confirmed.size} confirmed, ${expired} expired`,
+    )
+  }
+  return { pending: pending.length, confirmed: confirmed.size, expired }
+}
 
 /**
  * Verify Pending Transactions Task
@@ -19,6 +77,8 @@ export const verifyPendingTransactionsTask = {
     try {
       const payload = args.req?.payload || args.payload
 
+      const chango = await reconcilePendingChango(payload)
+
       // 5 minutes ago — transactions must be at least 5 min old before we check
       const cutoffTime = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       // 1 hour ago — transactions older than this are auto-failed
@@ -32,6 +92,8 @@ export const verifyPendingTransactionsTask = {
           paymentStatus: { equals: 'pending' },
           paymentMethod: { in: ['mobile-money', 'card', 'bank'] },
           createdAt: { less_than: cutoffTime },
+          // Chango contributions are checked against Chango above; Eganow has never seen them.
+          changoInvoiceId: { exists: false },
         },
         limit: 500,
         depth: 2,
@@ -42,6 +104,7 @@ export const verifyPendingTransactionsTask = {
         return {
           output: {
             processed: 0,
+            chango,
             message: 'No pending transactions to verify',
           },
         }
@@ -221,6 +284,7 @@ export const verifyPendingTransactionsTask = {
           total: pendingTransactions.docs.length,
           processed: processedCount,
           failed: failedCount,
+          chango,
           message: `Verified ${processedCount} transactions, ${failedCount} marked as failed`,
         },
       }

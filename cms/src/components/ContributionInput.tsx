@@ -28,7 +28,7 @@ interface ContributionInputProps {
   jarName?: string
   collectorId?: string | { id: string } | undefined
   allowAnonymousContributions?: boolean
-  /** No longer shown: the payer sees the fee on Eganow's hosted page. */
+  /** No longer shown: the payer sees the fee on Chango's checkout page. */
   transactionFeePercentage?: number
   customFields?: CustomField[]
   acceptingContributions?: boolean
@@ -89,7 +89,7 @@ export default function ContributionInput({
   )
 
   const { trigger: createHostedCheckout } = useSWRMutation(
-    `${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-hosted-checkout-eganow`,
+    `${process.env.NEXT_PUBLIC_API_URL}/transactions/charge-chango`,
     async (url: string, { arg }: { arg: { contributionId: string } }) => {
       const res = await fetch(url, {
         method: 'POST',
@@ -156,7 +156,7 @@ export default function ContributionInput({
     }
   }
 
-  // Back from Eganow's hosted checkout: verify the contribution named in `?reference=`
+  // Back from Chango's checkout: verify the contribution named in `?reference=`
   // and only congratulate once it has actually settled.
   useEffect(() => {
     const reference = new URLSearchParams(window.location.search).get('reference')
@@ -271,7 +271,7 @@ export default function ContributionInput({
         contributorPhoneNumber: contributorPhoneNumber.trim(),
         amount: selectedAmount,
         currency,
-        // The payer picks card or mobile money on Eganow's page; the webhook tells us which.
+        // The payer picks card or mobile money on Chango's page; the webhook tells us which.
         paymentMethod: 'mobile-money',
         collector: typeof collectorId === 'object' ? collectorId?.id : collectorId,
         ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
@@ -280,7 +280,7 @@ export default function ContributionInput({
 
       const contributionId = contributionData.data.id
 
-      // Eganow hosts the payment page, so we hand the payer over and let their page take
+      // Chango hosts the payment page, so we hand the payer over and let their page take
       // it from here. They come back to this page with `?reference=<id>`, and the effect
       // above verifies the payment before sending them to the congratulations page.
       const checkoutData = await createHostedCheckout({ contributionId })

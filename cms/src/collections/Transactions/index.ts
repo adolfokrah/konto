@@ -4,6 +4,7 @@ import { APIError } from 'payload'
 import { chargeMomoEganow } from './endpoints/charge-momo-ega-now'
 import { chargeCardEganow } from './endpoints/charge-card-eganow'
 import { chargeHostedCheckoutEganow } from './endpoints/charge-hosted-checkout-eganow'
+import { chargeChango } from './endpoints/charge-chango'
 import { getBanks } from './endpoints/get-banks'
 import { changoWebhook } from './endpoints/chango-webhook'
 import { createPaymentLinkContribution } from './endpoints/create-payment-link-contribution'
@@ -214,6 +215,7 @@ export const Transactions: CollectionConfig = {
           options: [
             { label: 'System settings', value: 'settings' },
             { label: 'Eganow quote', value: 'eganow' },
+            { label: 'Chango (no fees)', value: 'chango' },
           ],
           admin: {
             description: 'Where the fees came from',
@@ -301,6 +303,26 @@ export const Transactions: CollectionConfig = {
       admin: {
         description: "Eganow's PayPartnerTransactionId received in webhook callback",
         readOnly: true,
+      },
+    },
+    {
+      name: 'changoInvoiceId',
+      type: 'text',
+      index: true,
+      admin: {
+        description: 'Chango invoice created for this contribution',
+        readOnly: true,
+        condition: (data) => Boolean(data?.changoInvoiceId),
+      },
+    },
+    {
+      name: 'changoCheckoutReference',
+      type: 'text',
+      index: true,
+      admin: {
+        description: "Chango checkout's reference for the payment session",
+        readOnly: true,
+        condition: (data) => Boolean(data?.changoCheckoutReference),
       },
     },
     {
@@ -445,6 +467,11 @@ export const Transactions: CollectionConfig = {
       path: '/charge-hosted-checkout-eganow',
       method: 'post',
       handler: chargeHostedCheckoutEganow,
+    },
+    {
+      path: '/charge-chango',
+      method: 'post',
+      handler: chargeChango,
     },
     {
       path: '/eganow-card-webhook',
