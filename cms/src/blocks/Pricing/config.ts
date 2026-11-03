@@ -30,7 +30,7 @@ export const Pricing: Block = {
               children: [
                 {
                   type: 'text',
-                  text: 'Contributors cover a 1.95% telcos transaction fee while organizers pay a max of 2% platform fee. Organizers can also choose to pass this fee to contributors for maximum flexibility.',
+                  text: 'Contributors cover a 1.95% telcos transaction fee while organizers pay a max of 1.5% platform fee. Organizers can also choose to pass this fee to contributors for maximum flexibility.',
                 },
               ],
             },
