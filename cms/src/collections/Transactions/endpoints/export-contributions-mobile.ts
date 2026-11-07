@@ -99,8 +99,8 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     let { width: pageWidth, height: pageHeight } = page.getSize()
     const monoFont = await pdfDoc.embedFont(StandardFonts.Courier)
     const usableWidth = pageWidth - pageMargin * 2
-    // Columns: #, Transaction ID, Contributor, Initiated by, Payment Method, Type, Status, Contribution, Payout, [custom fields], Date
-    const basePercents = [0.04, 0.11, 0.1, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.1]
+    // Columns: #, Transaction ID, Contributor, Phone / Account No., Initiated by, Payment Method, Type, Status, Contribution, Payout, [custom fields], Date
+    const basePercents = [0.04, 0.1, 0.1, 0.09, 0.1, 0.08, 0.06, 0.07, 0.09, 0.09, 0.1]
     const customFieldPercent = 0.09
     const numCustomFields = exportableCustomFields.length
     const scaleFactor = numCustomFields > 0 ? 1 - customFieldPercent * numCustomFields : 1
@@ -108,13 +108,14 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       basePercents[0],
       ...basePercents.slice(1).map((p) => p * scaleFactor),
       ...exportableCustomFields.map(() => customFieldPercent * scaleFactor),
-      basePercents[9] * scaleFactor,
+      basePercents[10] * scaleFactor,
     ]
     const columnWidths = columnPercents.map((p) => Math.floor(p * usableWidth))
     const headers = [
       '#',
       'Transaction ID',
       'Contributor',
+      'Phone / Account No.',
       'Initiated by',
       'Payment Method',
       'Type',
@@ -366,6 +367,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     docs.forEach((c, idx) => {
       const idShort = String(c.id)
       const contributor = String(c.contributor || c.contributorPhoneNumber || 'Anonymous')
+      const contributorNumber = String(c.contributorPhoneNumber || c.accountNumber || '-')
       let collectorName = ''
       if (c.collector && typeof c.collector === 'object') {
         collectorName = c.collector.fullName || c.collector.name || c.collector.email || ''
@@ -400,6 +402,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
         String(idx + 1),
         idShort,
         contributor,
+        contributorNumber,
         collectorName,
         payment,
         type,
@@ -477,6 +480,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
       '#',
       'Transaction ID',
       'Contributor',
+      'Phone / Account No.',
       'Initiated By',
       'Payment Method',
       'Type',
@@ -501,7 +505,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
     sheet.columns = excelHeaders.map((h, i) => ({
       header: h,
       key: `col${i}`,
-      width: i === 1 ? 28 : i === 2 || i === 3 ? 20 : 14,
+      width: i === 1 ? 28 : i >= 2 && i <= 4 ? 20 : 14,
     }))
     const headerRow = sheet.getRow(metaLines.length + 2)
     headerRow.font = { bold: true, size: 10 }
@@ -510,6 +514,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
 
     docs.forEach((c, idx) => {
       const contributor = c.contributor || c.contributorPhoneNumber || 'Anonymous'
+      const contributorNumber = c.contributorPhoneNumber || c.accountNumber || ''
       let collectorName = ''
       if (c.collector && typeof c.collector === 'object') {
         collectorName = c.collector.fullName || c.collector.name || c.collector.email || ''
@@ -528,18 +533,19 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
         col0: idx + 1,
         col1: sanitizeExcelCell(c.id),
         col2: sanitizeExcelCell(contributor),
-        col3: sanitizeExcelCell(collectorName),
-        col4: sanitizeExcelCell(c.paymentMethod),
-        col5: sanitizeExcelCell(c.type),
-        col6: sanitizeExcelCell(c.paymentStatus),
-        col7: typeLower === 'contribution' ? amountNum : null,
-        col8: typeLower === 'payout' ? amountNum : null,
+        col3: sanitizeExcelCell(contributorNumber),
+        col4: sanitizeExcelCell(collectorName),
+        col5: sanitizeExcelCell(c.paymentMethod),
+        col6: sanitizeExcelCell(c.type),
+        col7: sanitizeExcelCell(c.paymentStatus),
+        col8: typeLower === 'contribution' ? amountNum : null,
+        col9: typeLower === 'payout' ? amountNum : null,
       }
       exportableCustomFields.forEach((f, fi) => {
         const val = cfvById[f.id] ?? cfvByLabel[f.label.toLowerCase()]
-        rowValues[`col${9 + fi}`] = sanitizeExcelCell(val)
+        rowValues[`col${10 + fi}`] = sanitizeExcelCell(val)
       })
-      rowValues[`col${9 + exportableCustomFields.length}`] = new Date(c.createdAt).toLocaleString()
+      rowValues[`col${10 + exportableCustomFields.length}`] = new Date(c.createdAt).toLocaleString()
 
       const row = sheet.addRow(rowValues)
       if (idx % 2 === 1) {
@@ -548,7 +554,7 @@ export const exportContributionsMobile = async (req: PayloadRequest) => {
         })
       }
     })
-    ;['col7', 'col8'].forEach((key) => {
+    ;['col8', 'col9'].forEach((key) => {
       sheet.getColumn(key).numFmt = '#,##0.00'
     })
 
