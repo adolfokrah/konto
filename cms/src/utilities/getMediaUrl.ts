@@ -1,5 +1,6 @@
 import { getClientSideURL, getServerSideURL } from '@/utilities/getURL'
 import canUseDOM from './canUseDOM'
+import { apiMediaUrl } from './apiMediaUrl'
 
 /**
  * Processes media resource URL to ensure proper formatting
@@ -13,6 +14,13 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
   // Check if URL already has http/https protocol
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return cacheTag ? `${url}?t=${cacheTag}` : url
+  }
+
+  // Media files are served by the API. The website deployment (hogapay.com) cannot read
+  // the storage bucket itself, so its own /api/media/file route returns 500.
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    const fullUrl = apiMediaUrl(url) ?? url
+    return cacheTag ? `${fullUrl}?t=${cacheTag}` : fullUrl
   }
 
   // Production fix: Always use consistent URL to prevent SSR/CSR mismatch
