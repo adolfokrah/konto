@@ -20,7 +20,29 @@
       "path": "/api/users/send-empty-jar-reminder",
       "schedule": "0 10 * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "usehoga.com"
+        }
+      ],
+      "destination": "https://hogapay.com/:path",
+      "permanent": true
+    },
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.usehoga.com"
+        }
+      ],
+      "destination": "https://hogapay.com/:path",
+      "permanent": true
+    }
   ]
 }
-
-
